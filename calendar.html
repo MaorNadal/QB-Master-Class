@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח שנה אימונים - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Rubik', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .day-cell { min-height: 92px; }
+        @media (max-width: 640px) { .day-cell { min-height: 64px; } }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-xl">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <a href="qb_master_class_v2.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300 flex items-center gap-1">
+                    <span>←</span><span>חזרה למדריך הראשי</span>
+                </a>
+                <span class="text-2xl">📅</span>
+                <span class="font-black text-lg tracking-wide text-fuchsia-400">לוח שנה אימונים</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleHolidays()" id="holidayToggleBtn" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-amber-400 text-slate-300 transition">✡️ הצג חגים ומועדים (לוח עברי)</button>
+                <button onclick="exportData()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-emerald-400 text-slate-300 transition">⬇️ גיבוי</button>
+                <label class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-sky-400 text-slate-300 transition cursor-pointer">
+                    ⬆️ שחזור
+                    <input type="file" accept="application/json" onchange="importData(event)" class="hidden">
+                </label>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-6xl mx-auto px-4 pt-6 pb-4">
+        <h1 class="text-2xl md:text-3xl font-black text-white mb-1">מעקב אימונים אישי לקוורטרבק</h1>
+        <p class="text-slate-400 text-sm">לחץ על כל יום כדי לסמן אילו אימונים/פעילויות בוצעו בו. ניתן לסמן מספר סוגי אימון לאותו היום. הנתונים נשמרים אוטומטית בדפדפן שלך.</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 space-y-6">
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg">
+                <div id="statLoggedDays" class="text-2xl font-extrabold text-fuchsia-400 mb-0.5">0</div>
+                <div class="text-[11px] text-slate-300 font-medium">ימי אימון החודש</div>
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg">
+                <div id="statSessions" class="text-2xl font-extrabold text-sky-400 mb-0.5">0</div>
+                <div class="text-[11px] text-slate-300 font-medium">סה"כ פעילויות החודש</div>
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg">
+                <div id="statStreak" class="text-2xl font-extrabold text-amber-400 mb-0.5">0</div>
+                <div class="text-[11px] text-slate-300 font-medium">רצף ימים נוכחי 🔥</div>
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg">
+                <div id="statTopCategory" class="text-lg font-extrabold text-emerald-400 mb-0.5">-</div>
+                <div class="text-[11px] text-slate-300 font-medium">הפעילות הנפוצה החודש</div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="changeMonth(-1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-fuchsia-600 transition text-white font-bold">→</button>
+                <div class="text-center">
+                    <div id="monthLabel" class="text-xl md:text-2xl font-black text-fuchsia-400"></div>
+                    <button onclick="goToday()" class="text-[11px] text-slate-400 hover:text-slate-200 underline mt-0.5">חזרה להיום</button>
+                </div>
+                <button onclick="changeMonth(1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-fuchsia-600 transition text-white font-bold">←</button>
+            </div>
+
+            <div class="grid grid-cols-7 gap-1.5 mb-1.5 text-center text-[11px] md:text-xs font-bold text-slate-400">
+                <div>ראשון</div><div>שני</div><div>שלישי</div><div>רביעי</div><div>חמישי</div><div>שישי</div><div>שבת</div>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-7 gap-1.5"></div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+            <h3 class="font-bold text-slate-200 text-sm mb-3">מקרא סוגי אימון</h3>
+            <div id="legendContainer" class="flex flex-wrap gap-2 text-[11px]"></div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+            <h3 class="text-center font-bold text-slate-200 text-sm mb-2">התפלגות פעילויות החודש</h3>
+            <div style="height:260px;">
+                <canvas id="monthChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <div id="dayModal" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5 md:p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modalDateTitle" class="text-lg font-black text-fuchsia-400"></h3>
+                <button onclick="closeDayModal()" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
+            </div>
+            <div id="modalHolidayNote" class="text-xs text-amber-300 mb-3 hidden"></div>
+
+            <div class="mb-4">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">אימוני מערכת קיימים</div>
+                <div id="modalSystemChecks" class="space-y-2"></div>
+            </div>
+            <div class="mb-5">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">פעילויות נוספות</div>
+                <div id="modalExtraChecks" class="space-y-2"></div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="saveDayModal()" class="flex-1 px-4 py-2.5 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl transition">💾 שמור</button>
+                <button onclick="closeDayModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CATEGORIES = [
+            { id: 'd1', label: 'יום 1: Upper Body (נפח)', color: '#38bdf8', group: 'system' },
+            { id: 'd2', label: 'יום 2: Lower Body & Core', color: '#10b981', group: 'system' },
+            { id: 'd3', label: 'יום 3: זריקות QB בשדה', color: '#f59e0b', group: 'system' },
+            { id: 'd4', label: 'יום 4: Upper Body (היפרטרופיה)', color: '#a855f7', group: 'system' },
+            { id: 'd5', label: 'יום 5: Lower Body (מתפרץ)', color: '#f43f5e', group: 'system' },
+            { id: 'd6', label: 'יום 6: התאוששות פעילה', color: '#14b8a6', group: 'system' },
+            { id: 'special', label: 'אימון מיוחד', color: '#94a3b8', group: 'extra' },
+            { id: 'special_throw', label: 'אימון זריקות מיוחד', color: '#fb923c', group: 'extra' },
+            { id: 'group', label: 'אימון קבוצתי', color: '#6366f1', group: 'extra' },
+            { id: 'towel', label: 'Towel Drill', color: '#e879f9', group: 'extra' },
+            { id: 'footwork', label: 'עבודת רגליים', color: '#84cc16', group: 'extra' },
+            { id: 'iq', label: 'זמן Football IQ', color: '#22d3ee', group: 'extra' },
+            { id: 'measure', label: 'בדיקת מדדים אישית', color: '#ef4444', group: 'extra' }
+        ];
+        const CAT_BY_ID = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
+
+        let viewYear, viewMonth; // viewMonth: 0-11
+        let selectedDateStr = null;
+        let holidaysVisible = false;
+        let holidayCache = {}; // key "YYYY-MM" -> { "YYYY-MM-DD": "title" }
+        let monthChartInstance = null;
+
+        const HEB_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+        function dateStr(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
+
+        function getDayData(ds) {
+            try {
+                const raw = localStorage.getItem('qbmc_cal_' + ds);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        }
+        function setDayData(ds, arr) {
+            try {
+                if (arr.length) localStorage.setItem('qbmc_cal_' + ds, JSON.stringify(arr));
+                else localStorage.removeItem('qbmc_cal_' + ds);
+            } catch (e) {}
+        }
+
+        function changeMonth(delta) {
+            viewMonth += delta;
+            if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+            if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+            renderCalendar();
+        }
+        function goToday() {
+            const t = new Date();
+            viewYear = t.getFullYear(); viewMonth = t.getMonth();
+            renderCalendar();
+        }
+
+        async function toggleHolidays() {
+            holidaysVisible = !holidaysVisible;
+            const btn = document.getElementById('holidayToggleBtn');
+            btn.classList.toggle('border-amber-400', holidaysVisible);
+            btn.classList.toggle('text-amber-300', holidaysVisible);
+            if (holidaysVisible) await loadHolidays(viewYear, viewMonth);
+            renderCalendar();
+        }
+
+        async function loadHolidays(y, m) {
+            const key = `${y}-${pad(m + 1)}`;
+            if (holidayCache[key]) return holidayCache[key];
+            try {
+                const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&mod=on&year=${y}&month=${m + 1}&ss=off&mf=off&c=off&geo=none`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const map = {};
+                (data.items || []).forEach(it => {
+                    if (it.date && it.date.length >= 10) {
+                        const d = it.date.substring(0, 10);
+                        map[d] = map[d] ? map[d] + ' • ' + it.title : it.title;
+                    }
+                });
+                holidayCache[key] = map;
+                return map;
+            } catch (e) {
+                holidayCache[key] = {};
+                return {};
+            }
+        }
+
+        function renderLegend() {
+            const container = document.getElementById('legendContainer');
+            container.innerHTML = CATEGORIES.map(c =>
+                `<span class="flex items-center gap-1.5 bg-slate-900/80 border border-slate-700 rounded-lg px-2 py-1">
+                    <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${c.color}"></span>${c.label}
+                </span>`
+            ).join('');
+        }
+
+        function renderCalendar() {
+            document.getElementById('monthLabel').innerText = `${HEB_MONTHS[viewMonth]} ${viewYear}`;
+            const grid = document.getElementById('calendarGrid');
+            const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            const todayStr = dateStr(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+            const holidayMap = holidaysVisible ? (holidayCache[`${viewYear}-${pad(viewMonth + 1)}`] || {}) : {};
+
+            let html = '';
+            for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
+            let loggedDays = 0, totalSessions = 0;
+            const catCounts = {};
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const ds = dateStr(viewYear, viewMonth, d);
+                const entries = getDayData(ds);
+                if (entries.length) { loggedDays++; totalSessions += entries.length; }
+                entries.forEach(id => { catCounts[id] = (catCounts[id] || 0) + 1; });
+
+                const isToday = ds === todayStr;
+                const holidayTitle = holidayMap[ds];
+
+                const dots = entries.slice(0, 6).map(id => {
+                    const c = CAT_BY_ID[id];
+                    return c ? `<span class="w-1.5 h-1.5 rounded-full inline-block" style="background:${c.color}"></span>` : '';
+                }).join('');
+                const extraCount = entries.length > 6 ? `<span class="text-[9px] text-slate-500">+${entries.length - 6}</span>` : '';
+
+                html += `
+                <button onclick="openDayModal('${ds}')" class="day-cell text-right p-1.5 md:p-2 rounded-lg border ${isToday ? 'border-fuchsia-400 bg-fuchsia-500/10' : 'border-slate-800 bg-slate-900/60'} hover:border-fuchsia-400/60 transition flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs md:text-sm font-bold ${isToday ? 'text-fuchsia-300' : 'text-slate-300'}">${d}</span>
+                    </div>
+                    ${holidayTitle ? `<div class="text-[8px] md:text-[9px] text-amber-300 leading-tight truncate" title="${holidayTitle}">✡️ ${holidayTitle}</div>` : ''}
+                    <div class="flex flex-wrap gap-0.5 mt-1">${dots}${extraCount}</div>
+                </button>`;
+            }
+            grid.innerHTML = html;
+
+            document.getElementById('statLoggedDays').innerText = loggedDays;
+            document.getElementById('statSessions').innerText = totalSessions;
+
+            let topCat = '-';
+            let topCount = 0;
+            Object.entries(catCounts).forEach(([id, n]) => { if (n > topCount) { topCount = n; topCat = CAT_BY_ID[id] ? CAT_BY_ID[id].label : id; } });
+            document.getElementById('statTopCategory').innerText = topCat;
+
+            document.getElementById('statStreak').innerText = computeStreak();
+
+            renderMonthChart(catCounts);
+        }
+
+        function computeStreak() {
+            let streak = 0;
+            let cursor = new Date();
+            while (true) {
+                const ds = dateStr(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
+                const entries = getDayData(ds);
+                if (entries.length > 0) {
+                    streak++;
+                    cursor.setDate(cursor.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        function renderMonthChart(catCounts) {
+            const labels = [];
+            const data = [];
+            const colors = [];
+            CATEGORIES.forEach(c => {
+                if (catCounts[c.id]) {
+                    labels.push(c.label);
+                    data.push(catCounts[c.id]);
+                    colors.push(c.color);
+                }
+            });
+            const ctx = document.getElementById('monthChart').getContext('2d');
+            if (monthChartInstance) monthChartInstance.destroy();
+            monthChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets: [{ data, backgroundColor: colors }] },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#cbd5e1', stepSize: 1 } },
+                        y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        async function openDayModal(ds) {
+            selectedDateStr = ds;
+            const d = new Date(ds + 'T00:00:00');
+            document.getElementById('modalDateTitle').innerText = d.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            const holidayNote = document.getElementById('modalHolidayNote');
+            if (holidaysVisible) {
+                const map = await loadHolidays(d.getFullYear(), d.getMonth());
+                if (map[ds]) { holidayNote.innerText = '✡️ ' + map[ds]; holidayNote.classList.remove('hidden'); }
+                else holidayNote.classList.add('hidden');
+            } else {
+                holidayNote.classList.add('hidden');
+            }
+
+            const entries = getDayData(ds);
+            const buildChecks = (group) => CATEGORIES.filter(c => c.group === group).map(c => `
+                <label class="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-lg p-2.5 cursor-pointer hover:border-fuchsia-400/50 transition">
+                    <input type="checkbox" value="${c.id}" ${entries.includes(c.id) ? 'checked' : ''} class="w-4 h-4" style="accent-color:${c.color}">
+                    <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${c.color}"></span>
+                    <span class="text-sm text-slate-200">${c.label}</span>
+                </label>
+            `).join('');
+
+            document.getElementById('modalSystemChecks').innerHTML = buildChecks('system');
+            document.getElementById('modalExtraChecks').innerHTML = buildChecks('extra');
+            document.getElementById('dayModal').classList.remove('hidden');
+        }
+
+        function closeDayModal() {
+            document.getElementById('dayModal').classList.add('hidden');
+            selectedDateStr = null;
+        }
+
+        function saveDayModal() {
+            if (!selectedDateStr) return;
+            const checks = document.querySelectorAll('#dayModal input[type=checkbox]:checked');
+            const selected = Array.from(checks).map(c => c.value);
+            setDayData(selectedDateStr, selected);
+            closeDayModal();
+            renderCalendar();
+        }
+
+        function exportData() {
+            const backup = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('qbmc_cal_')) backup[key] = localStorage.getItem(key);
+            }
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qb_master_class_calendar_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    Object.entries(backup).forEach(([key, value]) => {
+                        if (key.startsWith('qbmc_cal_')) localStorage.setItem(key, value);
+                    });
+                    renderCalendar();
+                    alert('השחזור הושלם בהצלחה!');
+                } catch (err) {
+                    alert('קובץ לא תקין. ודא שזה קובץ גיבוי שיוצא מהמערכת.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const t = new Date();
+            viewYear = t.getFullYear(); viewMonth = t.getMonth();
+            renderLegend();
+            renderCalendar();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מרכז גיבוי - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Rubik', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-xl">
+        <div class="max-w-4xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <a href="qb_master_class_v2.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300 flex items-center gap-1">
+                    <span>←</span><span>חזרה למדריך הראשי</span>
+                </a>
+                <a href="calendar.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">📅 לוח שנה</a>
+                <a href="metrics.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">📈 מדדים</a>
+                <a href="ai-tools.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">🤖 עזרי AI</a>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🗄️</span>
+                <span class="font-black text-lg tracking-wide text-slate-200">מרכז גיבוי</span>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-4xl mx-auto px-4 pt-6 pb-4">
+        <h1 class="text-2xl md:text-3xl font-black text-white mb-2">גיבוי, מיזוג ושחזור נתוני המערכת</h1>
+        <p class="text-slate-400 text-sm leading-relaxed">
+            כל דף במערכת (המדריך הראשי, לוח השנה, לוח המדדים) שומר את הנתונים שלו בנפרד בדפדפן שלך.
+            הכלי הזה מאפשר לך לאסוף את כל הגיבויים למקום אחד — ולעשות את הפעולה ההפוכה: לפצל גיבוי מאוחד בחזרה לקבצים
+            שכל דף יודע לקרוא בעצמו.
+        </p>
+        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mt-4 text-xs text-amber-200 leading-relaxed">
+            ⚠️ <strong>חשוב לדעת:</strong> הכלי הזה עובד על קבצים שאתה מעלה — הוא לא "רואה" ישירות את הנתונים השמורים בדפים
+            האחרים (זו מגבלה טכנית של קבצים מקומיים בדפדפן). לכן התהליך הוא: קודם מייצאים גיבוי מכל דף בנפרד (הכפתורים שכבר
+            קיימים בכל דף), ואז מעלים את כל הקבצים לכאן למיזוג. לאחר מעבר לאחסון אתר אמיתי (Hosting), זה ייפתר אוטומטית.
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 space-y-6">
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 md:p-6 backdrop-blur">
+            <h2 class="font-bold text-lg text-emerald-400 mb-1 flex items-center gap-2"><span>1️⃣</span> שלב ראשון — ייצוא מכל דף בנפרד</h2>
+            <p class="text-xs text-slate-400 mb-4">אם עדיין לא עשית זאת, לחץ על כפתור הגיבוי בכל אחד מהדפים הבאים והורד את הקבצים:</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                    <div class="font-bold text-white mb-1">📋 תוכנית אימונים (ראשי)</div>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי אימונים" בניווט העליון של המדריך הראשי.</div>
+                    <a href="qb_master_class_v2.html" class="text-sky-400 hover:underline">פתח את המדריך הראשי ←</a>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                    <div class="font-bold text-white mb-1">📅 לוח שנה אימונים</div>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בניווט העליון של לוח השנה.</div>
+                    <a href="calendar.html" class="text-fuchsia-400 hover:underline">פתח את לוח השנה ←</a>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                    <div class="font-bold text-white mb-1">📈 מדדים + Madden</div>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בניווט העליון של לוח המדדים.</div>
+                    <a href="metrics.html" class="text-cyan-400 hover:underline">פתח את לוח המדדים ←</a>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                    <div class="font-bold text-white mb-1">🍗 תזונה (עזרי AI)</div>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בלוח השנה שבתוך עזרי ה-AI.</div>
+                    <a href="ai-tools.html" class="text-emerald-400 hover:underline">פתח את עזרי ה-AI ←</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 md:p-6 backdrop-blur">
+            <h2 class="font-bold text-lg text-sky-400 mb-1 flex items-center gap-2"><span>2️⃣</span> שלב שני — מיזוג לקובץ אחד מאוחד</h2>
+            <p class="text-xs text-slate-400 mb-4">העלה כאן את כל קובצי הגיבוי שהורדת (אפשר לבחור כמה קבצים יחד). הכלי יזהה אוטומטית מאיזה דף כל קובץ הגיע.</p>
+
+            <label class="block border-2 border-dashed border-slate-700 hover:border-sky-400 rounded-xl p-8 text-center cursor-pointer transition">
+                <input type="file" id="mergeFileInput" accept="application/json" multiple class="hidden" onchange="handleMergeFiles(event)">
+                <span class="text-3xl block mb-2">📂</span>
+                <span class="text-sm text-slate-300 font-bold">לחץ לבחירת קבצי גיבוי (אפשר לבחור כמה יחד)</span>
+            </label>
+
+            <div id="mergeSummary" class="mt-4 space-y-2 text-xs hidden">
+                <div class="font-bold text-slate-300">קבצים שזוהו:</div>
+                <div id="mergeSummaryList" class="space-y-1"></div>
+                <button onclick="downloadMergedFile()" class="w-full mt-3 px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl transition">💾 הורד גיבוי מאוחד אחד</button>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 md:p-6 backdrop-blur">
+            <h2 class="font-bold text-lg text-purple-400 mb-1 flex items-center gap-2"><span>3️⃣</span> שלב שלישי — פיצול גיבוי מאוחד בחזרה (לשחזור)</h2>
+            <p class="text-xs text-slate-400 mb-4">
+                יש לך קובץ גיבוי מאוחד (מהשלב הקודם) ורוצה לשחזר אותו? העלה אותו כאן — הכלי יפצל אותו בחזרה לשלושה קבצים
+                נפרדים, מוכנים להזנה דרך כפתור ה"שחזור" הרגיל בכל דף.
+            </p>
+            <label class="block border-2 border-dashed border-slate-700 hover:border-purple-400 rounded-xl p-8 text-center cursor-pointer transition">
+                <input type="file" id="splitFileInput" accept="application/json" class="hidden" onchange="handleSplitFile(event)">
+                <span class="text-3xl block mb-2">🧩</span>
+                <span class="text-sm text-slate-300 font-bold">לחץ לבחירת קובץ הגיבוי המאוחד</span>
+            </label>
+            <div id="splitSummary" class="mt-4 space-y-2 hidden"></div>
+        </div>
+    </main>
+
+    <script>
+        const CATEGORY_INFO = {
+            'qbmc_ex_': { label: '📋 תוכנית אימונים (ראשי)', color: '#38bdf8', filename: 'qb_master_class_workouts_backup.json' },
+            'qbmc_cal_': { label: '📅 לוח שנה אימונים', color: '#e879f9', filename: 'qb_master_class_calendar_backup.json' },
+            'qbmc_metrics_': { label: '📈 מדדים + Madden', color: '#22d3ee', filename: 'qb_master_class_metrics_backup.json' },
+            'qbmc_meals_': { label: '🍗 תזונה (עזרי AI)', color: '#34d399', filename: 'qb_master_class_nutrition_backup.json' }
+        };
+        // Exact-match keys (not per-date prefixes) get folded into an existing category
+        const EXACT_KEY_CATEGORY = {
+            'qbmc_nutrition_targets': 'qbmc_meals_'
+        };
+
+        let mergedData = {};
+
+        function detectCategory(key) {
+            if (EXACT_KEY_CATEGORY[key]) return EXACT_KEY_CATEGORY[key];
+            return Object.keys(CATEGORY_INFO).find(prefix => key.startsWith(prefix)) || null;
+        }
+
+        function handleMergeFiles(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+
+            const summary = {};
+            let filesProcessed = 0;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        Object.entries(data).forEach(([key, value]) => {
+                            const cat = detectCategory(key);
+                            if (cat) {
+                                mergedData[key] = value;
+                                summary[cat] = (summary[cat] || 0) + 1;
+                            }
+                        });
+                    } catch (err) {
+                        summary['__error__'] = (summary['__error__'] || 0) + 1;
+                    }
+                    filesProcessed++;
+                    if (filesProcessed === files.length) renderMergeSummary(summary);
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function renderMergeSummary(summary) {
+            const container = document.getElementById('mergeSummaryList');
+            let html = '';
+            Object.entries(CATEGORY_INFO).forEach(([prefix, info]) => {
+                const count = summary[prefix] || 0;
+                html += `<div class="flex items-center justify-between bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2">
+                    <span style="color:${info.color}">${info.label}</span>
+                    <span class="font-bold ${count ? 'text-emerald-400' : 'text-slate-600'}">${count} רשומות ${count ? '✓' : '(לא נמצא)'}</span>
+                </div>`;
+            });
+            if (summary['__error__']) {
+                html += `<div class="text-rose-400">⚠️ ${summary['__error__']} קובץ/ים לא תקינים דולגו.</div>`;
+            }
+            document.getElementById('mergeSummaryList').innerHTML = html;
+            document.getElementById('mergeSummary').classList.remove('hidden');
+        }
+
+        function downloadMergedFile() {
+            const blob = new Blob([JSON.stringify(mergedData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qb_master_class_UNIFIED_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function handleSplitFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    const split = {};
+                    Object.entries(data).forEach(([key, value]) => {
+                        const cat = detectCategory(key);
+                        if (!cat) return;
+                        if (!split[cat]) split[cat] = {};
+                        split[cat][key] = value;
+                    });
+                    renderSplitResults(split);
+                } catch (err) {
+                    alert('קובץ לא תקין. ודא שזה קובץ JSON תקין.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        let lastSplitResult = {};
+
+        function renderSplitResults(split) {
+            lastSplitResult = split;
+            const container = document.getElementById('splitSummary');
+            let html = '';
+            Object.entries(CATEGORY_INFO).forEach(([prefix, info]) => {
+                const data = split[prefix];
+                const count = data ? Object.keys(data).length : 0;
+                html += `<div class="flex items-center justify-between bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5">
+                    <span style="color:${info.color}" class="text-sm">${info.label} — ${count} רשומות</span>
+                    ${count ? `<button onclick="downloadSplitFile('${prefix}')" class="text-xs font-bold px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg transition">⬇️ הורד</button>` : `<span class="text-[11px] text-slate-600">אין נתונים</span>`}
+                </div>`;
+            });
+            container.innerHTML = html;
+            container.classList.remove('hidden');
+        }
+
+        function downloadSplitFile(prefix) {
+            const data = lastSplitResult[prefix];
+            if (!data) return;
+            const info = CATEGORY_INFO[prefix];
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = info.filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח מעקב מדדים - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Rubik', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .day-cell { min-height: 78px; }
+        @media (max-width: 640px) { .day-cell { min-height: 56px; } }
+
+        #printReportView { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #printReportView, #printReportView * { visibility: visible; }
+            #printReportView { display: block; position: absolute; top: 0; left: 0; width: 100%; background: #fff; color: #0f172a; padding: 20px; }
+            #printReportView h1, #printReportView h2 { color: #0f172a; }
+            #printReportView .report-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 14px; break-inside: avoid; }
+            #printReportView table { width: 100%; border-collapse: collapse; }
+            #printReportView th, #printReportView td { border-bottom: 1px solid #e2e8f0; padding: 4px 6px; text-align: right; font-size: 11px; }
+            #printReportView .bar-bg { background: #e2e8f0; border-radius: 4px; overflow: hidden; height: 10px; }
+            #printReportView .bar-fill { background: #7c3aed; height: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-xl">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <a href="qb_master_class_v2.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300 flex items-center gap-1">
+                    <span>←</span><span>חזרה למדריך הראשי</span>
+                </a>
+                <a href="calendar.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300 flex items-center gap-1">
+                    <span>📅</span><span>לוח שנה אימונים</span>
+                </a>
+                <span class="text-2xl">📈</span>
+                <span class="font-black text-lg tracking-wide text-cyan-400">לוח מעקב מדדים</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleHolidays()" id="holidayToggleBtn" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-amber-400 text-slate-300 transition">✡️ הצג חגים ומועדים (לוח עברי)</button>
+                <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">גרסה ראשונית (v1)</span>
+                <button onclick="exportData()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-emerald-400 text-slate-300 transition">⬇️ גיבוי</button>
+                <label class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-sky-400 text-slate-300 transition cursor-pointer">
+                    ⬆️ שחזור
+                    <input type="file" accept="application/json" onchange="importData(event)" class="hidden">
+                </label>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-6xl mx-auto px-4 pt-6 pb-4">
+        <div class="flex flex-wrap justify-between items-start gap-3">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-black text-white mb-1">מעקב מדדים אישיים לאורך זמן</h1>
+                <p class="text-slate-400 text-sm">הזן מדדים שקיבלת מהמאמן (מהירות, קפיצה, כוח, עוצמת זריקה ועוד) בכל תאריך רלוונטי, ועקוב אחרי המגמה שלהם בגרף. זו גרסה ראשונית — נמשיך לשפר בהמשך.</p>
+            </div>
+            <button onclick="generatePrintReport()" class="shrink-0 text-xs font-bold px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl transition flex items-center gap-1.5">
+                <span>📄</span><span>הפק דוח התקדמות להדפסה</span>
+            </button>
+        </div>
+    </header>
+
+    <div id="printReportView">
+        <div style="text-align:center; margin-bottom:20px; border-bottom:2px solid #7c3aed; padding-bottom:12px;">
+            <h1 style="font-size:24px; font-weight:900;">🏈 QB Master Class — דוח התקדמות אישי</h1>
+            <div id="printPlayerName" style="font-size:14px; color:#475569;"></div>
+            <div style="font-size:11px; color:#64748b;">הופק בתאריך: <span id="printGenDate"></span></div>
+        </div>
+
+        <div class="report-card">
+            <h2 style="font-size:15px; font-weight:800; margin-bottom:8px;">🎮 דירוג Madden נוכחי</h2>
+            <div id="printMaddenSection" style="font-size:12px;"></div>
+        </div>
+
+        <div class="report-card">
+            <h2 style="font-size:15px; font-weight:800; margin-bottom:8px;">📈 מדדים פיזיים — ערך עדכני ומגמה</h2>
+            <table>
+                <thead><tr><th>מדד</th><th>ערך עדכני</th><th>תאריך</th><th>מגמה</th></tr></thead>
+                <tbody id="printMetricsTable"></tbody>
+            </table>
+        </div>
+
+        <div class="report-card">
+            <h2 style="font-size:15px; font-weight:800; margin-bottom:8px;">🏋️ נוכחות אימונים — 30 יום אחרונים</h2>
+            <div id="printWorkoutSection" style="font-size:12px;"></div>
+        </div>
+
+        <p style="font-size:9px; color:#94a3b8; text-align:center; margin-top:16px;">
+            דוח זה הופק אוטומטית ממערכת QB Master Class לצרכי מעקב אישי ושיתוף עם מאמן. אינו מהווה ייעוץ רפואי, תזונתי או מקצועי.
+        </p>
+    </div>
+
+    <main class="max-w-6xl mx-auto px-4 space-y-6">
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="changeMonth(-1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-cyan-600 transition text-white font-bold">→</button>
+                <div class="text-center">
+                    <div id="monthLabel" class="text-xl md:text-2xl font-black text-cyan-400"></div>
+                    <button onclick="goToday()" class="text-[11px] text-slate-400 hover:text-slate-200 underline mt-0.5">חזרה להיום</button>
+                </div>
+                <button onclick="changeMonth(1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-cyan-600 transition text-white font-bold">←</button>
+            </div>
+
+            <div class="grid grid-cols-7 gap-1.5 mb-1.5 text-center text-[11px] md:text-xs font-bold text-slate-400">
+                <div>ראשון</div><div>שני</div><div>שלישי</div><div>רביעי</div><div>חמישי</div><div>שישי</div><div>שבת</div>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-7 gap-1.5"></div>
+            <p class="text-[11px] text-slate-500 mt-3">ימים עם נקודה כחולה כוללים רישום מדד אחד לפחות. לחץ על יום כדי להוסיף/לערוך.</p>
+        </div>
+
+        <div class="bg-slate-800/50 border border-purple-500/30 rounded-2xl p-4 md:p-6 backdrop-blur">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                <h3 class="font-bold text-purple-300 text-base flex items-center gap-2"><span>🎮</span> כרטיס דירוג Madden (מהמאמן)</h3>
+                <div class="flex items-center gap-2">
+                    <label class="text-[11px] text-slate-400">הצג תמונת מצב נכון לתאריך:</label>
+                    <select id="maddenSnapshotSelect" onchange="renderMaddenCard()" class="bg-slate-800 border border-slate-600 rounded-lg p-1.5 text-[11px] text-white focus:outline-none focus:border-purple-400"></select>
+                </div>
+            </div>
+            <div id="maddenCardEmpty" class="text-center text-slate-500 text-sm py-6">
+                עדיין אין רישומי דירוג Madden. הוסף אותם דרך יום בלוח השנה למעלה — הם מופיעים תחת קבוצת "🎮 דירוג Madden" ברשימת המדדים.
+            </div>
+            <div id="maddenCardContent" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center mb-5">
+                    <div style="height:280px;">
+                        <canvas id="maddenRadarChart"></canvas>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">OVR כללי</div>
+                        <div id="maddenOvrDisplay" class="text-5xl font-black text-amber-400 mb-2">--</div>
+                        <div id="maddenOvrSource" class="text-[11px] text-slate-500 mb-4"></div>
+                        <div id="maddenSubStats" class="grid grid-cols-2 gap-2 text-xs text-right"></div>
+                    </div>
+                </div>
+                <details class="border-t border-slate-700 pt-3">
+                    <summary class="cursor-pointer text-xs font-bold text-purple-300 hover:text-purple-200">📜 היסטוריית עדכוני Madden המלאה (לחץ להרחבה)</summary>
+                    <div class="overflow-x-auto mt-3">
+                        <table class="w-full text-xs text-right">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-700">
+                                    <th class="py-2 px-2">תאריך</th>
+                                    <th class="py-2 px-2">יכולת</th>
+                                    <th class="py-2 px-2">ערך</th>
+                                </tr>
+                            </thead>
+                            <tbody id="maddenHistoryTable"></tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                <h3 class="font-bold text-slate-200 text-base">📊 מגמת מדד לאורך זמן</h3>
+                <select id="trendMetricSelect" onchange="renderTrendChart()" class="bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+                </select>
+            </div>
+            <div style="height:300px;">
+                <canvas id="trendChart"></canvas>
+            </div>
+            <p id="trendEmptyState" class="text-center text-slate-500 text-sm mt-4 hidden">אין עדיין נתונים למדד הזה. הוסף רישום דרך יום כלשהו בלוח השנה למעלה.</p>
+        </div>
+
+        <div class="bg-slate-800/50 border border-emerald-500/30 rounded-2xl p-4 md:p-6 backdrop-blur">
+            <h3 class="font-bold text-emerald-300 text-base mb-1 flex items-center gap-2"><span>🔗</span> ניתוח מתאם — האם האימונים משתקפים במדדים?</h3>
+            <p class="text-xs text-slate-400 mb-4">בוחרים מדד וסוג אימון, והגרף מציג יחד: מגמת המדד (קו) מול תדירות האימון השבועית (עמודות) — כדי לראות אם יש קשר.</p>
+
+            <div id="corrCalendarMissing" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-4">
+                <p class="text-xs text-amber-200 mb-3">לא נמצאו נתוני לוח אימונים בדף הזה (זה צפוי אם הדפים נפתחים כקבצים נפרדים — ראו הסבר במרכז הגיבוי). העלה כאן את קובץ הגיבוי של "לוח שנה אימונים" כדי לאפשר את הניתוח:</p>
+                <label class="inline-block text-xs font-bold px-3 py-2 bg-slate-800 border border-slate-700 hover:border-emerald-400 rounded-lg cursor-pointer transition">
+                    📂 טען קובץ גיבוי של לוח האימונים
+                    <input type="file" accept="application/json" onchange="loadCalendarBackupForCorrelation(event)" class="hidden">
+                </label>
+            </div>
+
+            <div id="corrControls" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">מדד לניתוח</label>
+                        <select id="corrMetricSelect" onchange="renderCorrelationChart()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-emerald-400"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">סוג אימון להשוואה</label>
+                        <select id="corrCategorySelect" onchange="renderCorrelationChart()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-emerald-400"></select>
+                    </div>
+                </div>
+                <div style="height:300px;">
+                    <canvas id="correlationChart"></canvas>
+                </div>
+                <p id="corrEmptyState" class="text-center text-slate-500 text-sm mt-4 hidden">אין מספיק נתונים לניתוח עבור הבחירה הזו.</p>
+                <p class="text-[10px] text-slate-500 mt-3">⚠️ זהו כלי להתרשמות ויזואלית בלבד — לא ניתוח סטטיסטי מדעי. מתאם לא בהכרח מעיד על סיבתיות (ייתכנו גורמים נוספים).</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+            <h3 class="font-bold text-slate-200 text-base mb-3">📋 כל הרישומים (טבלה)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-right">
+                    <thead>
+                        <tr class="text-slate-400 border-b border-slate-700">
+                            <th class="py-2 px-2">תאריך</th>
+                            <th class="py-2 px-2">מדד</th>
+                            <th class="py-2 px-2">ערך</th>
+                            <th class="py-2 px-2">יחידה</th>
+                            <th class="py-2 px-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="allEntriesTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="dayModal" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5 md:p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modalDateTitle" class="text-lg font-black text-cyan-400"></h3>
+                <button onclick="closeDayModal()" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
+            </div>
+            <div id="modalHolidayNote" class="text-xs text-amber-300 mb-3 hidden"></div>
+
+            <div id="modalEntriesList" class="space-y-2 mb-4"></div>
+
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 space-y-2">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">הוסף רישום מדד</div>
+                <select id="newMetricName" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+                    <option value="">-- בחר מדד --</option>
+                </select>
+                <input type="text" id="newMetricCustom" placeholder="או הקלד שם מדד מותאם אישית..." class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-cyan-400 hidden">
+                <div class="flex gap-2">
+                    <input type="number" step="any" id="newMetricValue" placeholder="ערך" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+                    <input type="text" id="newMetricUnit" placeholder="יחידה (שנ׳, ס״מ, ק״ג...)" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+                </div>
+                <button onclick="addMetricEntry()" class="w-full px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition text-xs">➕ הוסף רישום</button>
+            </div>
+
+            <button onclick="closeDayModal()" class="w-full mt-4 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">סגור</button>
+        </div>
+    </div>
+
+    <script>
+        const COMMON_METRICS = [
+            { name: '40-Yard Dash', unit: 'שניות' },
+            { name: 'Vertical Jump', unit: 'ס"מ' },
+            { name: 'Broad Jump', unit: 'ס"מ' },
+            { name: '3-Cone Drill', unit: 'שניות' },
+            { name: 'Shuttle Run (5-10-5)', unit: 'שניות' },
+            { name: 'Bench Press Max', unit: 'ק"ג' },
+            { name: 'Squat Max', unit: 'ק"ג' },
+            { name: 'עוצמת זריקה (Radar Gun)', unit: 'קמ"ש' },
+            { name: 'משקל גוף', unit: 'ק"ג' },
+            { name: 'אחוז שומן', unit: '%' }
+        ];
+
+        const MADDEN_METRICS = [
+            { name: 'Madden: עוצמת זרוע (THP)', unit: 'דירוג 0-99', short: 'THP' },
+            { name: 'Madden: דיוק קצר (SAC)', unit: 'דירוג 0-99', short: 'SAC' },
+            { name: 'Madden: דיוק בינוני (MAC)', unit: 'דירוג 0-99', short: 'MAC' },
+            { name: 'Madden: דיוק עמוק (DAC)', unit: 'דירוג 0-99', short: 'DAC' },
+            { name: 'Madden: תחושת כיס (AWR)', unit: 'דירוג 0-99', short: 'AWR' },
+            { name: 'Madden: מהירות שחרור (RLS)', unit: 'דירוג 0-99', short: 'RLS' },
+            { name: 'Madden: זריקה בתנועה (RUN)', unit: 'דירוג 0-99', short: 'RUN' }
+        ];
+        const MADDEN_OVR_NAME = 'Madden: OVR כללי (מהמאמן)';
+        let maddenRadarInstance = null;
+
+        let viewYear, viewMonth;
+        let selectedDateStr = null;
+        let trendChartInstance = null;
+        let correlationChartInstance = null;
+        let calendarDataCache = null; // { "YYYY-MM-DD": ["d1","towel",...], ... } once loaded
+
+        // Mirrors the category list from calendar.html so labels/colors stay consistent
+        const CALENDAR_CATEGORIES = [
+            { id: 'd1', label: 'יום 1: Upper Body (נפח)', color: '#38bdf8' },
+            { id: 'd2', label: 'יום 2: Lower Body & Core', color: '#10b981' },
+            { id: 'd3', label: 'יום 3: זריקות QB בשדה', color: '#f59e0b' },
+            { id: 'd4', label: 'יום 4: Upper Body (היפרטרופיה)', color: '#a855f7' },
+            { id: 'd5', label: 'יום 5: Lower Body (מתפרץ)', color: '#f43f5e' },
+            { id: 'd6', label: 'יום 6: התאוששות פעילה', color: '#14b8a6' },
+            { id: 'special', label: 'אימון מיוחד', color: '#94a3b8' },
+            { id: 'special_throw', label: 'אימון זריקות מיוחד', color: '#fb923c' },
+            { id: 'group', label: 'אימון קבוצתי', color: '#6366f1' },
+            { id: 'towel', label: 'Towel Drill', color: '#e879f9' },
+            { id: 'footwork', label: 'עבודת רגליים', color: '#84cc16' },
+            { id: 'iq', label: 'זמן Football IQ', color: '#22d3ee' },
+            { id: 'measure', label: 'בדיקת מדדים אישית', color: '#ef4444' }
+        ];
+
+        function tryLoadCalendarFromLocalStorage() {
+            const data = {};
+            let found = false;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('qbmc_cal_')) {
+                    try {
+                        data[key.replace('qbmc_cal_', '')] = JSON.parse(localStorage.getItem(key));
+                        found = true;
+                    } catch (e) {}
+                }
+            }
+            return found ? data : null;
+        }
+
+        function loadCalendarBackupForCorrelation(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    const data = {};
+                    Object.entries(backup).forEach(([key, value]) => {
+                        if (key.startsWith('qbmc_cal_')) data[key.replace('qbmc_cal_', '')] = JSON.parse(value);
+                    });
+                    calendarDataCache = data;
+                    initCorrelationUI();
+                } catch (err) {
+                    alert('קובץ לא תקין. ודא שזה קובץ גיבוי של לוח השנה.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function initCorrelationUI() {
+            if (!calendarDataCache) calendarDataCache = tryLoadCalendarFromLocalStorage();
+            const hasCalendar = calendarDataCache && Object.keys(calendarDataCache).length > 0;
+
+            document.getElementById('corrCalendarMissing').classList.toggle('hidden', hasCalendar);
+            document.getElementById('corrControls').classList.toggle('hidden', !hasCalendar);
+            if (!hasCalendar) return;
+
+            const metricNames = [...new Set(getAllEntries().map(e => e.name))].sort();
+            const metricSelect = document.getElementById('corrMetricSelect');
+            metricSelect.innerHTML = metricNames.length
+                ? metricNames.map(m => `<option value="${m}">${m}</option>`).join('')
+                : `<option value="">אין מדדים עדיין</option>`;
+
+            const catSelect = document.getElementById('corrCategorySelect');
+            catSelect.innerHTML = CALENDAR_CATEGORIES.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+
+            renderCorrelationChart();
+        }
+
+        function getISOWeekStart(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            const day = d.getDay(); // 0 = Sunday
+            d.setDate(d.getDate() - day);
+            return d.toISOString().slice(0, 10);
+        }
+
+        function renderCorrelationChart() {
+            const metricName = document.getElementById('corrMetricSelect').value;
+            const categoryId = document.getElementById('corrCategorySelect').value;
+            const canvas = document.getElementById('correlationChart');
+            const emptyState = document.getElementById('corrEmptyState');
+
+            const metricEntries = getAllEntries().filter(e => e.name === metricName).sort((a, b) => a.date.localeCompare(b.date));
+            const calendarDates = Object.keys(calendarDataCache || {});
+
+            if (!metricName || metricEntries.length === 0 || calendarDates.length === 0) {
+                emptyState.classList.remove('hidden');
+                canvas.classList.add('hidden');
+                if (correlationChartInstance) { correlationChartInstance.destroy(); correlationChartInstance = null; }
+                return;
+            }
+            emptyState.classList.add('hidden');
+            canvas.classList.remove('hidden');
+
+            const allDates = metricEntries.map(e => e.date).concat(calendarDates).sort();
+            const minWeek = getISOWeekStart(allDates[0]);
+            const maxWeek = getISOWeekStart(allDates[allDates.length - 1]);
+
+            const weeks = [];
+            let cursor = new Date(minWeek + 'T00:00:00');
+            const end = new Date(maxWeek + 'T00:00:00');
+            while (cursor <= end) {
+                weeks.push(cursor.toISOString().slice(0, 10));
+                cursor.setDate(cursor.getDate() + 7);
+            }
+
+            const barData = weeks.map(weekStart => {
+                let count = 0;
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(weekStart + 'T00:00:00');
+                    d.setDate(d.getDate() + i);
+                    const ds = d.toISOString().slice(0, 10);
+                    const entries = (calendarDataCache && calendarDataCache[ds]) || [];
+                    if (entries.includes(categoryId)) count++;
+                }
+                return count;
+            });
+
+            const lineData = weeks.map(weekStart => {
+                const weekEnd = new Date(weekStart + 'T00:00:00');
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                const weekEndStr = weekEnd.toISOString().slice(0, 10);
+                const matches = metricEntries.filter(e => e.date >= weekStart && e.date <= weekEndStr);
+                if (!matches.length) return null;
+                return matches.reduce((sum, e) => sum + e.value, 0) / matches.length;
+            });
+
+            const catMeta = CALENDAR_CATEGORIES.find(c => c.id === categoryId);
+            const ctx = canvas.getContext('2d');
+            if (correlationChartInstance) correlationChartInstance.destroy();
+            correlationChartInstance = new Chart(ctx, {
+                data: {
+                    labels: weeks.map(w => {
+                        const d = new Date(w + 'T00:00:00');
+                        return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+                    }),
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: catMeta ? catMeta.label + ' (ימים בשבוע)' : 'אימון',
+                            data: barData,
+                            backgroundColor: (catMeta ? catMeta.color : '#38bdf8') + '55',
+                            borderColor: catMeta ? catMeta.color : '#38bdf8',
+                            borderWidth: 1,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            type: 'line',
+                            label: metricName,
+                            data: lineData,
+                            borderColor: '#facc15',
+                            backgroundColor: 'rgba(250,204,21,0.15)',
+                            spanGaps: true,
+                            tension: 0.25,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#facc15',
+                            yAxisID: 'y'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#cbd5e1', font: { size: 9 } } },
+                        y: { position: 'left', grid: { color: '#334155' }, ticks: { color: '#facc15' }, title: { display: true, text: metricName, color: '#facc15', font: { size: 10 } } },
+                        y1: { position: 'right', grid: { display: false }, ticks: { color: '#cbd5e1', stepSize: 1, precision: 0 }, min: 0, max: 7, title: { display: true, text: 'ימי אימון בשבוע', color: '#cbd5e1', font: { size: 10 } } }
+                    },
+                    plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
+                }
+            });
+        }
+
+
+        let holidaysVisible = false;
+        let holidayCache = {}; // key "YYYY-MM" -> { "YYYY-MM-DD": "title" }
+
+        async function toggleHolidays() {
+            holidaysVisible = !holidaysVisible;
+            const btn = document.getElementById('holidayToggleBtn');
+            btn.classList.toggle('border-amber-400', holidaysVisible);
+            btn.classList.toggle('text-amber-300', holidaysVisible);
+            if (holidaysVisible) await loadHolidays(viewYear, viewMonth);
+            renderCalendar();
+        }
+
+        async function loadHolidays(y, m) {
+            const key = `${y}-${pad(m + 1)}`;
+            if (holidayCache[key]) return holidayCache[key];
+            try {
+                const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&mod=on&year=${y}&month=${m + 1}&ss=off&mf=off&c=off&geo=none`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const map = {};
+                (data.items || []).forEach(it => {
+                    if (it.date && it.date.length >= 10) {
+                        const d = it.date.substring(0, 10);
+                        map[d] = map[d] ? map[d] + ' • ' + it.title : it.title;
+                    }
+                });
+                holidayCache[key] = map;
+                return map;
+            } catch (e) {
+                holidayCache[key] = {};
+                return {};
+            }
+        }
+
+        const HEB_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+        function dateStr(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
+
+        function getDayEntries(ds) {
+            try {
+                const raw = localStorage.getItem('qbmc_metrics_' + ds);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        }
+        function setDayEntries(ds, arr) {
+            try {
+                if (arr.length) localStorage.setItem('qbmc_metrics_' + ds, JSON.stringify(arr));
+                else localStorage.removeItem('qbmc_metrics_' + ds);
+            } catch (e) {}
+        }
+
+        function getAllMetricDates() {
+            const dates = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('qbmc_metrics_')) dates.push(key.replace('qbmc_metrics_', ''));
+            }
+            return dates.sort();
+        }
+
+        function getAllEntries() {
+            const all = [];
+            getAllMetricDates().forEach(ds => {
+                getDayEntries(ds).forEach((e, idx) => all.push({ date: ds, _idx: idx, ...e }));
+            });
+            return all;
+        }
+
+        function changeMonth(delta) {
+            viewMonth += delta;
+            if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+            if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+            renderCalendar();
+        }
+        function goToday() {
+            const t = new Date();
+            viewYear = t.getFullYear(); viewMonth = t.getMonth();
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            document.getElementById('monthLabel').innerText = `${HEB_MONTHS[viewMonth]} ${viewYear}`;
+            const grid = document.getElementById('calendarGrid');
+            const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            const todayStr = dateStr(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+            const holidayMap = holidaysVisible ? (holidayCache[`${viewYear}-${pad(viewMonth + 1)}`] || {}) : {};
+
+            let html = '';
+            for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const ds = dateStr(viewYear, viewMonth, d);
+                const entries = getDayEntries(ds);
+                const isToday = ds === todayStr;
+                const holidayTitle = holidayMap[ds];
+                html += `
+                <button onclick="openDayModal('${ds}')" class="day-cell text-right p-1.5 md:p-2 rounded-lg border ${isToday ? 'border-cyan-400 bg-cyan-500/10' : 'border-slate-800 bg-slate-900/60'} hover:border-cyan-400/60 transition flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs md:text-sm font-bold ${isToday ? 'text-cyan-300' : 'text-slate-300'}">${d}</span>
+                        ${holidayTitle ? `<span class="text-[9px]" title="${holidayTitle}">✡️</span>` : ''}
+                    </div>
+                    ${holidayTitle ? `<div class="text-[8px] text-amber-300 leading-tight truncate">${holidayTitle}</div>` : ''}
+                    ${entries.length ? `<div class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block"></span><span class="text-[9px] text-slate-400">${entries.length}</span></div>` : ''}
+                </button>`;
+            }
+            grid.innerHTML = html;
+            renderMetricSelectOptions();
+            renderTrendChart();
+            renderAllEntriesTable();
+            renderMaddenCard();
+            if (document.getElementById('corrControls') && !document.getElementById('corrControls').classList.contains('hidden')) {
+                const prevMetric = document.getElementById('corrMetricSelect').value;
+                const prevCat = document.getElementById('corrCategorySelect').value;
+                initCorrelationUI();
+                if (prevMetric) document.getElementById('corrMetricSelect').value = prevMetric;
+                if (prevCat) document.getElementById('corrCategorySelect').value = prevCat;
+                renderCorrelationChart();
+            }
+        }
+
+        function getLatestValueForMetric(name) {
+            const matches = getAllEntries().filter(e => e.name === name).sort((a, b) => b.date.localeCompare(a.date));
+            return matches.length ? matches[0] : null;
+        }
+
+        function getValueAsOf(name, asOfDate) {
+            const matches = getAllEntries().filter(e => e.name === name && e.date <= asOfDate).sort((a, b) => b.date.localeCompare(a.date));
+            return matches.length ? matches[0] : null;
+        }
+
+        function getAllMaddenNames() {
+            return MADDEN_METRICS.map(m => m.name).concat([MADDEN_OVR_NAME]);
+        }
+
+        function populateMaddenSnapshotSelect() {
+            const names = getAllMaddenNames();
+            const dates = [...new Set(getAllEntries().filter(e => names.includes(e.name)).map(e => e.date))].sort().reverse();
+            const select = document.getElementById('maddenSnapshotSelect');
+            const prevValue = select.value;
+            select.innerHTML = dates.map((d, i) => `<option value="${d}">${d}${i === 0 ? ' (עדכני ביותר)' : ''}</option>`).join('');
+            if (dates.includes(prevValue)) select.value = prevValue;
+            return dates;
+        }
+
+        function renderMaddenCard() {
+            const snapshotDates = populateMaddenSnapshotSelect();
+            const hasAny = snapshotDates.length > 0;
+
+            document.getElementById('maddenCardEmpty').classList.toggle('hidden', hasAny);
+            document.getElementById('maddenCardContent').classList.toggle('hidden', !hasAny);
+            if (!hasAny) {
+                if (maddenRadarInstance) { maddenRadarInstance.destroy(); maddenRadarInstance = null; }
+                return;
+            }
+
+            const asOfDate = document.getElementById('maddenSnapshotSelect').value || snapshotDates[0];
+            const subValues = MADDEN_METRICS.map(m => getValueAsOf(m.name, asOfDate));
+            const values = subValues.map(v => v ? v.value : 0);
+
+            const ctx = document.getElementById('maddenRadarChart').getContext('2d');
+            if (maddenRadarInstance) maddenRadarInstance.destroy();
+            maddenRadarInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: MADDEN_METRICS.map(m => m.short),
+                    datasets: [{
+                        label: 'דירוג נכון ל-' + asOfDate,
+                        data: values,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168,85,247,0.25)',
+                        pointBackgroundColor: '#a855f7'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#334155' },
+                            grid: { color: '#334155' },
+                            pointLabels: { color: '#cbd5e1', font: { size: 11 } },
+                            ticks: { display: false, backdropColor: 'transparent' },
+                            min: 0, max: 99
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            const manualOvr = getValueAsOf(MADDEN_OVR_NAME, asOfDate);
+            const thp = values[0], sac = values[1], mac = values[2], dac = values[3], awr = values[4], rls = values[5], run = values[6];
+            const autoOvr = Math.round((thp * 0.2) + (sac * 0.15) + (mac * 0.2) + (dac * 0.15) + (awr * 0.15) + (rls * 0.08) + (run * 0.07));
+
+            const ovrDisplay = document.getElementById('maddenOvrDisplay');
+            const ovrSource = document.getElementById('maddenOvrSource');
+            if (manualOvr) {
+                ovrDisplay.innerText = manualOvr.value;
+                ovrSource.innerText = `מהמאמן (${manualOvr.date}) • מחושב לפי 7 היכולות: ${autoOvr}`;
+            } else {
+                ovrDisplay.innerText = autoOvr;
+                ovrSource.innerText = 'מחושב אוטומטית מ-7 היכולות (לא הוזן OVR ישיר מהמאמן)';
+            }
+
+            document.getElementById('maddenSubStats').innerHTML = MADDEN_METRICS.map((m, i) => `
+                <div class="bg-slate-800/80 border border-slate-700 rounded-lg px-2 py-1.5 flex justify-between items-center">
+                    <span class="text-slate-400">${m.short}</span>
+                    <span class="text-left">
+                        <span class="font-bold text-purple-300">${subValues[i] ? subValues[i].value : '--'}</span>
+                        ${subValues[i] ? `<span class="block text-[9px] text-slate-500">${subValues[i].date}</span>` : ''}
+                    </span>
+                </div>
+            `).join('');
+
+            renderMaddenHistoryTable();
+        }
+
+        function renderMaddenHistoryTable() {
+            const names = getAllMaddenNames();
+            const shortLabel = (name) => {
+                const m = MADDEN_METRICS.find(x => x.name === name);
+                return m ? m.short : 'OVR';
+            };
+            const rows = getAllEntries().filter(e => names.includes(e.name)).sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name));
+            const tbody = document.getElementById('maddenHistoryTable');
+            if (!rows.length) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-slate-500 py-3">אין עדיין היסטוריית עדכונים.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = rows.map(e => `
+                <tr class="border-b border-slate-800/60 hover:bg-slate-800/40">
+                    <td class="py-1.5 px-2 text-slate-400">${e.date}</td>
+                    <td class="py-1.5 px-2 text-white font-medium">${shortLabel(e.name)}</td>
+                    <td class="py-1.5 px-2 text-purple-300 font-bold">${e.value}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderMetricSelectOptions() {
+            const allEntries = getAllEntries();
+            const uniqueMetrics = [...new Set(allEntries.map(e => e.name))].sort();
+            const select = document.getElementById('trendMetricSelect');
+            const prevValue = select.value;
+            select.innerHTML = uniqueMetrics.length
+                ? uniqueMetrics.map(m => `<option value="${m}">${m}</option>`).join('')
+                : `<option value="">אין נתונים עדיין</option>`;
+            if (uniqueMetrics.includes(prevValue)) select.value = prevValue;
+        }
+
+        function renderTrendChart() {
+            const metricName = document.getElementById('trendMetricSelect').value;
+            const allEntries = getAllEntries().filter(e => e.name === metricName).sort((a, b) => a.date.localeCompare(b.date));
+
+            const emptyState = document.getElementById('trendEmptyState');
+            const canvas = document.getElementById('trendChart');
+            if (!metricName || allEntries.length === 0) {
+                emptyState.classList.remove('hidden');
+                canvas.classList.add('hidden');
+                if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+                return;
+            }
+            emptyState.classList.add('hidden');
+            canvas.classList.remove('hidden');
+
+            const labels = allEntries.map(e => e.date);
+            const data = allEntries.map(e => e.value);
+            const unit = allEntries[allEntries.length - 1].unit || '';
+
+            const ctx = canvas.getContext('2d');
+            if (trendChartInstance) trendChartInstance.destroy();
+            trendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: metricName + (unit ? ' (' + unit + ')' : ''),
+                        data,
+                        borderColor: '#22d3ee',
+                        backgroundColor: 'rgba(34,211,238,0.15)',
+                        tension: 0.25,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#22d3ee',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#cbd5e1', font: { size: 10 } } },
+                        y: { grid: { color: '#334155' }, ticks: { color: '#cbd5e1' } }
+                    },
+                    plugins: { legend: { labels: { color: '#f8fafc' } } }
+                }
+            });
+        }
+
+        function renderAllEntriesTable() {
+            const all = getAllEntries().sort((a, b) => b.date.localeCompare(a.date));
+            const tbody = document.getElementById('allEntriesTable');
+            if (!all.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-slate-500 py-4">אין רישומים עדיין.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = all.map(e => `
+                <tr class="border-b border-slate-800/60 hover:bg-slate-800/40">
+                    <td class="py-1.5 px-2 text-slate-400">${e.date}</td>
+                    <td class="py-1.5 px-2 text-white font-medium">${e.name}</td>
+                    <td class="py-1.5 px-2 text-cyan-300 font-bold">${e.value}</td>
+                    <td class="py-1.5 px-2 text-slate-400">${e.unit || ''}</td>
+                    <td class="py-1.5 px-2 text-left">
+                        <button onclick="deleteEntry('${e.date}', ${e._idx})" class="text-rose-400 hover:text-rose-300 text-[11px]">מחק</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function openDayModal(ds) {
+            selectedDateStr = ds;
+            const d = new Date(ds + 'T00:00:00');
+            document.getElementById('modalDateTitle').innerText = d.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            const holidayNote = document.getElementById('modalHolidayNote');
+            if (holidaysVisible) {
+                const map = await loadHolidays(d.getFullYear(), d.getMonth());
+                if (map[ds]) { holidayNote.innerText = '✡️ ' + map[ds]; holidayNote.classList.remove('hidden'); }
+                else holidayNote.classList.add('hidden');
+            } else {
+                holidayNote.classList.add('hidden');
+            }
+
+            const select = document.getElementById('newMetricName');
+            select.innerHTML = `<option value="">-- בחר מדד --</option>` +
+                `<optgroup label="🎮 דירוג Madden (מהמאמן)">` +
+                MADDEN_METRICS.map(m => `<option value="${m.name}" data-unit="${m.unit}">${m.name}</option>`).join('') +
+                `<option value="${MADDEN_OVR_NAME}" data-unit="דירוג 0-99">${MADDEN_OVR_NAME}</option>` +
+                `</optgroup>` +
+                `<optgroup label="🏋️ מדדים פיזיים נפוצים">` +
+                COMMON_METRICS.map(m => `<option value="${m.name}" data-unit="${m.unit}">${m.name}</option>`).join('') +
+                `</optgroup>` +
+                `<option value="__custom__">✏️ מדד מותאם אישית...</option>`;
+            select.onchange = () => {
+                document.getElementById('newMetricCustom').classList.toggle('hidden', select.value !== '__custom__');
+                const opt = select.selectedOptions[0];
+                if (opt && opt.dataset.unit) document.getElementById('newMetricUnit').value = opt.dataset.unit;
+            };
+            document.getElementById('newMetricCustom').classList.add('hidden');
+            document.getElementById('newMetricCustom').value = '';
+            document.getElementById('newMetricValue').value = '';
+            document.getElementById('newMetricUnit').value = '';
+
+            renderModalEntries();
+            document.getElementById('dayModal').classList.remove('hidden');
+        }
+
+        function renderModalEntries() {
+            const entries = getDayEntries(selectedDateStr);
+            const container = document.getElementById('modalEntriesList');
+            if (!entries.length) {
+                container.innerHTML = `<p class="text-xs text-slate-500">אין עדיין רישומים ליום זה.</p>`;
+                return;
+            }
+            container.innerHTML = entries.map((e, idx) => `
+                <div class="flex justify-between items-center bg-slate-800/80 border border-slate-700 rounded-lg p-2.5">
+                    <div>
+                        <span class="text-sm font-bold text-white">${e.name}</span>
+                        <span class="text-cyan-300 font-bold text-sm mr-2">${e.value} ${e.unit || ''}</span>
+                    </div>
+                    <button onclick="deleteEntry('${selectedDateStr}', ${idx})" class="text-rose-400 hover:text-rose-300 text-xs">מחק</button>
+                </div>
+            `).join('');
+        }
+
+        function addMetricEntry() {
+            const select = document.getElementById('newMetricName');
+            let name = select.value;
+            if (name === '__custom__') name = document.getElementById('newMetricCustom').value.trim();
+            const value = parseFloat(document.getElementById('newMetricValue').value);
+            const unit = document.getElementById('newMetricUnit').value.trim();
+
+            if (!name || isNaN(value)) {
+                alert('נא לבחור/להקליד שם מדד ולהזין ערך מספרי.');
+                return;
+            }
+            const entries = getDayEntries(selectedDateStr);
+            entries.push({ name, value, unit });
+            setDayEntries(selectedDateStr, entries);
+            renderModalEntries();
+            renderCalendar();
+
+            document.getElementById('newMetricValue').value = '';
+        }
+
+        function deleteEntry(ds, idx) {
+            const entries = getDayEntries(ds);
+            entries.splice(idx, 1);
+            setDayEntries(ds, entries);
+            if (selectedDateStr === ds) renderModalEntries();
+            renderCalendar();
+        }
+
+        function closeDayModal() {
+            document.getElementById('dayModal').classList.add('hidden');
+            selectedDateStr = null;
+        }
+
+        function exportData() {
+            const backup = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('qbmc_metrics_')) backup[key] = localStorage.getItem(key);
+            }
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qb_master_class_metrics_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    Object.entries(backup).forEach(([key, value]) => {
+                        if (key.startsWith('qbmc_metrics_')) localStorage.setItem(key, value);
+                    });
+                    renderCalendar();
+                    alert('השחזור הושלם בהצלחה!');
+                } catch (err) {
+                    alert('קובץ לא תקין. ודא שזה קובץ גיבוי שיוצא מהמערכת.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function trendArrow(first, last) {
+            if (last > first) return '<span style="color:#16a34a;">▲ עלייה</span>';
+            if (last < first) return '<span style="color:#dc2626;">▼ ירידה</span>';
+            return '<span style="color:#64748b;">— יציב</span>';
+        }
+
+        function generatePrintReport() {
+            document.getElementById('printGenDate').innerText = new Date().toLocaleDateString('he-IL', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Madden section
+            const subValues = MADDEN_METRICS.map(m => getLatestValueForMetric(m.name));
+            const manualOvr = getLatestValueForMetric(MADDEN_OVR_NAME);
+            let maddenHtml = '';
+            if (subValues.some(v => v)) {
+                const thp = subValues[0] ? subValues[0].value : 0, sac = subValues[1] ? subValues[1].value : 0,
+                      mac = subValues[2] ? subValues[2].value : 0, dac = subValues[3] ? subValues[3].value : 0,
+                      awr = subValues[4] ? subValues[4].value : 0, rls = subValues[5] ? subValues[5].value : 0,
+                      run = subValues[6] ? subValues[6].value : 0;
+                const autoOvr = Math.round((thp * 0.2) + (sac * 0.15) + (mac * 0.2) + (dac * 0.15) + (awr * 0.15) + (rls * 0.08) + (run * 0.07));
+                const ovr = manualOvr ? manualOvr.value : autoOvr;
+                maddenHtml += `<div style="font-size:28px; font-weight:900; color:#7c3aed; margin-bottom:8px;">OVR: ${ovr}</div>`;
+                maddenHtml += MADDEN_METRICS.map((m, i) => {
+                    const val = subValues[i] ? subValues[i].value : 0;
+                    return `<div style="display:flex; align-items:center; gap:8px; margin-bottom:3px;">
+                        <span style="width:50px; font-weight:700;">${m.short}</span>
+                        <div class="bar-bg" style="flex:1;"><div class="bar-fill" style="width:${val}%;"></div></div>
+                        <span style="width:24px; text-align:left;">${val}</span>
+                    </div>`;
+                }).join('');
+            } else {
+                maddenHtml = '<p style="color:#94a3b8;">אין עדיין נתוני דירוג Madden.</p>';
+            }
+            document.getElementById('printMaddenSection').innerHTML = maddenHtml;
+
+            // Metrics table
+            const allEntries = getAllEntries().filter(e => !e.name.startsWith('Madden:'));
+            const metricNames = [...new Set(allEntries.map(e => e.name))].sort();
+            const rows = metricNames.map(name => {
+                const entries = allEntries.filter(e => e.name === name).sort((a, b) => a.date.localeCompare(b.date));
+                const last = entries[entries.length - 1];
+                const first = entries[0];
+                return `<tr><td>${name}</td><td><strong>${last.value} ${last.unit || ''}</strong></td><td>${last.date}</td><td>${entries.length > 1 ? trendArrow(first.value, last.value) : '—'}</td></tr>`;
+            }).join('');
+            document.getElementById('printMetricsTable').innerHTML = rows || `<tr><td colspan="4" style="text-align:center; color:#94a3b8;">אין עדיין רישומים.</td></tr>`;
+
+            // Workout section (uses calendarDataCache if available)
+            const calData = calendarDataCache;
+            let workoutHtml = '';
+            if (calData && Object.keys(calData).length) {
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - 30);
+                const cutoffStr = cutoff.toISOString().slice(0, 10);
+                const recentDates = Object.keys(calData).filter(d => d >= cutoffStr);
+                const loggedDays = recentDates.filter(d => calData[d].length > 0).length;
+                const catCounts = {};
+                recentDates.forEach(d => calData[d].forEach(c => { catCounts[c] = (catCounts[c] || 0) + 1; }));
+                const topCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
+                workoutHtml = `<p>ימי אימון (מכל סוג) ב-30 הימים האחרונים: <strong>${loggedDays}</strong></p>`;
+                if (topCat) {
+                    const label = (CALENDAR_CATEGORIES.find(c => c.id === topCat[0]) || {}).label || topCat[0];
+                    workoutHtml += `<p>הפעילות הנפוצה ביותר: <strong>${label}</strong> (${topCat[1]} פעמים)</p>`;
+                }
+            } else {
+                workoutHtml = '<p style="color:#94a3b8;">נתוני לוח האימונים לא זמינים בדף זה (ראה "מרכז גיבוי" לחיבור בין הדפים).</p>';
+            }
+            document.getElementById('printWorkoutSection').innerHTML = workoutHtml;
+
+            setTimeout(() => window.print(), 150);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const t = new Date();
+            viewYear = t.getFullYear(); viewMonth = t.getMonth();
+            renderCalendar();
+            initCorrelationUI();
+        });
+    </script>
+</body>
+</html>

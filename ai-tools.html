@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עזרי AI - QB Master Class</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Rubik', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-xl">
+        <div class="max-w-4xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <a href="qb_master_class_v2.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300 flex items-center gap-1">
+                    <span>←</span><span>חזרה למדריך הראשי</span>
+                </a>
+                <a href="metrics.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">📈 מדדים</a>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🤖</span>
+                <span class="font-black text-lg tracking-wide text-violet-400">עזרי AI</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="exportNutritionData()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-emerald-400 text-slate-300 transition">⬇️ גיבוי</button>
+                <label class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-sky-400 text-slate-300 transition cursor-pointer">
+                    ⬆️ שחזור
+                    <input type="file" accept="application/json" onchange="importNutritionData(event)" class="hidden">
+                </label>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-4xl mx-auto px-4 pt-6 pb-4">
+        <h1 class="text-2xl md:text-3xl font-black text-white mb-2">עזרי בינה מלאכותית — גרסת יסוד (v1)</h1>
+        <p class="text-slate-400 text-sm leading-relaxed">
+            שני כלים שמשתמשים במפתח Gemini API האישי שלך כדי לנתח וידאו/תמונות של ביצועים ולעזור במעקב תזונה.
+        </p>
+        <div class="bg-rose-500/10 border border-rose-500/30 rounded-xl p-3 mt-4 text-xs text-rose-200 leading-relaxed">
+            🔒 <strong>אזהרת אבטחה חשובה:</strong> המפתח שלך נשמר בדפדפן בלבד (בקובץ הזה) ונשלח ישירות לגוגל בכל בקשה.
+            זה בטוח לשימוש אישי שלך במכשיר שלך — אבל <strong>אל תשתף את הקובץ הזה עם אחרים</strong> אחרי שהזנת את המפתח,
+            ואל תעלה אותו לאתר ציבורי. מי שיפתח את כלי הפיתוח של הדפדפן (F12) יוכל לראות את המפתח.
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 space-y-6">
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 md:p-6 backdrop-blur">
+            <h2 class="font-bold text-lg text-white mb-3 flex items-center gap-2"><span>🔑</span> הגדרת מפתח Gemini API</h2>
+            <p class="text-xs text-slate-400 mb-3">
+                אין לך מפתח? צור אחד בחינם ב-
+                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="text-violet-400 hover:underline">Google AI Studio</a>
+                (התחברות עם חשבון Google רגיל, לוקח פחות מדקה).
+            </p>
+            <div class="flex gap-2">
+                <input type="password" id="apiKeyInput" placeholder="הדבק כאן את מפתח ה-API..." class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-violet-400">
+                <button onclick="saveApiKey()" class="px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-lg transition text-xs">שמור</button>
+                <button onclick="clearApiKey()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg transition text-xs">מחק</button>
+            </div>
+            <p id="apiKeyStatus" class="text-[11px] mt-2 text-slate-500"></p>
+        </div>
+
+        <div class="bg-slate-800/50 border border-sky-500/30 rounded-2xl p-5 md:p-6 backdrop-blur">
+            <h2 class="font-bold text-lg text-sky-300 mb-1 flex items-center gap-2"><span>🎥</span> מנתח ביצועים בוידאו</h2>
+            <p class="text-xs text-slate-400 mb-4">
+                העלה תמונה או סרטון קצר (עד כ-20MB, מומלץ עד 15 שניות) של זריקה/תרגיל, ותקבל ניתוח מכני מבוסס על קטגוריות
+                דירוג ה-Madden שבנינו (THP, SAC, MAC, DAC, AWR, RLS, RUN) — כולל הצעות לתיקון ודירוג משוער.
+            </p>
+            <input type="file" id="videoFileInput" accept="image/*,video/*" class="w-full text-xs text-slate-300 mb-3 file:ml-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white file:font-bold file:cursor-pointer">
+            <textarea id="videoContext" placeholder="הקשר נוסף (אופציונלי): איזו זווית זריקה, מה ביקשת מהשחקן לתרגל, וכו׳" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-sky-400 mb-3" rows="2"></textarea>
+            <button onclick="analyzeVideo()" id="analyzeVideoBtn" class="w-full px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl transition text-sm">🔍 נתח ביצוע</button>
+            <div id="videoAnalysisLoading" class="hidden text-center text-sky-300 text-xs mt-3">מנתח... (יכול לקחת עד 30 שניות)</div>
+            <div id="videoAnalysisResult" class="hidden mt-4 bg-slate-900/80 border border-slate-700 rounded-xl p-4 text-xs text-slate-200 leading-relaxed whitespace-pre-wrap"></div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-emerald-500/30 rounded-2xl p-5 md:p-6 backdrop-blur">
+            <h2 class="font-bold text-lg text-emerald-300 mb-1 flex items-center gap-2"><span>🍗</span> מחשבון תזונה יומי</h2>
+
+            <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 mb-4">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">מחשבון יעד יומי (נוסחת Mifflin-St Jeor)</div>
+                <p class="text-[10px] text-slate-500 mb-3">💭 בעתיד: אחרי מעבר לאחסון אתר, נוכל לשלוף משקל/גובה עדכניים אוטומטית מ"לוח מעקב מדדים" במקום להזין כאן ידנית. כרגע — מוזן ידנית פעם אחת ונשמר קבוע.</p>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs mb-3">
+                    <div>
+                        <label class="block text-slate-400 mb-1">משקל (ק"ג)</label>
+                        <input type="number" id="calcWeight" onchange="saveNutritionTargets()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">גובה (ס"מ)</label>
+                        <input type="number" id="calcHeight" onchange="saveNutritionTargets()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">גיל</label>
+                        <input type="number" id="calcAge" onchange="saveNutritionTargets()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">מין</label>
+                        <select id="calcSex" onchange="saveNutritionTargets()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+                            <option value="male">זכר</option>
+                            <option value="female">נקבה</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">רמת פעילות</label>
+                        <select id="calcActivity" onchange="saveNutritionTargets()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+                            <option value="1.375">אימונים 2-3 בשבוע</option>
+                            <option value="1.55" selected>אימונים 4-5 בשבוע (טיפוסי ל-QB בעונה)</option>
+                            <option value="1.725">אימונים אינטנסיביים כמעט יומיים</option>
+                            <option value="1.9">אימון כפול / עומס מאוד גבוה</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">מטרה</label>
+                        <select id="calcGoal" onchange="saveNutritionTargets()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+                            <option value="bulk">בניית מסת שריר (עודף קלורי)</option>
+                            <option value="maintain">שמירה על משקל נוכחי</option>
+                            <option value="cut">הפחתת אחוז שומן (גירעון קלורי)</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="calculateNutritionTargets()" class="w-full px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs mb-3">📐 חשב יעד לפי נוסחה</button>
+                <p id="calcFormulaBreakdown" class="text-[10px] text-slate-500 mb-4 leading-relaxed"></p>
+
+                <div class="border-t border-slate-700 pt-3">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">היעד שלי (אפשר גם לערוך ידנית)</div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1">יעד קלוריות יומי</label>
+                            <input type="number" id="targetCalories" onchange="saveNutritionTargets()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">יעד חלבון יומי (גרם)</label>
+                            <input type="number" id="targetProtein" onchange="saveNutritionTargets()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="saveNutritionTargets(); this.innerText='✓ נשמר!'; setTimeout(()=>this.innerText='שמור שינוי ידני',1500)" class="w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition">שמור שינוי ידני</button>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-emerald-400/80 mt-2">🔒 היעד הזה נשמר אוטומטית ונשאר קבוע בכל פעם שתיכנס — אין צורך להזין מחדש כל יום. הוא ישתנה רק כשתחשב מחדש או תערוך ידנית.</p>
+                </div>
+
+                <p class="text-[10px] text-slate-500 mt-3">💬 רוצה גם הסבר מילולי מותאם אישית מה-AI (לא מספר חדש, רק הקשר)? <button onclick="explainTargets()" class="text-emerald-400 hover:underline">לחץ כאן</button></p>
+                <div id="targetsAiExplain" class="hidden mt-2 text-xs text-slate-300 bg-slate-800/80 border border-slate-700 rounded-lg p-3 whitespace-pre-wrap"></div>
+            </div>
+
+            <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 mb-4">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">מה אכלת היום?</div>
+                <textarea id="mealDescription" placeholder="תאר בחופשיות מה אכלת (למשל: 3 ביצים, 200 גרם חזה עוף, כוס אורז, בננה...)" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-emerald-400 mb-2" rows="3"></textarea>
+                <button onclick="analyzeMeal()" id="analyzeMealBtn" class="w-full px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition text-sm">🧮 חשב קלוריות וחלבון</button>
+                <div id="mealAnalysisLoading" class="hidden text-center text-emerald-300 text-xs mt-3">מחשב...</div>
+            </div>
+
+            <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">סיכום היום</div>
+                    <button onclick="clearTodayMeals()" class="text-[10px] text-rose-400 hover:underline">נקה יום</button>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div class="text-center">
+                        <div id="todayCaloriesDisplay" class="text-2xl font-black text-amber-400">0</div>
+                        <div class="text-[10px] text-slate-500">קלוריות <span id="targetCaloriesLabel"></span></div>
+                    </div>
+                    <div class="text-center">
+                        <div id="todayProteinDisplay" class="text-2xl font-black text-emerald-400">0</div>
+                        <div class="text-[10px] text-slate-500">גרם חלבון <span id="targetProteinLabel"></span></div>
+                    </div>
+                </div>
+                <div id="todayMealsList" class="space-y-1.5 text-xs"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3 text-center">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">שבועי (7 ימים אחרונים)</div>
+                    <div id="weeklyAvgCal" class="text-xl font-black text-amber-400">--</div>
+                    <div class="text-[10px] text-slate-500 mb-1">ממוצע קלוריות ליום</div>
+                    <div id="weeklyAvgPro" class="text-lg font-black text-emerald-400">--</div>
+                    <div class="text-[10px] text-slate-500">ממוצע חלבון ליום</div>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3 text-center">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">חודשי (חודש מוצג)</div>
+                    <div id="monthlyAvgCal" class="text-xl font-black text-amber-400">--</div>
+                    <div class="text-[10px] text-slate-500 mb-1">ממוצע קלוריות ליום</div>
+                    <div id="monthlyAvgPro" class="text-lg font-black text-emerald-400">--</div>
+                    <div class="text-[10px] text-slate-500">ממוצע חלבון ליום</div>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3 text-center">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">כללי (כל הזמן)</div>
+                    <div id="overallDaysLogged" class="text-xl font-black text-violet-400">--</div>
+                    <div class="text-[10px] text-slate-500 mb-2">ימים עם רישום</div>
+                    <div class="grid grid-cols-2 gap-1">
+                        <div>
+                            <div id="overallAdherenceCal" class="text-base font-black text-sky-400">--</div>
+                            <div class="text-[9px] text-slate-500">עמידה קלורית</div>
+                        </div>
+                        <div>
+                            <div id="overallAdherencePro" class="text-base font-black text-emerald-400">--</div>
+                            <div class="text-[9px] text-slate-500">עמידה חלבונית</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-[10px] text-slate-500 mb-4">💡 "עמידה" = כמה קרוב היית ליעד בממוצע (100% = בדיוק ביעד; גם חריגה משמעותית למעלה וגם למטה מורידה את האחוז) — עבור ימים שבהם הוגדר יעד ונרשמו ארוחות.</p>
+
+            <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 mb-4">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">📊 מגמת קלוריות וחלבון לאורך זמן</div>
+                    <select id="nutTrendRange" onchange="renderNutritionTrendChart()" class="bg-slate-800 border border-slate-600 rounded-lg p-1.5 text-[11px] text-white focus:outline-none focus:border-emerald-400">
+                        <option value="14">14 ימים אחרונים</option>
+                        <option value="30" selected>30 ימים אחרונים</option>
+                        <option value="90">90 ימים אחרונים</option>
+                        <option value="all">כל הזמן</option>
+                    </select>
+                </div>
+                <div style="height:260px;">
+                    <canvas id="nutritionTrendChart"></canvas>
+                </div>
+                <p id="nutTrendEmptyState" class="text-center text-slate-500 text-xs mt-3 hidden">אין עדיין מספיק נתונים להצגת מגמה.</p>
+                <p class="text-[10px] text-slate-500 mt-2">קווים מקווקוים = היעד היומי שלך (אם הוגדר), לצורך השוואה ויזואלית מהירה.</p>
+            </div>
+
+            <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">📅 לוח שנה תזונה</div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleNutritionHolidays()" id="nutHolidayToggleBtn" class="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-amber-400 text-slate-300 transition">✡️ חגים עבריים</button>
+                        <button onclick="exportNutritionData()" class="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-emerald-400 text-slate-300 transition">⬇️ גיבוי</button>
+                        <label class="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-sky-400 text-slate-300 transition cursor-pointer">
+                            ⬆️ שחזור
+                            <input type="file" accept="application/json" onchange="importNutritionData(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-3">
+                    <button onclick="changeNutritionMonth(-1)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-emerald-600 transition text-white font-bold text-sm">→</button>
+                    <div class="text-center">
+                        <div id="nutMonthLabel" class="text-sm font-black text-emerald-400"></div>
+                        <button onclick="goNutritionToday()" class="text-[10px] text-slate-400 hover:text-slate-200 underline">חזרה להיום</button>
+                    </div>
+                    <button onclick="changeNutritionMonth(1)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-emerald-600 transition text-white font-bold text-sm">←</button>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1 mb-1 text-center text-[9px] md:text-[10px] font-bold text-slate-400">
+                    <div>ראשון</div><div>שני</div><div>שלישי</div><div>רביעי</div><div>חמישי</div><div>שישי</div><div>שבת</div>
+                </div>
+                <div id="nutCalendarGrid" class="grid grid-cols-7 gap-1"></div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-fuchsia-500/30 rounded-2xl p-5 md:p-6 backdrop-blur">
+            <h2 class="font-bold text-lg text-fuchsia-300 mb-1 flex items-center gap-2"><span>🔬</span> ניתוח AI כוללני — מצב פיזי ותזונתי</h2>
+            <p class="text-xs text-slate-400 mb-4">
+                מאחד את נתוני התזונה שלמעלה עם המדדים הפיזיים מ"לוח מעקב מדדים" (מהירות, קפיצה, כוח וכו') לניתוח AI אחד שמסתכל על התמונה המלאה — האם התזונה תומכת במה שקורה במדדים, ומה שווה לשפר.
+            </p>
+
+            <div id="holisticMetricsMissing" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-4">
+                <p class="text-xs text-amber-200 mb-3">לא נמצאו נתוני מדדים פיזיים בדף הזה (צפוי אם הדפים נפתחים כקבצים נפרדים). אפשר להעלות את קובץ הגיבוי של "לוח מעקב מדדים" כדי לכלול אותם בניתוח — או להמשיך בלי זה (הניתוח יתמקד רק בתזונה):</p>
+                <label class="inline-block text-xs font-bold px-3 py-2 bg-slate-800 border border-slate-700 hover:border-fuchsia-400 rounded-lg cursor-pointer transition">
+                    📂 טען קובץ גיבוי מדדים
+                    <input type="file" accept="application/json" onchange="loadMetricsBackupForHolistic(event)" class="hidden">
+                </label>
+                <p id="holisticMetricsStatus" class="text-[11px] text-slate-500 mt-2"></p>
+            </div>
+            <div id="holisticMetricsFound" class="hidden text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2.5 mb-4"></div>
+
+            <button onclick="runHolisticAnalysis()" id="holisticAnalysisBtn" class="w-full px-4 py-2.5 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl transition text-sm">🔬 בצע ניתוח AI כוללני</button>
+            <div id="holisticAnalysisLoading" class="hidden text-center text-fuchsia-300 text-xs mt-3">מנתח את כל הנתונים... (עד 30 שניות)</div>
+            <div id="holisticAnalysisResult" class="hidden mt-4 bg-slate-900/80 border border-slate-700 rounded-xl p-4 text-xs text-slate-200 leading-relaxed whitespace-pre-wrap"></div>
+        </div>
+    </main>
+
+    <div id="nutDayModal" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5 md:p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="nutModalDateTitle" class="text-lg font-black text-emerald-400"></h3>
+                <button onclick="closeNutDayModal()" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
+            </div>
+            <div id="nutModalHolidayNote" class="text-xs text-amber-300 mb-3 hidden"></div>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="text-center bg-slate-800/80 border border-slate-700 rounded-lg p-2">
+                    <div id="nutModalCalories" class="text-xl font-black text-amber-400">0</div>
+                    <div class="text-[10px] text-slate-500">קלוריות</div>
+                </div>
+                <div class="text-center bg-slate-800/80 border border-slate-700 rounded-lg p-2">
+                    <div id="nutModalProtein" class="text-xl font-black text-emerald-400">0</div>
+                    <div class="text-[10px] text-slate-500">גרם חלבון</div>
+                </div>
+            </div>
+
+            <div id="nutModalMealsList" class="space-y-1.5 text-xs mb-4"></div>
+
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">הוסף ארוחה ליום זה</div>
+                <textarea id="nutModalMealInput" placeholder="תאר מה נאכל..." class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-emerald-400 mb-2" rows="2"></textarea>
+                <button onclick="addMealToModalDate()" id="nutModalAddBtn" class="w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition text-xs">🧮 חשב והוסף</button>
+            </div>
+
+            <button onclick="closeNutDayModal()" class="w-full mt-4 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">סגור</button>
+        </div>
+    </div>
+
+    <script>
+        function getApiKey() {
+            try { return localStorage.getItem('qbmc_gemini_key') || ''; } catch (e) { return ''; }
+        }
+        function saveApiKey() {
+            const val = document.getElementById('apiKeyInput').value.trim();
+            if (!val) return;
+            try { localStorage.setItem('qbmc_gemini_key', val); } catch (e) {}
+            document.getElementById('apiKeyInput').value = '';
+            updateApiKeyStatus();
+        }
+        function clearApiKey() {
+            try { localStorage.removeItem('qbmc_gemini_key'); } catch (e) {}
+            updateApiKeyStatus();
+        }
+        function updateApiKeyStatus() {
+            const key = getApiKey();
+            document.getElementById('apiKeyStatus').innerText = key
+                ? '✅ מפתח שמור (מוסתר). ' + key.slice(0, 4) + '••••••••'
+                : '⚠️ לא הוזן מפתח עדיין — הכלים למטה לא יעבדו בלעדיו.';
+        }
+
+        async function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Gemini deprecates model names fairly often. If you get a 404 "no longer
+        // available" error again in the future, just update this one constant.
+        const GEMINI_MODEL_CANDIDATES = ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.8-flash', 'gemini-2.5-flash'];
+
+        async function callGemini(parts) {
+            const key = getApiKey();
+            if (!key) { alert('נא להזין ולשמור מפתח Gemini API למעלה קודם.'); return null; }
+
+            let lastError = null;
+            for (const model of GEMINI_MODEL_CANDIDATES) {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts }] })
+                    });
+                    if (!res.ok) {
+                        const errText = await res.text();
+                        // Model retired/not found — silently try the next candidate.
+                        if (res.status === 404) { lastError = new Error(errText.slice(0, 200)); continue; }
+                        throw new Error('שגיאה מה-API: ' + res.status + ' — ' + errText.slice(0, 200));
+                    }
+                    const data = await res.json();
+                    return data.candidates && data.candidates[0] && data.candidates[0].content
+                        ? data.candidates[0].content.parts.map(p => p.text || '').join('\n')
+                        : 'לא התקבלה תשובה.';
+                } catch (err) {
+                    lastError = err;
+                }
+            }
+            throw new Error('כל מודלי ה-Gemini הידועים נכשלו (כנראה שוב הוחלפו שמות). שגיאה אחרונה: ' + (lastError ? lastError.message : 'לא ידוע'));
+        }
+
+        const MADDEN_ANALYSIS_PROMPT = `אתה מאמן קוורטרבקים מקצועי בפוטבול אמריקאי. נתח את הביצוע המוצג (זריקה/תרגיל) והתייחס במפורש לכל אחת מ-7 קטגוריות הדירוג הבאות (בסולם 0-99, בסגנון Madden), עם נימוק קצר לכל אחת:
+1. THP - עוצמת זרוע
+2. SAC - דיוק במסירה קצרה
+3. MAC - דיוק במסירה בינונית
+4. DAC - דיוק במסירה עמוקה
+5. AWR - תחושת כיס ומודעות
+6. RLS - מהירות שחרור
+7. RUN - זריקה בתנועה/ניידות
+בנוסף, ציין 2-3 נקודות טכניות ספציפיות לשיפור (למשל: מנח רגליים, סיבוב אגן, גובה מרפק). תשובה בעברית, מסודרת וברורה. הדגש: זו הערכה ויזואלית כללית, לא תחליף להערכת מאמן מוסמך בשטח.`;
+
+        async function analyzeVideo() {
+            const fileInput = document.getElementById('videoFileInput');
+            const file = fileInput.files[0];
+            if (!file) { alert('נא לבחור קובץ תמונה או וידאו קודם.'); return; }
+            if (file.size > 20 * 1024 * 1024) { alert('הקובץ גדול מדי (מעל 20MB). נסה קובץ קצר/קטן יותר.'); return; }
+
+            const context = document.getElementById('videoContext').value.trim();
+            const loading = document.getElementById('videoAnalysisLoading');
+            const resultBox = document.getElementById('videoAnalysisResult');
+            const btn = document.getElementById('analyzeVideoBtn');
+
+            loading.classList.remove('hidden');
+            resultBox.classList.add('hidden');
+            btn.disabled = true;
+
+            try {
+                const base64 = await fileToBase64(file);
+                const parts = [
+                    { text: MADDEN_ANALYSIS_PROMPT + (context ? '\n\nהקשר נוסף מהמאמן: ' + context : '') },
+                    { inline_data: { mime_type: file.type, data: base64 } }
+                ];
+                const text = await callGemini(parts);
+                resultBox.innerText = text;
+                resultBox.classList.remove('hidden');
+            } catch (err) {
+                resultBox.innerText = '❌ שגיאה: ' + err.message;
+                resultBox.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        function saveNutritionTargets() {
+            const targets = {
+                weight: document.getElementById('calcWeight').value,
+                height: document.getElementById('calcHeight').value,
+                age: document.getElementById('calcAge').value,
+                sex: document.getElementById('calcSex').value,
+                activity: document.getElementById('calcActivity').value,
+                goal: document.getElementById('calcGoal').value,
+                calories: document.getElementById('targetCalories').value,
+                protein: document.getElementById('targetProtein').value
+            };
+            try { localStorage.setItem('qbmc_nutrition_targets', JSON.stringify(targets)); } catch (e) {}
+            updateTargetLabels();
+        }
+
+        function loadNutritionTargets() {
+            try {
+                const raw = localStorage.getItem('qbmc_nutrition_targets');
+                if (raw) {
+                    const t = JSON.parse(raw);
+                    if (t.weight) document.getElementById('calcWeight').value = t.weight;
+                    if (t.height) document.getElementById('calcHeight').value = t.height;
+                    if (t.age) document.getElementById('calcAge').value = t.age;
+                    if (t.sex) document.getElementById('calcSex').value = t.sex;
+                    if (t.activity) document.getElementById('calcActivity').value = t.activity;
+                    if (t.goal) document.getElementById('calcGoal').value = t.goal;
+                    document.getElementById('targetCalories').value = t.calories || '';
+                    document.getElementById('targetProtein').value = t.protein || '';
+                }
+            } catch (e) {}
+            updateTargetLabels();
+        }
+
+        function updateTargetLabels() {
+            const cal = document.getElementById('targetCalories').value;
+            const pro = document.getElementById('targetProtein').value;
+            document.getElementById('targetCaloriesLabel').innerText = cal ? `/ ${cal}` : '';
+            document.getElementById('targetProteinLabel').innerText = pro ? `/ ${pro}` : '';
+        }
+
+        // Mifflin-St Jeor BMR + activity multiplier + goal adjustment.
+        // Protein-per-kg follows standard sports-nutrition ranges for strength/athletic
+        // populations (higher during a cut, to help preserve lean mass in a deficit).
+        function calculateNutritionTargets() {
+            const weight = parseFloat(document.getElementById('calcWeight').value);
+            const height = parseFloat(document.getElementById('calcHeight').value);
+            const age = parseInt(document.getElementById('calcAge').value);
+            const sex = document.getElementById('calcSex').value;
+            const activityMult = parseFloat(document.getElementById('calcActivity').value);
+            const goal = document.getElementById('calcGoal').value;
+
+            if (!weight || !height || !age) {
+                alert('נא להזין משקל, גובה וגיל.');
+                return;
+            }
+
+            let bmr = sex === 'male'
+                ? (10 * weight) + (6.25 * height) - (5 * age) + 5
+                : (10 * weight) + (6.25 * height) - (5 * age) - 161;
+
+            const tdee = bmr * activityMult;
+
+            let calorieTarget, proteinPerKg, goalLabel;
+            if (goal === 'bulk') { calorieTarget = tdee * 1.15; proteinPerKg = 2.0; goalLabel = 'עודף קלורי מתון (+15%) לבניית מסה'; }
+            else if (goal === 'cut') { calorieTarget = tdee * 0.82; proteinPerKg = 2.2; goalLabel = 'גירעון קלורי מתון (-18%) לשמירה על מסת שריר תוך ירידה בשומן'; }
+            else { calorieTarget = tdee; proteinPerKg = 1.8; goalLabel = 'שמירה על משקל (קלוריות תחזוקה)'; }
+
+            const proteinTarget = weight * proteinPerKg;
+
+            document.getElementById('targetCalories').value = Math.round(calorieTarget);
+            document.getElementById('targetProtein').value = Math.round(proteinTarget);
+            updateTargetLabels();
+
+            document.getElementById('calcFormulaBreakdown').innerText =
+                `BMR (Mifflin-St Jeor): ${Math.round(bmr)} קק"ל • TDEE (עם רמת פעילות): ${Math.round(tdee)} קק"ל • ` +
+                `${goalLabel} • חלבון: ${proteinPerKg}ג לכל ק"ג משקל גוף. זו הערכה מבוססת נוסחאות מקובלות בתזונת ספורט — לא תחליף לייעוץ תזונאי/דיאטן קליני מוסמך, במיוחד בגילאי התבגרות.`;
+
+            saveNutritionTargets(); // persists automatically — no need to re-enter tomorrow
+        }
+
+        async function explainTargets() {
+            const cal = document.getElementById('targetCalories').value;
+            const pro = document.getElementById('targetProtein').value;
+            const goal = document.getElementById('calcGoal').value;
+            if (!cal || !pro) { alert('נא לחשב או להזין יעד קודם.'); return; }
+            const box = document.getElementById('targetsAiExplain');
+            box.classList.remove('hidden');
+            box.innerText = 'טוען הסבר...';
+            try {
+                const text = await callGemini([{ text: `שחקן קוורטרבק נוער/צעיר עם יעד יומי של ${cal} קלוריות ו-${pro} גרם חלבון, במטרת "${goal}". הסבר בקצרה (3-4 משפטים, בעברית) למה מבנה כזה הגיוני עבור קוורטרבק, ותן טיפ מעשי אחד ליישום (למשל פיזור הארוחות סביב אימונים). אל תשנה את המספרים עצמם.` }]);
+                box.innerText = text;
+            } catch (err) {
+                box.innerText = 'שגיאה: ' + err.message;
+            }
+        }
+
+        function pad2(n) { return String(n).padStart(2, '0'); }
+        function dateToStr(y, m, d) { return `${y}-${pad2(m + 1)}-${pad2(d)}`; }
+        function todayKey() {
+            const t = new Date();
+            return dateToStr(t.getFullYear(), t.getMonth(), t.getDate());
+        }
+
+        function getMealsForDate(ds) {
+            try {
+                const raw = localStorage.getItem('qbmc_meals_' + ds);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        }
+        function setMealsForDate(ds, meals) {
+            try {
+                if (meals.length) localStorage.setItem('qbmc_meals_' + ds, JSON.stringify(meals));
+                else localStorage.removeItem('qbmc_meals_' + ds);
+            } catch (e) {}
+        }
+        function getTodayMeals() { return getMealsForDate(todayKey()); }
+        function setTodayMeals(meals) { setMealsForDate(todayKey(), meals); }
+
+        function getAllMealDates() {
+            const dates = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('qbmc_meals_')) dates.push(key.replace('qbmc_meals_', ''));
+            }
+            return dates.sort();
+        }
+
+        async function analyzeMealForDate(desc, ds) {
+            const text = await callGemini([{ text: `הערך את כמות הקלוריות והחלבון (בגרמים) בארוחה הבאה. השב אך ורק במבנה: "קלוריות: X | חלבון: Yג" (מספרים בלבד, הערכה סבירה, בלי טווחים ובלי טקסט נוסף).\n\nהארוחה: ${desc}` }]);
+            const calMatch = text.match(/קלוריות:\s*(\d+)/);
+            const proMatch = text.match(/חלבון:\s*(\d+)/);
+            const calories = calMatch ? parseInt(calMatch[1]) : 0;
+            const protein = proMatch ? parseInt(proMatch[1]) : 0;
+            const meals = getMealsForDate(ds);
+            meals.push({ desc, calories, protein, time: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) });
+            setMealsForDate(ds, meals);
+            return { calories, protein };
+        }
+
+        async function analyzeMeal() {
+            const desc = document.getElementById('mealDescription').value.trim();
+            if (!desc) { alert('נא לתאר מה אכלת.'); return; }
+            const loading = document.getElementById('mealAnalysisLoading');
+            const btn = document.getElementById('analyzeMealBtn');
+            loading.classList.remove('hidden');
+            btn.disabled = true;
+            try {
+                await analyzeMealForDate(desc, todayKey());
+                document.getElementById('mealDescription').value = '';
+                renderTodaySummary();
+                renderNutritionCalendar();
+            } catch (err) {
+                alert('שגיאה: ' + err.message);
+            } finally {
+                loading.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        function deleteMeal(idx) {
+            const meals = getTodayMeals();
+            meals.splice(idx, 1);
+            setTodayMeals(meals);
+            renderTodaySummary();
+            renderNutritionCalendar();
+        }
+
+        function clearTodayMeals() {
+            if (!confirm('לנקות את כל הארוחות של היום?')) return;
+            setTodayMeals([]);
+            renderTodaySummary();
+            renderNutritionCalendar();
+        }
+
+        function renderTodaySummary() {
+            const meals = getTodayMeals();
+            const totalCal = meals.reduce((s, m) => s + (m.calories || 0), 0);
+            const totalPro = meals.reduce((s, m) => s + (m.protein || 0), 0);
+            document.getElementById('todayCaloriesDisplay').innerText = totalCal;
+            document.getElementById('todayProteinDisplay').innerText = totalPro;
+            updateTargetLabels();
+
+            const list = document.getElementById('todayMealsList');
+            list.innerHTML = meals.length
+                ? meals.map((m, i) => `
+                    <div class="flex justify-between items-center bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5">
+                        <span class="text-slate-300 flex-1">${m.time} — ${m.desc}</span>
+                        <span class="text-amber-400 font-bold ml-2">${m.calories} קק"ל</span>
+                        <span class="text-emerald-400 font-bold ml-2">${m.protein}ג</span>
+                        <button onclick="deleteMeal(${i})" class="text-rose-400 hover:text-rose-300 mr-2">✕</button>
+                    </div>`).join('')
+                : `<p class="text-slate-500 text-center py-2">עדיין לא נרשמו ארוחות היום.</p>`;
+        }
+
+        // ---- Weekly / Monthly / Overall summary ----
+        function computeDaySums(ds) {
+            const meals = getMealsForDate(ds);
+            return {
+                calories: meals.reduce((s, m) => s + (m.calories || 0), 0),
+                protein: meals.reduce((s, m) => s + (m.protein || 0), 0),
+                count: meals.length
+            };
+        }
+
+        let nutritionTrendChartInstance = null;
+
+        function renderNutritionTrendChart() {
+            const rangeVal = document.getElementById('nutTrendRange').value;
+            const allDates = getAllMealDates();
+            const emptyState = document.getElementById('nutTrendEmptyState');
+            const canvas = document.getElementById('nutritionTrendChart');
+
+            if (!allDates.length) {
+                emptyState.classList.remove('hidden');
+                canvas.classList.add('hidden');
+                if (nutritionTrendChartInstance) { nutritionTrendChartInstance.destroy(); nutritionTrendChartInstance = null; }
+                return;
+            }
+
+            let datesInRange;
+            if (rangeVal === 'all') {
+                datesInRange = allDates;
+            } else {
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - parseInt(rangeVal));
+                const cutoffStr = dateToStr(cutoff.getFullYear(), cutoff.getMonth(), cutoff.getDate());
+                datesInRange = allDates.filter(d => d >= cutoffStr);
+            }
+
+            if (!datesInRange.length) {
+                emptyState.classList.remove('hidden');
+                canvas.classList.add('hidden');
+                if (nutritionTrendChartInstance) { nutritionTrendChartInstance.destroy(); nutritionTrendChartInstance = null; }
+                return;
+            }
+            emptyState.classList.add('hidden');
+            canvas.classList.remove('hidden');
+
+            const labels = datesInRange.map(d => {
+                const dt = new Date(d + 'T00:00:00');
+                return dt.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+            });
+            const calData = datesInRange.map(d => computeDaySums(d).calories);
+            const proData = datesInRange.map(d => computeDaySums(d).protein);
+
+            let target = {};
+            try { target = JSON.parse(localStorage.getItem('qbmc_nutrition_targets') || '{}'); } catch (e) {}
+
+            const datasets = [
+                { label: 'קלוריות', data: calData, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.12)', tension: 0.25, pointRadius: 3, yAxisID: 'y' },
+                { label: 'חלבון (ג)', data: proData, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', tension: 0.25, pointRadius: 3, yAxisID: 'y1' }
+            ];
+            if (target.calories) {
+                datasets.push({ label: 'יעד קלוריות', data: datesInRange.map(() => parseFloat(target.calories)), borderColor: 'rgba(245,158,11,0.5)', borderDash: [6, 4], pointRadius: 0, fill: false, yAxisID: 'y' });
+            }
+            if (target.protein) {
+                datasets.push({ label: 'יעד חלבון', data: datesInRange.map(() => parseFloat(target.protein)), borderColor: 'rgba(16,185,129,0.5)', borderDash: [6, 4], pointRadius: 0, fill: false, yAxisID: 'y1' });
+            }
+
+            const ctx = canvas.getContext('2d');
+            if (nutritionTrendChartInstance) nutritionTrendChartInstance.destroy();
+            nutritionTrendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#cbd5e1', font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } },
+                        y: { position: 'left', grid: { color: '#334155' }, ticks: { color: '#f59e0b' }, title: { display: true, text: 'קלוריות', color: '#f59e0b', font: { size: 10 } } },
+                        y1: { position: 'right', grid: { display: false }, ticks: { color: '#10b981' }, title: { display: true, text: 'חלבון (ג)', color: '#10b981', font: { size: 10 } } }
+                    },
+                    plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function renderSummaryStats() {
+            const target = (() => {
+                try { return JSON.parse(localStorage.getItem('qbmc_nutrition_targets') || '{}'); } catch (e) { return {}; }
+            })();
+
+            // Weekly: last 7 days including today
+            let weekCal = 0, weekPro = 0, weekDays = 0;
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                const ds = dateToStr(d.getFullYear(), d.getMonth(), d.getDate());
+                const sums = computeDaySums(ds);
+                if (sums.count) { weekCal += sums.calories; weekPro += sums.protein; weekDays++; }
+            }
+            document.getElementById('weeklyAvgCal').innerText = weekDays ? Math.round(weekCal / weekDays) : '--';
+            document.getElementById('weeklyAvgPro').innerText = weekDays ? Math.round(weekPro / weekDays) + 'ג' : '--';
+
+            // Monthly: currently viewed calendar month
+            const daysInMonth = new Date(nutViewYear, nutViewMonth + 1, 0).getDate();
+            let monthCal = 0, monthPro = 0, monthDays = 0;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const ds = dateToStr(nutViewYear, nutViewMonth, d);
+                const sums = computeDaySums(ds);
+                if (sums.count) { monthCal += sums.calories; monthPro += sums.protein; monthDays++; }
+            }
+            document.getElementById('monthlyAvgCal').innerText = monthDays ? Math.round(monthCal / monthDays) : '--';
+            document.getElementById('monthlyAvgPro').innerText = monthDays ? Math.round(monthPro / monthDays) + 'ג' : '--';
+
+            // Overall: all logged dates ever
+            const allDates = getAllMealDates();
+            let overallDays = 0, calAdherenceSum = 0, calAdherenceCount = 0, proAdherenceSum = 0, proAdherenceCount = 0;
+            allDates.forEach(ds => {
+                const sums = computeDaySums(ds);
+                if (sums.count) {
+                    overallDays++;
+                    if (target.calories) {
+                        const pct = 100 - Math.abs(sums.calories - target.calories) / target.calories * 100;
+                        calAdherenceSum += Math.max(0, Math.round(pct));
+                        calAdherenceCount++;
+                    }
+                    if (target.protein) {
+                        const pct = 100 - Math.abs(sums.protein - target.protein) / target.protein * 100;
+                        proAdherenceSum += Math.max(0, Math.round(pct));
+                        proAdherenceCount++;
+                    }
+                }
+            });
+            document.getElementById('overallDaysLogged').innerText = overallDays;
+            document.getElementById('overallAdherenceCal').innerText = calAdherenceCount ? Math.round(calAdherenceSum / calAdherenceCount) + '%' : '--';
+            document.getElementById('overallAdherencePro').innerText = proAdherenceCount ? Math.round(proAdherenceSum / proAdherenceCount) + '%' : '--';
+        }
+
+        // ---- Nutrition calendar (with optional Hebrew holidays) ----
+        let nutViewYear, nutViewMonth;
+        let nutHolidaysVisible = false;
+        let nutHolidayCache = {};
+        let nutSelectedDate = null;
+        const NUT_HEB_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+        function changeNutritionMonth(delta) {
+            nutViewMonth += delta;
+            if (nutViewMonth < 0) { nutViewMonth = 11; nutViewYear--; }
+            if (nutViewMonth > 11) { nutViewMonth = 0; nutViewYear++; }
+            renderNutritionCalendar();
+        }
+        function goNutritionToday() {
+            const t = new Date();
+            nutViewYear = t.getFullYear(); nutViewMonth = t.getMonth();
+            renderNutritionCalendar();
+        }
+
+        async function toggleNutritionHolidays() {
+            nutHolidaysVisible = !nutHolidaysVisible;
+            const btn = document.getElementById('nutHolidayToggleBtn');
+            btn.classList.toggle('border-amber-400', nutHolidaysVisible);
+            btn.classList.toggle('text-amber-300', nutHolidaysVisible);
+            if (nutHolidaysVisible) await loadNutHolidays(nutViewYear, nutViewMonth);
+            renderNutritionCalendar();
+        }
+
+        async function loadNutHolidays(y, m) {
+            const key = `${y}-${pad2(m + 1)}`;
+            if (nutHolidayCache[key]) return nutHolidayCache[key];
+            try {
+                const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&mod=on&year=${y}&month=${m + 1}&ss=off&mf=off&c=off&geo=none`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const map = {};
+                (data.items || []).forEach(it => {
+                    if (it.date && it.date.length >= 10) {
+                        const d = it.date.substring(0, 10);
+                        map[d] = map[d] ? map[d] + ' • ' + it.title : it.title;
+                    }
+                });
+                nutHolidayCache[key] = map;
+                return map;
+            } catch (e) {
+                nutHolidayCache[key] = {};
+                return {};
+            }
+        }
+
+        function renderNutritionCalendar() {
+            document.getElementById('nutMonthLabel').innerText = `${NUT_HEB_MONTHS[nutViewMonth]} ${nutViewYear}`;
+            const grid = document.getElementById('nutCalendarGrid');
+            const firstDay = new Date(nutViewYear, nutViewMonth, 1).getDay();
+            const daysInMonth = new Date(nutViewYear, nutViewMonth + 1, 0).getDate();
+            const todayStr = todayKey();
+            const holidayMap = nutHolidaysVisible ? (nutHolidayCache[`${nutViewYear}-${pad2(nutViewMonth + 1)}`] || {}) : {};
+
+            let html = '';
+            for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const ds = dateToStr(nutViewYear, nutViewMonth, d);
+                const sums = computeDaySums(ds);
+                const isToday = ds === todayStr;
+                const holidayTitle = holidayMap[ds];
+                html += `
+                <button onclick="openNutDayModal('${ds}')" class="text-right p-1 md:p-1.5 rounded-lg border ${isToday ? 'border-emerald-400 bg-emerald-500/10' : 'border-slate-800 bg-slate-900/60'} hover:border-emerald-400/60 transition" style="min-height:56px;">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] md:text-xs font-bold ${isToday ? 'text-emerald-300' : 'text-slate-300'}">${d}</span>
+                        ${holidayTitle ? `<span class="text-[8px]" title="${holidayTitle}">✡️</span>` : ''}
+                    </div>
+                    ${sums.count ? `<div class="text-[8px] md:text-[9px] text-amber-400 font-bold leading-tight">${sums.calories} קק"ל</div><div class="text-[8px] md:text-[9px] text-emerald-400 font-bold leading-tight">${sums.protein}ג</div>` : ''}
+                </button>`;
+            }
+            grid.innerHTML = html;
+            renderSummaryStats();
+            renderNutritionTrendChart();
+        }
+
+        async function openNutDayModal(ds) {
+            nutSelectedDate = ds;
+            const d = new Date(ds + 'T00:00:00');
+            document.getElementById('nutModalDateTitle').innerText = d.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            const holidayNote = document.getElementById('nutModalHolidayNote');
+            if (nutHolidaysVisible) {
+                const map = await loadNutHolidays(d.getFullYear(), d.getMonth());
+                if (map[ds]) { holidayNote.innerText = '✡️ ' + map[ds]; holidayNote.classList.remove('hidden'); }
+                else holidayNote.classList.add('hidden');
+            } else {
+                holidayNote.classList.add('hidden');
+            }
+
+            document.getElementById('nutModalMealInput').value = '';
+            renderNutModalMeals();
+            document.getElementById('nutDayModal').classList.remove('hidden');
+        }
+
+        function renderNutModalMeals() {
+            const meals = getMealsForDate(nutSelectedDate);
+            const totalCal = meals.reduce((s, m) => s + (m.calories || 0), 0);
+            const totalPro = meals.reduce((s, m) => s + (m.protein || 0), 0);
+            document.getElementById('nutModalCalories').innerText = totalCal;
+            document.getElementById('nutModalProtein').innerText = totalPro;
+
+            const list = document.getElementById('nutModalMealsList');
+            list.innerHTML = meals.length
+                ? meals.map((m, i) => `
+                    <div class="flex justify-between items-center bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5">
+                        <span class="text-slate-300 flex-1">${m.time} — ${m.desc}</span>
+                        <span class="text-amber-400 font-bold ml-2">${m.calories} קק"ל</span>
+                        <span class="text-emerald-400 font-bold ml-2">${m.protein}ג</span>
+                        <button onclick="deleteMealFromModal(${i})" class="text-rose-400 hover:text-rose-300 mr-2">✕</button>
+                    </div>`).join('')
+                : `<p class="text-slate-500 text-center py-2 text-xs">אין ארוחות רשומות ליום זה.</p>`;
+        }
+
+        function deleteMealFromModal(idx) {
+            const meals = getMealsForDate(nutSelectedDate);
+            meals.splice(idx, 1);
+            setMealsForDate(nutSelectedDate, meals);
+            renderNutModalMeals();
+            renderNutritionCalendar();
+            if (nutSelectedDate === todayKey()) renderTodaySummary();
+        }
+
+        async function addMealToModalDate() {
+            const desc = document.getElementById('nutModalMealInput').value.trim();
+            if (!desc) { alert('נא לתאר מה נאכל.'); return; }
+            const btn = document.getElementById('nutModalAddBtn');
+            btn.disabled = true;
+            btn.innerText = 'מחשב...';
+            try {
+                await analyzeMealForDate(desc, nutSelectedDate);
+                document.getElementById('nutModalMealInput').value = '';
+                renderNutModalMeals();
+                renderNutritionCalendar();
+                if (nutSelectedDate === todayKey()) renderTodaySummary();
+            } catch (err) {
+                alert('שגיאה: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '🧮 חשב והוסף';
+            }
+        }
+
+        function closeNutDayModal() {
+            document.getElementById('nutDayModal').classList.add('hidden');
+            nutSelectedDate = null;
+        }
+
+        // ---- Export / Import (meals + targets) ----
+        function exportNutritionData() {
+            const backup = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.startsWith('qbmc_meals_') || key === 'qbmc_nutrition_targets')) backup[key] = localStorage.getItem(key);
+            }
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qb_master_class_nutrition_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importNutritionData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    Object.entries(backup).forEach(([key, value]) => {
+                        if (key.startsWith('qbmc_meals_') || key === 'qbmc_nutrition_targets') localStorage.setItem(key, value);
+                    });
+                    loadNutritionTargets();
+                    renderTodaySummary();
+                    renderNutritionCalendar();
+                    alert('השחזור הושלם בהצלחה!');
+                } catch (err) {
+                    alert('קובץ לא תקין. ודא שזה קובץ גיבוי שיוצא מהמערכת.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ---- Holistic AI analysis: bridges in metrics.html data (same pattern as the main page's Madden auto-load) ----
+        let holisticMetricsCache = null; // { "YYYY-MM-DD": [ {name,value,unit}, ... ] }
+
+        function tryAutoLoadMetricsForHolistic() {
+            const dayMap = {};
+            let found = false;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('qbmc_metrics_')) {
+                    try {
+                        dayMap[key.replace('qbmc_metrics_', '')] = JSON.parse(localStorage.getItem(key));
+                        found = true;
+                    } catch (e) {}
+                }
+            }
+            if (found) {
+                holisticMetricsCache = dayMap;
+                const note = document.getElementById('holisticMetricsFound');
+                note.innerText = `✅ נמצאו נתוני מדדים אוטומטית (${Object.keys(dayMap).length} תאריכים).`;
+                note.classList.remove('hidden');
+            } else {
+                document.getElementById('holisticMetricsMissing').classList.remove('hidden');
+            }
+        }
+
+        function loadMetricsBackupForHolistic(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    const dayMap = {};
+                    Object.entries(backup).forEach(([key, value]) => {
+                        if (key.startsWith('qbmc_metrics_')) dayMap[key.replace('qbmc_metrics_', '')] = JSON.parse(value);
+                    });
+                    holisticMetricsCache = dayMap;
+                    document.getElementById('holisticMetricsStatus').innerText = `✅ נטענו ${Object.keys(dayMap).length} תאריכים מהקובץ.`;
+                } catch (err) {
+                    document.getElementById('holisticMetricsStatus').innerText = '❌ קובץ לא תקין.';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function summarizeMetricsForPrompt() {
+            if (!holisticMetricsCache) return 'לא נטענו נתוני מדדים פיזיים.';
+            const latest = {}; // name -> {date, value, unit}
+            Object.entries(holisticMetricsCache).forEach(([date, entries]) => {
+                (entries || []).forEach(e => {
+                    if (!latest[e.name] || date > latest[e.name].date) latest[e.name] = { date, value: e.value, unit: e.unit };
+                });
+            });
+            const lines = Object.entries(latest).map(([name, v]) => `- ${name}: ${v.value} ${v.unit || ''} (עדכון: ${v.date})`);
+            return lines.length ? lines.join('\n') : 'לא נמצאו רישומי מדדים.';
+        }
+
+        function summarizeNutritionForPrompt() {
+            let target = {};
+            try { target = JSON.parse(localStorage.getItem('qbmc_nutrition_targets') || '{}'); } catch (e) {}
+            const allDates = getAllMealDates().sort().reverse().slice(0, 14); // last 14 logged days
+            const rows = allDates.map(ds => {
+                const sums = computeDaySums(ds);
+                return `${ds}: ${sums.calories} קק"ל, ${sums.protein}ג חלבון (${sums.count} ארוחות)`;
+            });
+            return `יעד יומי: ${target.calories || 'לא הוגדר'} קק"ל, ${target.protein || 'לא הוגדר'}ג חלבון (מטרה: ${target.goal || 'לא צוין'}).\n\n14 הימים האחרונים עם רישום:\n${rows.join('\n') || 'אין נתונים עדיין.'}`;
+        }
+
+        async function runHolisticAnalysis() {
+            const loading = document.getElementById('holisticAnalysisLoading');
+            const resultBox = document.getElementById('holisticAnalysisResult');
+            const btn = document.getElementById('holisticAnalysisBtn');
+
+            loading.classList.remove('hidden');
+            resultBox.classList.add('hidden');
+            btn.disabled = true;
+
+            try {
+                const prompt = `אתה מאמן ביצועים (Performance Coach) לקוורטרבק נוער/צעיר בפוטבול אמריקאי. נתח את התמונה המלאה הבאה וכתוב סיכום מקצועי בעברית (עד 300 מילים) שכולל:
+1. הערכה כללית של המצב הנוכחי.
+2. האם התזונה תומכת ביעדים הפיזיים (למשל, אם המדדים מראים ירידה בכוח/מהירות אך התזונה חלשה בחלבון/קלוריות — ציין את הקשר האפשרי).
+3. עד 3 המלצות מעשיות וספציפיות לשבועיים הקרובים.
+חשוב: זו הערכה כללית תומכת-החלטה, לא ייעוץ רפואי/תזונאי/אימוני מוסמך — ציין זאת בקצרה בסוף.
+
+=== מדדים פיזיים (ערך עדכני לכל יכולת) ===
+${summarizeMetricsForPrompt()}
+
+=== נתוני תזונה ===
+${summarizeNutritionForPrompt()}`;
+
+                const text = await callGemini([{ text: prompt }]);
+                resultBox.innerText = text;
+                resultBox.classList.remove('hidden');
+            } catch (err) {
+                resultBox.innerText = '❌ שגיאה: ' + err.message;
+                resultBox.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateApiKeyStatus();
+            loadNutritionTargets();
+            renderTodaySummary();
+            const t = new Date();
+            nutViewYear = t.getFullYear(); nutViewMonth = t.getMonth();
+            renderNutritionCalendar();
+            tryAutoLoadMetricsForHolistic();
+        });
+    </script>
+</body>
+</html>
