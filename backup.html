@@ -15,7 +15,7 @@
     <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-xl">
         <div class="max-w-4xl mx-auto flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center gap-3">
-                <a href="qb_master_class_v2.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300 flex items-center gap-1">
+                <a href="index.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300 flex items-center gap-1">
                     <span>←</span><span>חזרה למדריך הראשי</span>
                 </a>
                 <a href="calendar.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">📅 לוח שנה</a>
@@ -32,19 +32,36 @@
     <header class="max-w-4xl mx-auto px-4 pt-6 pb-4">
         <h1 class="text-2xl md:text-3xl font-black text-white mb-2">גיבוי, מיזוג ושחזור נתוני המערכת</h1>
         <p class="text-slate-400 text-sm leading-relaxed">
-            כל דף במערכת (המדריך הראשי, לוח השנה, לוח המדדים) שומר את הנתונים שלו בנפרד בדפדפן שלך.
-            הכלי הזה מאפשר לך לאסוף את כל הגיבויים למקום אחד — ולעשות את הפעולה ההפוכה: לפצל גיבוי מאוחד בחזרה לקבצים
-            שכל דף יודע לקרוא בעצמו.
+            עכשיו כשהמערכת מתארחת באתר אמיתי, כל הדפים חולקים את אותו זיכרון דפדפן — כלי הגיבוי המאוחד האמיתי למטה
+            קורא ישירות את כל הנתונים בלחיצה אחת, בלי צורך להעלות קבצים בנפרד. מפתח ה-Gemini האישי שלך תמיד מוחרג
+            מכל גיבוי, משיקולי אבטחה.
         </p>
-        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mt-4 text-xs text-amber-200 leading-relaxed">
-            ⚠️ <strong>חשוב לדעת:</strong> הכלי הזה עובד על קבצים שאתה מעלה — הוא לא "רואה" ישירות את הנתונים השמורים בדפים
-            האחרים (זו מגבלה טכנית של קבצים מקומיים בדפדפן). לכן התהליך הוא: קודם מייצאים גיבוי מכל דף בנפרד (הכפתורים שכבר
-            קיימים בכל דף), ואז מעלים את כל הקבצים לכאן למיזוג. לאחר מעבר לאחסון אתר אמיתי (Hosting), זה ייפתר אוטומטית.
-        </div>
     </header>
 
     <main class="max-w-4xl mx-auto px-4 space-y-6">
 
+        <div id="autoBackupSection" class="bg-slate-800/50 border-2 border-emerald-500/50 rounded-2xl p-5 md:p-6 backdrop-blur">
+            <h2 class="font-bold text-lg text-emerald-400 mb-1 flex items-center gap-2"><span>⚡</span> גיבוי מאוחד אוטומטי — כפתור אחד, הכל</h2>
+            <p class="text-xs text-slate-400 mb-4">קורא ישירות מהדפדפן את כל הנתונים שנשמרו בכל דפי המערכת (בביקור בדפדפן הזה), ומאחד לקובץ JSON יחיד להורדה.</p>
+            <div id="autoBackupSummary" class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs mb-4"></div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="downloadAutoBackup()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition text-sm">💾 הורד גיבוי מאוחד אחד (הכל, אוטומטית)</button>
+                <label class="px-4 py-2.5 bg-slate-800 border border-slate-700 hover:border-sky-400 text-slate-300 font-bold rounded-xl transition text-sm cursor-pointer">
+                    ⬆️ שחזר מקובץ מאוחד ישירות
+                    <input type="file" accept="application/json" onchange="restoreAutoBackup(event)" class="hidden">
+                </label>
+            </div>
+            <p id="autoBackupNote" class="text-[11px] text-slate-500 mt-2"></p>
+        </div>
+
+        <details class="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-5 md:p-6 backdrop-blur">
+            <summary class="cursor-pointer font-bold text-slate-300 text-sm">🧰 שיטת גיבוי ידנית (למקרה שהאוטומטי לא מוצא הכל — למשל אם ביקרת בדף מסוים בדפדפן אחר)</summary>
+            <div class="mt-4">
+                <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-4 text-xs text-amber-200 leading-relaxed">
+                    ⚠️ הכלי האוטומטי למעלה רואה רק נתונים שנשמרו <strong>באותו דפדפן</strong> שבו אתה נמצא כרגע. אם הזנת נתונים
+                    בדפדפן/מכשיר אחר, תצטרך להשתמש בשיטה הידנית: קודם מייצאים גיבוי מכל דף בנפרד (הכפתורים שכבר קיימים בכל דף),
+                    ואז מעלים את כל הקבצים לכאן למיזוג.
+                </div>
         <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 md:p-6 backdrop-blur">
             <h2 class="font-bold text-lg text-emerald-400 mb-1 flex items-center gap-2"><span>1️⃣</span> שלב ראשון — ייצוא מכל דף בנפרד</h2>
             <p class="text-xs text-slate-400 mb-4">אם עדיין לא עשית זאת, לחץ על כפתור הגיבוי בכל אחד מהדפים הבאים והורד את הקבצים:</p>
@@ -52,7 +69,7 @@
                 <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                     <div class="font-bold text-white mb-1">📋 תוכנית אימונים (ראשי)</div>
                     <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי אימונים" בניווט העליון של המדריך הראשי.</div>
-                    <a href="qb_master_class_v2.html" class="text-sky-400 hover:underline">פתח את המדריך הראשי ←</a>
+                    <a href="index.html" class="text-sky-400 hover:underline">פתח את המדריך הראשי ←</a>
                 </div>
                 <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                     <div class="font-bold text-white mb-1">📅 לוח שנה אימונים</div>
@@ -102,6 +119,8 @@
             </label>
             <div id="splitSummary" class="mt-4 space-y-2 hidden"></div>
         </div>
+            </div>
+        </details>
     </main>
 
     <script>
@@ -121,6 +140,88 @@
         function detectCategory(key) {
             if (EXACT_KEY_CATEGORY[key]) return EXACT_KEY_CATEGORY[key];
             return Object.keys(CATEGORY_INFO).find(prefix => key.startsWith(prefix)) || null;
+        }
+
+        // ---- Automatic unified backup: reads localStorage directly. Works fully now
+        // that everything shares one real origin (hosted) — qbmc_gemini_key is always
+        // explicitly excluded, on purpose, for security. ----
+        const SENSITIVE_KEYS = ['qbmc_gemini_key'];
+
+        function scanLocalStorage() {
+            const found = {}; // category prefix -> { count, data: {key: value} }
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!key || !key.startsWith('qbmc_') || SENSITIVE_KEYS.includes(key)) continue;
+                const cat = detectCategory(key);
+                if (!cat) continue;
+                if (!found[cat]) found[cat] = { count: 0, data: {} };
+                found[cat].count++;
+                found[cat].data[key] = localStorage.getItem(key);
+            }
+            return found;
+        }
+
+        function renderAutoBackupSummary() {
+            const found = scanLocalStorage();
+            const totalFound = Object.values(found).reduce((s, c) => s + c.count, 0);
+            const summaryEl = document.getElementById('autoBackupSummary');
+
+            summaryEl.innerHTML = Object.entries(CATEGORY_INFO).map(([prefix, info]) => {
+                const count = found[prefix] ? found[prefix].count : 0;
+                return `<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center">
+                    <div style="color:${info.color}" class="font-bold">${count}</div>
+                    <div class="text-slate-500 text-[10px]">${info.label}</div>
+                </div>`;
+            }).join('');
+
+            const note = document.getElementById('autoBackupNote');
+            note.innerText = totalFound > 0
+                ? `✅ נמצאו ${totalFound} רשומות בדפדפן הזה, מוכנות לגיבוי (מפתח ה-API מוחרג תמיד).`
+                : '⚠️ לא נמצאו נתונים בדפדפן הזה עדיין — בקר בדפים ותוסיף נתונים, או השתמש בשיטה הידנית למטה.';
+
+            return found;
+        }
+
+        function downloadAutoBackup() {
+            const found = scanLocalStorage();
+            const backup = {};
+            Object.values(found).forEach(cat => Object.assign(backup, cat.data));
+
+            if (!Object.keys(backup).length) {
+                alert('לא נמצאו נתונים לגיבוי בדפדפן הזה.');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qb_master_class_UNIFIED_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function restoreAutoBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    let written = 0;
+                    Object.entries(backup).forEach(([key, value]) => {
+                        if (SENSITIVE_KEYS.includes(key)) return; // never restore secrets from a shared file
+                        if (!detectCategory(key)) return;
+                        localStorage.setItem(key, value);
+                        written++;
+                    });
+                    renderAutoBackupSummary();
+                    alert(`השחזור הושלם! ${written} רשומות נכתבו. בקר בכל דף כדי לוודא שהנתונים מופיעים שם.`);
+                } catch (err) {
+                    alert('קובץ לא תקין. ודא שזה קובץ גיבוי JSON תקין.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
         }
 
         function handleMergeFiles(event) {
@@ -231,6 +332,10 @@
             a.click();
             URL.revokeObjectURL(url);
         }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderAutoBackupSummary();
+        });
     </script>
 </body>
 </html>
