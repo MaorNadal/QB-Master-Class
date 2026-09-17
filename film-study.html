@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מרכז צפייה וניתוח NFL - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Rubik', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-xl">
+        <div class="max-w-5xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300 flex items-center gap-1">
+                    <span>←</span><span>חזרה למדריך הראשי</span>
+                </a>
+                <a href="calendar.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">📅 לוח שנה</a>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🎬</span>
+                <span class="font-black text-lg tracking-wide text-amber-400">מרכז צפייה וניתוח NFL</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="exportFilmData()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-emerald-400 text-slate-300 transition">⬇️ גיבוי</button>
+                <label class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-sky-400 text-slate-300 transition cursor-pointer">
+                    ⬆️ שחזור
+                    <input type="file" accept="application/json" onchange="importFilmData(event)" class="hidden">
+                </label>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-5xl mx-auto px-4 pt-8 pb-6 text-center">
+        <div class="inline-block px-4 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-400 text-sm font-semibold mb-3">
+            צפייה חכמה = אימון נוסף בלי לזוז מהספה
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-3">
+            איך קוורטרבק צריך לצפות במשחקי NFL
+        </h1>
+        <p class="text-slate-300 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
+            רוב האוהדים צופים במשחק כדי לראות מה קרה. QB שרוצה להשתפר צריך לצפות כדי להבין <strong>למה</strong> זה קרה —
+            ומה זה אומר עבור ההחלטות שהוא עצמו יצטרך לקבל במגרש. זה בדיוק ההבדל בין צריכת בידור לתרגול Football IQ.
+        </p>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 space-y-10">
+
+        <section class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <h2 class="text-2xl md:text-3xl font-black text-sky-400 mb-4 flex items-center gap-2"><span>📺</span> איך לצפות נכון — לא כמו אוהד</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4">
+                    <div class="font-bold text-white text-sm mb-2">1. חפש זווית All-22 כשאפשר</div>
+                    <p class="text-xs text-slate-300 leading-relaxed">שידור טלוויזיה עוקב אחרי הכדור בלבד — אתה לא רואה את שאר 21 השחקנים, שזה בדיוק המידע שקובע קריאת הגנה. זווית "Coaches Film" (מצלמה קבועה מלמעלה) מראה את כל המגרש.</p>
+                </div>
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4">
+                    <div class="font-bold text-white text-sm mb-2">2. צפה פעמיים, לא פעם אחת</div>
+                    <p class="text-xs text-slate-300 leading-relaxed">צפייה ראשונה — תיהנה, תראה מה קרה. צפייה שנייה (אפשר רק דרייב אחד) — עצור לפני כל סנאפ, נחש את ההגנה בעצמך, ואז תבדוק אם צדקת.</p>
+                </div>
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4">
+                    <div class="font-bold text-white text-sm mb-2">3. מיקוד אחד לצפייה</div>
+                    <p class="text-xs text-slate-300 leading-relaxed">אל תנסה לעקוב אחרי הכל בבת אחת. בחר נושא אחד לכל משחק (למשל "רק עיניים של ה-QB" או "רק תנועת Safety") — בדיוק כמו הקטגוריות למטה.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <h2 class="text-2xl md:text-4xl font-black text-emerald-400 mb-2 flex items-center gap-2"><span>🔍</span> על מה להסתכל — לפי קטגוריה</h2>
+            <p class="text-slate-300 text-sm mb-6">לחץ על קטגוריה כדי להרחיב. סמן ✓ ליד נקודות שבדקת בצפייה הנוכחית שלך (מתאפס בכל טעינה — זה כלי למהלך הצפייה, לא יומן קבוע).</p>
+            <div id="watchCategories" class="space-y-3"></div>
+        </section>
+
+        <section class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <h2 class="text-2xl md:text-4xl font-black text-purple-400 mb-2 flex items-center gap-2"><span>🏈</span> ארכיטיפים של קוורטרבקים ללמוד מהם</h2>
+            <p class="text-slate-300 text-sm mb-6">לא כל QB משחק אותו סגנון — ולמידה יעילה מתחילה מזיהוי איזה סגנון הכי קרוב לשלך.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-900/90 border border-sky-500/30 rounded-xl p-4">
+                    <div class="font-bold text-sky-400 text-sm mb-2">🎯 Rhythm & Timing (קצב ותזמון)</div>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-2">שחרור מהיר, זריקה לפני שהרסיבר מסיים חיתוך, תלות בדיוק ובקריאה מהירה יותר מבעוצמת זרוע. דוגמה היסטורית מוכרת לסגנון: Drew Brees.</p>
+                    <p class="text-[11px] text-sky-300">למד מזה אם: אתה מדויק אבל לא הכי חזק בזרוע.</p>
+                </div>
+                <div class="bg-slate-900/90 border border-amber-500/30 rounded-xl p-4">
+                    <div class="font-bold text-amber-400 text-sm mb-2">🛡️ Pocket Passer קלאסי</div>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-2">תנועה מינימלית אך חכמה בתוך הכיס, קריאות מורכבות, סבלנות עד שהחלון נפתח. דוגמה היסטורית מוכרת: Tom Brady, Peyton Manning.</p>
+                    <p class="text-[11px] text-amber-300">למד מזה אם: ה-IQ שלך חזק יותר מהניידות שלך.</p>
+                </div>
+                <div class="bg-slate-900/90 border border-rose-500/30 rounded-xl p-4">
+                    <div class="font-bold text-rose-400 text-sm mb-2">⚡ Off-Platform / Dual Threat</div>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-2">יוצר מחוץ למבנה, זורק מזוויות לא סטנדרטיות, מאיים גם בריצה. דוגמה עדכנית מוכרת לסגנון: Patrick Mahomes.</p>
+                    <p class="text-[11px] text-rose-300">למד מזה אם: הניידות שלך היא נשק אמיתי.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-slate-800/80 border-2 border-amber-500/60 rounded-2xl p-6 md:p-8 backdrop-blur shadow-2xl">
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                <h2 class="text-2xl md:text-3xl font-black text-amber-400 flex items-center gap-2"><span>📓</span> יומן צפייה</h2>
+                <button onclick="markFootballIQToday()" id="iqMarkBtn" class="text-xs font-bold px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition">✅ סמן "זמן Football IQ" היום בלוח האימונים</button>
+            </div>
+            <p id="iqMarkStatus" class="text-[11px] text-slate-500 mb-4"></p>
+
+            <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 mb-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs mb-3">
+                    <div>
+                        <label class="block text-slate-400 mb-1">תאריך</label>
+                        <input type="date" id="filmDate" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">משחק / קבוצות</label>
+                        <input type="text" id="filmGame" placeholder="למשל: Chiefs @ Bills" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">QB שלמדתי ממנו</label>
+                        <input type="text" id="filmQb" placeholder="שם + סגנון" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">מיקוד הצפייה</label>
+                        <select id="filmFocus" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                            <option>Pre-Snap Reads</option>
+                            <option>עיניים ו-Progression</option>
+                            <option>תנועה בכיס</option>
+                            <option>מכניקה ורגליים</option>
+                            <option>מצבי משחק (Situational)</option>
+                            <option>אחר</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea id="filmNotes" placeholder="מה שמת לב אליו? מה תוכל לקחת לזריקות/לקריאות שלך?" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-amber-400 mb-3" rows="3"></textarea>
+                <button onclick="addFilmEntry()" class="w-full px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl transition text-sm">💾 שמור רישום ביומן</button>
+            </div>
+
+            <div id="filmEntriesList" class="space-y-2"></div>
+        </section>
+
+        <section class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <h2 class="text-2xl md:text-3xl font-black text-teal-400 mb-4 flex items-center gap-2"><span>🔗</span> איפה לצפות</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="https://www.nfl.com/plus/learn-more" target="_blank" rel="noopener" class="block bg-slate-900/90 border border-teal-500/30 hover:border-teal-400 rounded-xl p-4 transition">
+                    <div class="font-bold text-teal-300 text-sm mb-1">NFL+ Premium — All-22 Coaches Film</div>
+                    <p class="text-xs text-slate-400">המקור הרשמי לצפייה בזווית All-22 המלאה (כל 22 השחקנים על המסך) — זמין כ-24-36 שעות אחרי כל משחק. דורש מנוי בתשלום.</p>
+                </a>
+                <a href="https://www.matchquarters.com" target="_blank" rel="noopener" class="block bg-slate-900/90 border border-teal-500/30 hover:border-teal-400 rounded-xl p-4 transition">
+                    <div class="font-bold text-teal-300 text-sm mb-1">MatchQuarters</div>
+                    <p class="text-xs text-slate-400">אתר/ניוזלטר מקצועי של מאמן פוטבול, עם ניתוחי כיסויים ופילם-סטאדי מעמיקים — מתאים מאוד להעמיק בדיוק את הנושאים שיש לנו בלוח ההגנות.</p>
+                </a>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-4">💡 טיפ: אחרי שתלמד לזהות מבנה הגנתי בוידאו, תחזור ללוח ההגנות ולסימולטור שלנו ותבדוק אם אתה מזהה את אותה הגנה נכון בתנאים "מבוקרים".</p>
+        </section>
+    </main>
+
+    <script>
+        const WATCH_CATEGORIES = [
+            {
+                id: 'presnap', icon: '👁️', color: '#38bdf8', title: 'Pre-Snap Reads',
+                items: [
+                    'כמה Safeties עמוקים רואים לפני הסנאפ? (0/1/2)',
+                    'האם יש הזזה/Motion — ומה זה חשף על סוג הכיסוי?',
+                    'כמה מגינים ב-Box? האם זה מרמז על בליץ?',
+                    'האם ה-QB משנה משהו בקריאה (Alert/Check) לפי מה שהוא רואה?'
+                ]
+            },
+            {
+                id: 'eyes', icon: '🧠', color: '#10b981', title: 'עיניים ו-Progression',
+                items: [
+                    'לאן העיניים של ה-QB הולכות ראשון אחרי הסנאפ?',
+                    'האם הוא "מזיז" Safety עם העיניים לפני שהוא זורק לכיוון האמיתי?',
+                    'כמה זמן עובר עד השחרור? (ספירה מנטלית מהסנאפ)',
+                    'האם רואים Hot Read ברור כשיש בליץ בלתי חסום?'
+                ]
+            },
+            {
+                id: 'pocket', icon: '🏃', color: '#ef4444', title: 'תנועה בכיס',
+                items: [
+                    'האם הוא "מטפס" קדימה בלחץ, או נסוג אחורה (רע)?',
+                    'האם הרגליים ממשיכות לזוז מתחתיו גם בזמן שהוא סורק (Alive Feet)?',
+                    'מתי הוא בוחר לברוח מהכיס — האם זה נראה מוקדם מדי או מאוחר מדי?',
+                    'האם הוא מאפס רגליים לפני זריקה מחוץ למבנה, או זורק "תוך כדי ריצה"?'
+                ]
+            },
+            {
+                id: 'mechanics', icon: '⚙️', color: '#a855f7', title: 'מכניקה ורגליים',
+                items: [
+                    'האם עומק ה-Drop תואם את עומק המסלול (3/5/7 צעדים)?',
+                    'מה זווית הזריקה (Over-the-Top / 3/4 / Sidearm) בכל מצב?',
+                    'האם רואים Hip-Shoulder Separation ברור בזריקות העוצמתיות?',
+                    'מה קורה לרגל האחורית ברגע השחרור?'
+                ]
+            },
+            {
+                id: 'situational', icon: '⏱️', color: '#f59e0b', title: 'מצבי משחק (Situational)',
+                items: [
+                    'איך הקריאות משתנות ב-3rd & Long לעומת 3rd & Short?',
+                    'מה קורה ב-Red Zone — פחות עומק, יותר דיוק?',
+                    'איך מנוהל הזמן ב-2-Minute Drill (Clock Management)?',
+                    'האם רואים דפוס חוזר (Tendency) שההגנה תנצל במשחק הבא?'
+                ]
+            }
+        ];
+
+        function renderWatchCategories() {
+            const container = document.getElementById('watchCategories');
+            container.innerHTML = WATCH_CATEGORIES.map(cat => `
+                <details class="bg-slate-900/90 border border-slate-700 rounded-xl overflow-hidden" style="border-color:${cat.color}40">
+                    <summary class="cursor-pointer px-4 py-3 font-bold text-sm flex items-center gap-2" style="color:${cat.color}">
+                        <span>${cat.icon}</span> ${cat.title}
+                    </summary>
+                    <div class="px-4 pb-4 space-y-2">
+                        ${cat.items.map((item, i) => `
+                            <label class="flex items-start gap-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" class="mt-0.5 w-3.5 h-3.5" style="accent-color:${cat.color}">
+                                <span>${item}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </details>
+            `).join('');
+        }
+
+        // ---- Football IQ tie-in: writes directly into the training calendar's own
+        // storage format. Works fully now that everything shares one hosted origin. ----
+        function todayStr() {
+            const t = new Date();
+            return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+        }
+
+        function markFootballIQToday() {
+            const ds = todayStr();
+            const key = 'qbmc_cal_' + ds;
+            let entries = [];
+            try { entries = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
+            if (!entries.includes('iq')) {
+                entries.push('iq');
+                try {
+                    localStorage.setItem(key, JSON.stringify(entries));
+                    document.getElementById('iqMarkStatus').innerText = '✅ סומן בהצלחה! פתח את לוח השנה כדי לראות.';
+                } catch (e) {
+                    document.getElementById('iqMarkStatus').innerText = '❌ לא הצלחנו לשמור — נסה מלוח השנה ישירות.';
+                }
+            } else {
+                document.getElementById('iqMarkStatus').innerText = 'ℹ️ כבר סומן להיום.';
+            }
+        }
+
+        // ---- Film study journal ----
+        function getFilmEntries() {
+            try {
+                const raw = localStorage.getItem('qbmc_film_entries');
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        }
+        function setFilmEntries(entries) {
+            try { localStorage.setItem('qbmc_film_entries', JSON.stringify(entries)); } catch (e) {}
+        }
+
+        function addFilmEntry() {
+            const date = document.getElementById('filmDate').value || todayStr();
+            const game = document.getElementById('filmGame').value.trim();
+            const qb = document.getElementById('filmQb').value.trim();
+            const focus = document.getElementById('filmFocus').value;
+            const notes = document.getElementById('filmNotes').value.trim();
+
+            if (!game && !notes) { alert('נא למלא לפחות את שם המשחק או הערות.'); return; }
+
+            const entries = getFilmEntries();
+            entries.unshift({ date, game, qb, focus, notes });
+            setFilmEntries(entries);
+
+            document.getElementById('filmGame').value = '';
+            document.getElementById('filmQb').value = '';
+            document.getElementById('filmNotes').value = '';
+            renderFilmEntries();
+        }
+
+        function deleteFilmEntry(idx) {
+            const entries = getFilmEntries();
+            entries.splice(idx, 1);
+            setFilmEntries(entries);
+            renderFilmEntries();
+        }
+
+        function renderFilmEntries() {
+            const entries = getFilmEntries();
+            const container = document.getElementById('filmEntriesList');
+            container.innerHTML = entries.length ? entries.map((e, i) => `
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                    <div class="flex justify-between items-start gap-2 mb-1">
+                        <div class="text-xs font-bold text-white">${e.game || 'ללא שם משחק'} <span class="text-slate-500 font-normal">— ${e.date}</span></div>
+                        <button onclick="deleteFilmEntry(${i})" class="text-rose-400 hover:text-rose-300 text-[11px]">מחק</button>
+                    </div>
+                    <div class="flex gap-2 text-[10px] text-slate-400 mb-1.5">
+                        ${e.qb ? `<span class="bg-slate-800 px-2 py-0.5 rounded">🏈 ${e.qb}</span>` : ''}
+                        <span class="bg-slate-800 px-2 py-0.5 rounded">🎯 ${e.focus}</span>
+                    </div>
+                    ${e.notes ? `<p class="text-xs text-slate-300 leading-relaxed">${e.notes}</p>` : ''}
+                </div>
+            `).join('') : `<p class="text-slate-500 text-center py-4 text-sm">עדיין אין רישומים ביומן — תתחיל עם המשחק הבא שתצפה בו!</p>`;
+        }
+
+        function exportFilmData() {
+            const backup = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('qbmc_film_')) backup[key] = localStorage.getItem(key);
+            }
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qb_master_class_film_study_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importFilmData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    Object.entries(backup).forEach(([key, value]) => {
+                        if (key.startsWith('qbmc_film_')) localStorage.setItem(key, value);
+                    });
+                    renderFilmEntries();
+                    alert('השחזור הושלם בהצלחה!');
+                } catch (err) {
+                    alert('קובץ לא תקין. ודא שזה קובץ גיבוי שיוצא מהמערכת.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderWatchCategories();
+            document.getElementById('filmDate').value = todayStr();
+            renderFilmEntries();
+        });
+    </script>
+</body>
+</html>

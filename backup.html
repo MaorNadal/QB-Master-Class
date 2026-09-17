@@ -21,6 +21,7 @@
                 <a href="calendar.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">📅 לוח שנה</a>
                 <a href="metrics.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">📈 מדדים</a>
                 <a href="ai-tools.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">🤖 עזרי AI</a>
+                <a href="film-study.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">🎬 צפייה NFL</a>
             </div>
             <div class="flex items-center gap-2">
                 <span class="text-2xl">🗄️</span>
@@ -65,7 +66,7 @@
         <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 md:p-6 backdrop-blur">
             <h2 class="font-bold text-lg text-emerald-400 mb-1 flex items-center gap-2"><span>1️⃣</span> שלב ראשון — ייצוא מכל דף בנפרד</h2>
             <p class="text-xs text-slate-400 mb-4">אם עדיין לא עשית זאת, לחץ על כפתור הגיבוי בכל אחד מהדפים הבאים והורד את הקבצים:</p>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 text-xs">
                 <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                     <div class="font-bold text-white mb-1">📋 תוכנית אימונים (ראשי)</div>
                     <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי אימונים" בניווט העליון של המדריך הראשי.</div>
@@ -85,6 +86,11 @@
                     <div class="font-bold text-white mb-1">🍗 תזונה (עזרי AI)</div>
                     <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בלוח השנה שבתוך עזרי ה-AI.</div>
                     <a href="ai-tools.html" class="text-emerald-400 hover:underline">פתח את עזרי ה-AI ←</a>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                    <div class="font-bold text-white mb-1">🎬 יומן צפייה NFL</div>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בניווט העליון של מרכז הצפייה.</div>
+                    <a href="film-study.html" class="text-amber-400 hover:underline">פתח את מרכז הצפייה ←</a>
                 </div>
             </div>
         </div>
@@ -128,7 +134,8 @@
             'qbmc_ex_': { label: '📋 תוכנית אימונים (ראשי)', color: '#38bdf8', filename: 'qb_master_class_workouts_backup.json' },
             'qbmc_cal_': { label: '📅 לוח שנה אימונים', color: '#e879f9', filename: 'qb_master_class_calendar_backup.json' },
             'qbmc_metrics_': { label: '📈 מדדים + Madden', color: '#22d3ee', filename: 'qb_master_class_metrics_backup.json' },
-            'qbmc_meals_': { label: '🍗 תזונה (עזרי AI)', color: '#34d399', filename: 'qb_master_class_nutrition_backup.json' }
+            'qbmc_meals_': { label: '🍗 תזונה (עזרי AI)', color: '#34d399', filename: 'qb_master_class_nutrition_backup.json' },
+            'qbmc_film_': { label: '🎬 יומן צפייה NFL', color: '#fbbf24', filename: 'qb_master_class_film_study_backup.json' }
         };
         // Exact-match keys (not per-date prefixes) get folded into an existing category
         const EXACT_KEY_CATEGORY = {
