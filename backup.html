@@ -12,23 +12,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
 
-    <nav class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-xl">
-        <div class="max-w-4xl mx-auto flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300 flex items-center gap-1">
-                    <span>←</span><span>חזרה למדריך הראשי</span>
-                </a>
-                <a href="calendar.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">📅 לוח שנה</a>
-                <a href="metrics.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">📈 מדדים</a>
-                <a href="ai-tools.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">🤖 עזרי AI</a>
-                <a href="film-study.html" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition text-slate-300">🎬 צפייה NFL</a>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">🗄️</span>
-                <span class="font-black text-lg tracking-wide text-slate-200">מרכז גיבוי</span>
-            </div>
-        </div>
-    </nav>
+    <script src="nav.js"></script>
 
     <header class="max-w-4xl mx-auto px-4 pt-6 pb-4">
         <h1 class="text-2xl md:text-3xl font-black text-white mb-2">גיבוי, מיזוג ושחזור נתוני המערכת</h1>
@@ -69,27 +53,27 @@
             <div class="grid grid-cols-1 md:grid-cols-5 gap-3 text-xs">
                 <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                     <div class="font-bold text-white mb-1">📋 תוכנית אימונים (ראשי)</div>
-                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי אימונים" בניווט העליון של המדריך הראשי.</div>
-                    <a href="index.html" class="text-sky-400 hover:underline">פתח את המדריך הראשי ←</a>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי אימונים" בראש דף האימון.</div>
+                    <a href="training.html" class="text-sky-400 hover:underline">פתח את דף האימון ←</a>
                 </div>
                 <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                     <div class="font-bold text-white mb-1">📅 לוח שנה אימונים</div>
-                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בניווט העליון של לוח השנה.</div>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בראש לוח השנה.</div>
                     <a href="calendar.html" class="text-fuchsia-400 hover:underline">פתח את לוח השנה ←</a>
                 </div>
                 <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                     <div class="font-bold text-white mb-1">📈 מדדים + Madden</div>
-                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בניווט העליון של לוח המדדים.</div>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בראש לוח המדדים.</div>
                     <a href="metrics.html" class="text-cyan-400 hover:underline">פתח את לוח המדדים ←</a>
                 </div>
                 <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                     <div class="font-bold text-white mb-1">🍗 תזונה (עזרי AI)</div>
-                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בלוח השנה שבתוך עזרי ה-AI.</div>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בראש עזרי ה-AI.</div>
                     <a href="ai-tools.html" class="text-emerald-400 hover:underline">פתח את עזרי ה-AI ←</a>
                 </div>
                 <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
                     <div class="font-bold text-white mb-1">🎬 יומן צפייה NFL</div>
-                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בניווט העליון של מרכז הצפייה.</div>
+                    <div class="text-slate-400 mb-2">כפתור "⬇️ גיבוי" בראש מרכז הצפייה.</div>
                     <a href="film-study.html" class="text-amber-400 hover:underline">פתח את מרכז הצפייה ←</a>
                 </div>
             </div>
@@ -138,6 +122,8 @@
             'qbmc_film_': { label: '🎬 יומן צפייה NFL', color: '#fbbf24', filename: 'qb_master_class_film_study_backup.json' }
         };
         // Exact-match keys (not per-date prefixes) get folded into an existing category
+        const OTHER = '__other__';   // catch-all: any future feature that stores qbmc_* data is backed up automatically
+        CATEGORY_INFO[OTHER] = { label: '🧩 נתונים נוספים (פיצ\'רים חדשים)', color: '#a78bfa', filename: 'qb_master_class_other_backup.json' };
         const EXACT_KEY_CATEGORY = {
             'qbmc_nutrition_targets': 'qbmc_meals_'
         };
@@ -146,19 +132,25 @@
 
         function detectCategory(key) {
             if (EXACT_KEY_CATEGORY[key]) return EXACT_KEY_CATEGORY[key];
-            return Object.keys(CATEGORY_INFO).find(prefix => key.startsWith(prefix)) || null;
+            const known = Object.keys(CATEGORY_INFO).find(prefix => prefix !== OTHER && key.startsWith(prefix));
+            if (known) return known;
+            return key.startsWith('qbmc_') && !isSensitive(key) ? OTHER : null;
         }
 
         // ---- Automatic unified backup: reads localStorage directly. Works fully now
         // that everything shares one real origin (hosted) — qbmc_gemini_key is always
         // explicitly excluded, on purpose, for security. ----
         const SENSITIVE_KEYS = ['qbmc_gemini_key'];
+        // Names that look like secrets are excluded automatically, including for future features.
+        function isSensitive(key) {
+            return SENSITIVE_KEYS.includes(key) || /(^|_)(key|token|secret|password)(_|$)/i.test(key);
+        }
 
         function scanLocalStorage() {
             const found = {}; // category prefix -> { count, data: {key: value} }
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                if (!key || !key.startsWith('qbmc_') || SENSITIVE_KEYS.includes(key)) continue;
+                if (!key || !key.startsWith('qbmc_') || isSensitive(key)) continue;
                 const cat = detectCategory(key);
                 if (!cat) continue;
                 if (!found[cat]) found[cat] = { count: 0, data: {} };
@@ -175,6 +167,7 @@
 
             summaryEl.innerHTML = Object.entries(CATEGORY_INFO).map(([prefix, info]) => {
                 const count = found[prefix] ? found[prefix].count : 0;
+                if (prefix === OTHER && !count) return '';
                 return `<div class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 text-center">
                     <div style="color:${info.color}" class="font-bold">${count}</div>
                     <div class="text-slate-500 text-[10px]">${info.label}</div>
@@ -216,7 +209,7 @@
                     const backup = JSON.parse(e.target.result);
                     let written = 0;
                     Object.entries(backup).forEach(([key, value]) => {
-                        if (SENSITIVE_KEYS.includes(key)) return; // never restore secrets from a shared file
+                        if (isSensitive(key)) return; // never restore secrets from a shared file
                         if (!detectCategory(key)) return;
                         localStorage.setItem(key, value);
                         written++;
@@ -265,6 +258,7 @@
             let html = '';
             Object.entries(CATEGORY_INFO).forEach(([prefix, info]) => {
                 const count = summary[prefix] || 0;
+                if (prefix === OTHER && !count) return;
                 html += `<div class="flex items-center justify-between bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2">
                     <span style="color:${info.color}">${info.label}</span>
                     <span class="font-bold ${count ? 'text-emerald-400' : 'text-slate-600'}">${count} רשומות ${count ? '✓' : '(לא נמצא)'}</span>
@@ -318,6 +312,7 @@
             Object.entries(CATEGORY_INFO).forEach(([prefix, info]) => {
                 const data = split[prefix];
                 const count = data ? Object.keys(data).length : 0;
+                if (prefix === OTHER && !count) return;
                 html += `<div class="flex items-center justify-between bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5">
                     <span style="color:${info.color}" class="text-sm">${info.label} — ${count} רשומות</span>
                     ${count ? `<button onclick="downloadSplitFile('${prefix}')" class="text-xs font-bold px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg transition">⬇️ הורד</button>` : `<span class="text-[11px] text-slate-600">אין נתונים</span>`}
