@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אימון: דרילים ותוכנית שבועית - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        @media print {
+            nav, .no-print, button, select, input[type=range] {
+                display: none !important;
+            }
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            .bg-slate-900, .bg-slate-800, .bg-slate-800\/50, .bg-slate-900\/90, .bg-slate-900\/80 {
+                background-color: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+            }
+            .text-white, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400 {
+                color: #0f172a !important;
+            }
+            .text-sky-400, .text-amber-400, .text-emerald-400, .text-rose-400, .text-purple-400 {
+                color: #0284c7 !important;
+                font-weight: bold;
+            }
+            canvas {
+                max-width: 100% !important;
+            }
+            .print-only-target {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <script src="nav.js"></script>
+
+    <header class="max-w-7xl mx-auto px-4 pt-8 pb-6 text-center">
+        <div class="inline-block px-4 py-1.5 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-400 text-sm font-semibold mb-3">
+            QB MASTER CLASS • אימון
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-3">
+            אימון: דרילים ותוכנית שבועית
+        </h1>
+        <p class="text-slate-300 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
+            ספריית הדרילים ותוכנית האימונים השבועית עם סימון ביצוע וגיבוי המעקב.
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 space-y-12">
+
+        <div class="no-print flex flex-wrap justify-end gap-2 text-xs md:text-sm font-semibold">
+            <button onclick="exportWorkoutData()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-emerald-400 text-slate-300 transition">⬇️ גיבוי אימונים</button>
+            <label class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 hover:border-sky-400 text-slate-300 transition cursor-pointer">
+                ⬆️ שחזור אימונים
+                <input type="file" accept="application/json" onchange="importWorkoutData(event)" class="hidden">
+            </label>
+        </div>
+
+        <section id="drills" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6 text-center">
+                <span class="px-3 py-1 bg-orange-500/20 text-orange-300 font-bold text-xs rounded-full border border-orange-500/30">ספריית דרילים לקוורטרבק</span>
+                <h2 class="text-2xl md:text-4xl font-black text-orange-400 mt-2">
+                    🎯 דרילים לקוורטרבק — 20 תרגילים טכניים
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-2 max-w-3xl mx-auto">
+                    בניגוד לתוכנית הכוח שלמעלה (חדר כושר) ולפלייבוק (מה לרוץ), כאן זה <strong>איך מתאמנים על המכניקה, הדיוק והקריאות עצמן</strong> — תרגילי שטח שאפשר לשלב בכל אימון זריקות.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2 justify-center mb-6" id="drillCategoryTabs"></div>
+            <div id="drillsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+
+        <section id="workout-plan" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6 text-center">
+                <span class="px-3 py-1 bg-rose-500/20 text-rose-300 font-bold text-xs rounded-full border border-rose-500/30">תוכנית אימון שבועית מקיפה</span>
+                <h2 class="text-2xl md:text-4xl font-black text-rose-400 mt-2">
+                    🏋️‍♂️ תוכנית אימונים שבועית לקוורטרבק (חדר כושר + זריקות)
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-1 max-w-2xl mx-auto">
+                    בניית נפח, עוצמה מתפרצת, יציבות ליבה, זרועות חזקות ואמות ברזל (Forearms & Grip) בשילוב אימוני טכניקת זריקה בשדה. סמן ✓ ליד כל תרגיל שביצעת — ההתקדמות נשמרת אוטומטית בדפדפן שלך.
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-slate-900/90 border border-slate-700 rounded-2xl p-5 shadow-lg">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3 border-b border-slate-800 pb-2">
+                        <h3 class="font-bold text-lg text-sky-400 flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-sky-500/15 border border-sky-500/30 shrink-0">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="9" width="3" height="6" rx="1"/><rect x="20" y="9" width="3" height="6" rx="1"/><rect x="4" y="7" width="2.5" height="10" rx="1"/><rect x="17.5" y="7" width="2.5" height="10" rx="1"/><line x1="6.5" y1="12" x2="17.5" y2="12"/></svg>
+                            </span>
+                            יום 1: Upper Body — נפח ועוצמה (גב, חזה, כתפיים, זרועות ואמות)
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span id="progress-d1" class="text-[11px] font-bold px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">0/6 הושלמו</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-sky-500/20 text-sky-300">אימון פלג גוף עליון א'</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                        <div id="card-d1e1" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d1e1" data-ex-id="d1e1" data-day="d1" onchange="toggleExercise('d1e1','d1')" class="mt-1 w-4 h-4 accent-sky-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Bench Press / Incline DB Press</span>
+                                    <span class="text-sky-300 font-bold">4 סטים × 6–8 חזרות</span>
+                                    <p class="text-slate-400 mt-1">בניית חזה וכתפיים קדמיות לדחיפה ולעוצמה.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d1e2" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d1e2" data-ex-id="d1e2" data-day="d1" onchange="toggleExercise('d1e2','d1')" class="mt-1 w-4 h-4 accent-sky-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Barbell / Dumbbell Rows</span>
+                                    <span class="text-sky-300 font-bold">4 סטים × 8–10 חזרות</span>
+                                    <p class="text-slate-400 mt-1">עיבוי הרחב-גבי והגב העליון — קריטי ליציבות הזריקה והבלימה.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d1e3" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d1e3" data-ex-id="d1e3" data-day="d1" onchange="toggleExercise('d1e3','d1')" class="mt-1 w-4 h-4 accent-sky-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Overhead Dumbbell Press</span>
+                                    <span class="text-sky-300 font-bold">3 סטים × 8–10 חזרות</span>
+                                    <p class="text-slate-400 mt-1">חיזוק כתפיים וייצוב המפרק במנח אנכי.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d1e4" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d1e4" data-ex-id="d1e4" data-day="d1" onchange="toggleExercise('d1e4','d1')" class="mt-1 w-4 h-4 accent-amber-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-amber-300 block mb-1">Superset זרועות (קדמית + אחורית)</span>
+                                    <span class="text-amber-400 font-bold">3 סטים × 10–12 חזרות</span>
+                                    <p class="text-slate-400 mt-1">Barbell Bicep Curls בשילוב Triceps Rope Pushdowns / Skullcrushers.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d1e5" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d1e5" data-ex-id="d1e5" data-day="d1" onchange="toggleExercise('d1e5','d1')" class="mt-1 w-4 h-4 accent-rose-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-rose-300 block mb-1">עבודת אמות: Wrist Curls</span>
+                                    <span class="text-rose-400 font-bold">3 סטים × 15 חזרות</span>
+                                    <p class="text-slate-400 mt-1">כפיפות מפרק כף יד עם מוט/משקולות לחיזוק הספירלה והאחיזה.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d1e6" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d1e6" data-ex-id="d1e6" data-day="d1" onchange="toggleExercise('d1e6','d1')" class="mt-1 w-4 h-4 accent-rose-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-rose-300 block mb-1">עבודת אמות: Farmer's Walk</span>
+                                    <span class="text-rose-400 font-bold">3 סטים של 45 שניות</span>
+                                    <p class="text-slate-400 mt-1">הליכה עם משקולות כבדות בידיים לחיזוק אחיזת ה-Grip והטרפזים.</p>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-2xl p-5 shadow-lg">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3 border-b border-slate-800 pb-2">
+                        <h3 class="font-bold text-lg text-emerald-400 flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 shrink-0">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="1.6"/><path d="M12 6v5l-3 3-2 6"/><path d="M12 11l3.5 2 1.5 5.5"/><path d="M9 11h5"/></svg>
+                            </span>
+                            יום 2: Lower Body & Core — כוח ופיצוץ (רגליים וליבה)
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span id="progress-d2" class="text-[11px] font-bold px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">0/5 הושלמו</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300">אימון פלג גוף תחתון א'</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                        <div id="card-d2e1" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d2e1" data-ex-id="d2e1" data-day="d2" onchange="toggleExercise('d2e1','d2')" class="mt-1 w-4 h-4 accent-emerald-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Barbell Squat / Trap Bar Deadlift</span>
+                                    <span class="text-emerald-300 font-bold">4 סטים × 6–8 חזרות</span>
+                                    <p class="text-slate-400 mt-1">בניית בסיס הכוח ברגליים ובאגן לייצור אנרגיה בשרשרת הקינטית.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d2e2" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d2e2" data-ex-id="d2e2" data-day="d2" onchange="toggleExercise('d2e2','d2')" class="mt-1 w-4 h-4 accent-emerald-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Romanian Deadlift (RDL)</span>
+                                    <span class="text-emerald-300 font-bold">3 סטים × 8–10 חזרות</span>
+                                    <p class="text-slate-400 mt-1">חיזוק המורכבים האחוריים (Hamstrings & Glutes) לנחיתה ויציבות.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d2e3" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d2e3" data-ex-id="d2e3" data-day="d2" onchange="toggleExercise('d2e3','d2')" class="mt-1 w-4 h-4 accent-emerald-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Walking Lunges (מכרעים)</span>
+                                    <span class="text-emerald-300 font-bold">3 סטים × 10 צעדים לכל רגל</span>
+                                    <p class="text-slate-400 mt-1">יציבות מפרק ירך, עבודת רגליים ואיזון חד-רגלי.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d2e4" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d2e4" data-ex-id="d2e4" data-day="d2" onchange="toggleExercise('d2e4','d2')" class="mt-1 w-4 h-4 accent-emerald-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Standing Calf Raises</span>
+                                    <span class="text-emerald-300 font-bold">3 סטים × 12–15 חזרות</span>
+                                    <p class="text-slate-400 mt-1">חיזוק התאומים והאכילס לדחיפה מהירה מהקרקע.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d2e5" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity col-span-1 md:col-span-2">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d2e5" data-ex-id="d2e5" data-day="d2" onchange="toggleExercise('d2e5','d2')" class="mt-1 w-4 h-4 accent-amber-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-amber-300 block mb-1">Rotational Core Work (Russian Twists / Cable Woodchops)</span>
+                                    <span class="text-amber-400 font-bold">3 סטים × 12 חזרות לכל צד</span>
+                                    <p class="text-slate-400 mt-1">חיזוק שרירי הבטן האלכסוניים (Obliques) לרוטציית טורסו עוצמתית בזריקה.</p>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-amber-500/40 rounded-2xl p-5 shadow-lg">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <h3 class="font-bold text-lg text-amber-400 flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/15 border border-amber-500/30 shrink-0">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="12" rx="9" ry="5"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="9" y1="10.5" x2="9" y2="13.5"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="15" y1="10.5" x2="15" y2="13.5"/></svg>
+                            </span>
+                            יום 3: מנוחה / אימון זריקות QB במגרש (Field Mechanics Session)
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span id="progress-d3" class="text-[11px] font-bold px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">0/4 הושלמו</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-amber-500/20 text-amber-300">עבודת שדה ודיוק</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div id="card-d3e1" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d3e1" data-ex-id="d3e1" data-day="d3" onchange="toggleExercise('d3e1','d3')" class="mt-1 w-4 h-4 accent-amber-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">חימום קצר (Warm-up / Stationary)</span>
+                                    <span class="text-amber-300 font-bold">30 זריקות</span>
+                                    <p class="text-slate-400 mt-1">זריקות קצרות מעמידה נייחת להפעלת שרשרת הזריקה בהדרגה.</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div id="card-d3e2" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d3e2" data-ex-id="d3e2" data-day="d3" onchange="toggleExercise('d3e2','d3')" class="mt-1 w-4 h-4 accent-amber-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Dropback של 3/5 צעדים</span>
+                                    <span class="text-amber-300 font-bold">30 זריקות</span>
+                                    <p class="text-slate-400 mt-1">תרגול תזמון ה-Drop מול עומק המסירה.</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div id="card-d3e3" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d3e3" data-ex-id="d3e3" data-day="d3" onchange="toggleExercise('d3e3','d3')" class="mt-1 w-4 h-4 accent-amber-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">זריקות בתנועה (Off-platform / Rollout)</span>
+                                    <span class="text-amber-300 font-bold">20 זריקות</span>
+                                    <p class="text-slate-400 mt-1">שמירת דיוק ומכניקה תוך תנועה מחוץ לכיס.</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div id="card-d3e4" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d3e4" data-ex-id="d3e4" data-day="d3" onchange="toggleExercise('d3e4','d3')" class="mt-1 w-4 h-4 accent-amber-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">מסירות עמוקות לעץ המסלולים (Out, Dig, Deep Post)</span>
+                                    <span class="text-amber-300 font-bold">20 זריקות</span>
+                                    <p class="text-slate-400 mt-1">עבודת עוצמה ודיוק על המסלולים העמוקים.</p>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-2xl p-5 shadow-lg">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3 border-b border-slate-800 pb-2">
+                        <h3 class="font-bold text-lg text-purple-400 flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-purple-500/15 border border-purple-500/30 shrink-0">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18c0-3 1-5 3-6-1-2 0-4 2-5 3-1 5 1 5 4 0 1-.5 2-1 2.5 2 .5 3 2 3 4v1"/><circle cx="7" cy="10" r="1.4"/></svg>
+                            </span>
+                            יום 4: Upper Body — היפרטרופיה ודגש זרועות/אמות
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span id="progress-d4" class="text-[11px] font-bold px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">0/6 הושלמו</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-purple-500/20 text-purple-300">אימון פלג גוף עליון ב'</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                        <div id="card-d4e1" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d4e1" data-ex-id="d4e1" data-day="d4" onchange="toggleExercise('d4e1','d4')" class="mt-1 w-4 h-4 accent-purple-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Incline Dumbbell Press</span>
+                                    <span class="text-purple-300 font-bold">3 סטים × 8–10 חזרות</span>
+                                    <p class="text-slate-400 mt-1">מיקוד בחזה עליון ובכתף קדמית.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d4e2" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d4e2" data-ex-id="d4e2" data-day="d4" onchange="toggleExercise('d4e2','d4')" class="mt-1 w-4 h-4 accent-purple-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Lat Pulldowns / Pull-ups</span>
+                                    <span class="text-purple-300 font-bold">4 סטים × 8–12 חזרות</span>
+                                    <p class="text-slate-400 mt-1">פולי עליון / מתח לאיזון החלק האחורי של הכתף.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d4e3" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d4e3" data-ex-id="d4e3" data-day="d4" onchange="toggleExercise('d4e3','d4')" class="mt-1 w-4 h-4 accent-purple-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Lateral Raises (הרחקת זרועות)</span>
+                                    <span class="text-purple-300 font-bold">4 סטים × 12–15 חזרות</span>
+                                    <p class="text-slate-400 mt-1">הרחקת זרועות לצדדים ליצירת המראה הרחב והחזק בכתפיים.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d4e4" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d4e4" data-ex-id="d4e4" data-day="d4" onchange="toggleExercise('d4e4','d4')" class="mt-1 w-4 h-4 accent-amber-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-amber-300 block mb-1">Hammer Curls (פטישים)</span>
+                                    <span class="text-amber-400 font-bold">3 סטים × 10–12 חזרות</span>
+                                    <p class="text-slate-400 mt-1">תרגיל אש לבניית הזרוע והאמה בו זמנית (Brachioradialis).</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d4e5" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d4e5" data-ex-id="d4e5" data-day="d4" onchange="toggleExercise('d4e5','d4')" class="mt-1 w-4 h-4 accent-amber-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-amber-300 block mb-1">Triceps Overhead Extension</span>
+                                    <span class="text-amber-400 font-bold">3 סטים × 10–12 חזרות</span>
+                                    <p class="text-slate-400 mt-1">פשיטת מרפקים מעל הראש להגדלת הראש הארוך של היד האחורית.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d4e6" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d4e6" data-ex-id="d4e6" data-day="d4" onchange="toggleExercise('d4e6','d4')" class="mt-1 w-4 h-4 accent-rose-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-rose-300 block mb-1">Plate Pinches / Reverse Wrist Curls</span>
+                                    <span class="text-rose-400 font-bold">3 סטים לכישלון</span>
+                                    <p class="text-slate-400 mt-1">תפיסת פלטות באצבעות וכפיפות אמה הפוכות לכישלון מוחלט לחיזוק האחיזה.</p>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-2xl p-5 shadow-lg">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3 border-b border-slate-800 pb-2">
+                        <h3 class="font-bold text-lg text-rose-400 flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-rose-500/15 border border-rose-500/30 shrink-0">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-rose-400" fill="currentColor"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>
+                            </span>
+                            יום 5: Lower Body — כוח מתפרץ וזריזות
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span id="progress-d5" class="text-[11px] font-bold px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">0/4 הושלמו</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-rose-500/20 text-rose-300">אימון פלג גוף תחתון ב'</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div id="card-d5e1" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d5e1" data-ex-id="d5e1" data-day="d5" onchange="toggleExercise('d5e1','d5')" class="mt-1 w-4 h-4 accent-rose-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Front Squat / Goblet Squat</span>
+                                    <span class="text-rose-300 font-bold">3 סטים × 8 חזרות</span>
+                                    <p class="text-slate-400 mt-1">סקוואט קדמי הדורש החזקת גו זקוף ומפעיל את הארבע-ראשי והליבה במקביל.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d5e2" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d5e2" data-ex-id="d5e2" data-day="d5" onchange="toggleExercise('d5e2','d5')" class="mt-1 w-4 h-4 accent-rose-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Single-Leg Romanian Deadlift</span>
+                                    <span class="text-rose-300 font-bold">3 סטים × 8 חזרות לכל רגל</span>
+                                    <p class="text-slate-400 mt-1">דדליפט רומני על רגל אחת לשיפור שיווי משקל, יציבות קרסול ומניעת פציעות.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d5e3" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d5e3" data-ex-id="d5e3" data-day="d5" onchange="toggleExercise('d5e3','d5')" class="mt-1 w-4 h-4 accent-amber-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-amber-300 block mb-1">Box Jumps / Plyometrics</span>
+                                    <span class="text-amber-400 font-bold">4 סטים × 5 קפיצות</span>
+                                    <p class="text-slate-400 mt-1">כוח מתפרץ (Explosive Power) ברגליים — מתורגם ישירות לעוצמת דחיפה מהקרקע בזריקה.</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="card-d5e4" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d5e4" data-ex-id="d5e4" data-day="d5" onchange="toggleExercise('d5e4','d5')" class="mt-1 w-4 h-4 accent-rose-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Plank Variations & Anti-Rotation (Pallof Press)</span>
+                                    <span class="text-rose-300 font-bold">3 סטים של דקה</span>
+                                    <p class="text-slate-400 mt-1">יציבות ליבה נגד רוטציה — שומרת על יישור האגן והכתפיים בזמן הזריקה.</p>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-teal-500/40 rounded-2xl p-5 shadow-lg">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <h3 class="font-bold text-lg text-teal-400 flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-teal-500/15 border border-teal-500/30 shrink-0">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+                            </span>
+                            יום 6: מנוחה פעילה / טיפוח זרוע ואימון זריקות קליל (Recovery & Arm Care)
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span id="progress-d6" class="text-[11px] font-bold px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700">0/4 הושלמו</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-teal-500/20 text-teal-300">התאוששות פעילה</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                        בניגוד ליום 3 (עומס זריקות גבוה), יום זה מוקדש להתאוששות הכתף/המרפק ולתחזוקת מכניקה בעצימות נמוכה — קריטי למניעת פציעות עומס-יתר (Overuse) לאורך עונה.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div id="card-d6e1" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d6e1" data-ex-id="d6e1" data-day="d6" onchange="toggleExercise('d6e1','d6')" class="mt-1 w-4 h-4 accent-teal-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Band Shoulder Care (Internal/External Rotation)</span>
+                                    <span class="text-teal-300 font-bold">3 סטים × 15 חזרות לכל כיוון</span>
+                                    <p class="text-slate-400 mt-1">חיזוק ה-Rotator Cuff למניעת פציעות זריקה כרוניות.</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div id="card-d6e2" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d6e2" data-ex-id="d6e2" data-day="d6" onchange="toggleExercise('d6e2','d6')" class="mt-1 w-4 h-4 accent-teal-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Foam Rolling & Mobility (גב עליון, לאט, ירכיים)</span>
+                                    <span class="text-teal-300 font-bold">10 דקות</span>
+                                    <p class="text-slate-400 mt-1">שחרור רקמות ושיפור טווחי תנועה לקראת שבוע האימונים הבא.</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div id="card-d6e3" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d6e3" data-ex-id="d6e3" data-day="d6" onchange="toggleExercise('d6e3','d6')" class="mt-1 w-4 h-4 accent-teal-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">Light Throwing Tune-Up (עצימות נמוכה)</span>
+                                    <span class="text-teal-300 font-bold">40 זריקות קלות</span>
+                                    <p class="text-slate-400 mt-1">דגש על מכניקת רגליים ותזמון בלבד — ללא מאמץ מקסימלי על הזרוע.</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div id="card-d6e4" class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 transition-opacity">
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" id="chk-d6e4" data-ex-id="d6e4" data-day="d6" onchange="toggleExercise('d6e4','d6')" class="mt-1 w-4 h-4 accent-teal-400 shrink-0">
+                                <span class="flex-1">
+                                    <span class="font-bold text-white block mb-1">מתיחות סטטיות + נשימה להתאוששות</span>
+                                    <span class="text-teal-300 font-bold">10 דקות</span>
+                                    <p class="text-slate-400 mt-1">הורדת דופק והפעלת מערכת העצבים הפאראסימפתטית לקראת המנוחה.</p>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 border-t border-slate-800 pt-6">
+        <p>QB Master Class 2.0 • מערכת ניתוח טקטי, מכניקה ותוכנית אימונים לקוורטרבקים</p>
+    </footer>
+
+    <script>
+        // ---- Workout checklist tracking (persists in the browser via localStorage) ----
+        function updateDayProgress(day) {
+            const boxes = document.querySelectorAll('input[data-day="' + day + '"]');
+            const total = boxes.length;
+            let done = 0;
+            boxes.forEach(b => { if (b.checked) done++; });
+            const badge = document.getElementById('progress-' + day);
+            if (badge) badge.innerText = done + '/' + total + ' הושלמו';
+        }
+
+        function toggleExercise(id, day) {
+            const checkbox = document.getElementById('chk-' + id);
+            const card = document.getElementById('card-' + id);
+            const checked = checkbox.checked;
+            try { localStorage.setItem('qbmc_ex_' + id, checked ? '1' : '0'); } catch (e) {}
+            if (card) {
+                card.classList.toggle('opacity-50', checked);
+                card.classList.toggle('line-through', checked);
+            }
+            updateDayProgress(day);
+        }
+
+        // ---- QB Drills library ----
+        const DRILL_CATEGORY_META = {
+            footwork: { label: 'עבודת רגליים ו-Drops', icon: '👟', color: '#38bdf8' },
+            accuracy: { label: 'דיוק ומיקום כדור', icon: '🎯', color: '#f59e0b' },
+            mechanics: { label: 'מכניקה וטיפוח זרוע', icon: '⚙️', color: '#a855f7' },
+            reads: { label: 'קריאות וקבלת החלטות', icon: '🧠', color: '#10b981' },
+            pocket: { label: 'תנועה בכיס ומילוט', icon: '🏃', color: '#ef4444' }
+        };
+
+        const DRILLS_DATABASE = [
+            { name: '3-Step Drop Rhythm', category: 'footwork', duration: '10 חזרות', equipment: 'ללא ציוד', desc: 'נסיגה מהירה בת 3 צעדים מתוך Center/Gun, עם שחרור בצעד האחרון — מתאמן טיימינג ל-Quick Game.', cue: 'הרגל האחורית פוגשת קרקע בדיוק כשהכדור משתחרר.' },
+            { name: '5-Step Drop Rhythm', category: 'footwork', duration: '10 חזרות', equipment: 'ללא ציוד', desc: 'נסיגה סטנדרטית בת 5 צעדים לתרגילי דרופבק בעומק בינוני.', cue: 'קצב אחיד — לא להאיץ בסוף הנסיגה.' },
+            { name: '7-Step Drop & Climb', category: 'footwork', duration: '8 חזרות', equipment: 'ללא ציוד', desc: 'נסיגה עמוקה ל-7 צעדים עבור מסלולים עמוקים, כולל "טיפוס" קדימה בכיס לפני השחרור.', cue: 'הצעד האחרון קצר ומבוקר — לא קפיצה.' },
+            { name: 'Gun Quick-Game Footwork (1-Step)', category: 'footwork', duration: '12 חזרות', equipment: 'ללא ציוד', desc: 'משחרור מיידי מ-Shotgun — צעד אחד בלבד לפני המסירה, לתרגילי Slant/Flat/Screen.', cue: 'הכתפיים כבר פתוחות לפני קבלת הכדור.' },
+            { name: 'Bucket Step / Play-Action Footwork', category: 'footwork', duration: '10 חזרות', equipment: 'כדור בלבד', desc: 'תרגול צעד "הדלי" האחורי בהטעיית ריצה, ואז מעבר חלק לעמדת זריקה.', cue: 'עיניים על ה-Safety לאורך כל ההטעיה, לא על הרצפה.' },
+            { name: 'Bag/Cone Target Throws', category: 'accuracy', duration: '20 זריקות', equipment: '4-6 קונוסים/שקיות', desc: 'זריקה למטרות סטטיות במרחקים שונים (Flat, Curl, Out, Deep) — בונה דיוק בסיסי לכל עומק.', cue: 'כל זריקה — קודם רגליים למטרה, אחר כך הכדור.' },
+            { name: 'Moving Target Ladder Throws', category: 'accuracy', duration: '15 זריקות', equipment: 'שותף רץ', desc: 'זריקה לרסיבר שרץ מסלול אמיתי במהירות הולכת וגוברת — מתרגל תזמון והובלת המטרה.', cue: 'הובל את הרסיבר — זרוק לאן שהוא יגיע, לא לאן שהוא נמצא.' },
+            { name: 'Back-Shoulder Placement Drill', category: 'accuracy', duration: '10 זריקות', equipment: 'שותף רץ', desc: 'זריקה מכוונת לכתף האחורית של הרסיבר כשה-CB רץ איתו צמוד — טכניקת מיסמאץ׳ קלאסית.', cue: 'הכדור נמוך וצמוד לגוף, לא גבוה מדי.' },
+            { name: 'Red Zone Window Throws', category: 'accuracy', duration: '12 זריקות', equipment: '4 קונוסים (סימון 20 יארד)', desc: 'זריקות דיוק בשטח מצומצם (בתוך קו ה-20), בדגש על חלונות צרים ותזמון מהיר.', cue: 'אין זמן להיסוס — או שהחלון פתוח או שעוברים ליעד הבא.' },
+            { name: 'Wrist Snap / Spiral Drill', category: 'mechanics', duration: '15 זריקות', equipment: 'ללא ציוד (טווח קצר)', desc: 'זריקות קצרות מטווח 5-7 יארד, בדגש מוחלט על סנאפ מפרק כף היד ליצירת ספירלה נקייה.', cue: 'האצבע המורה היא האחרונה שנוגעת בכדור.' },
+            { name: 'Warm-Up Progression Throws', category: 'mechanics', duration: '5-7 דקות', equipment: 'ללא ציוד', desc: 'רצף חימום מובנה: זריקות קצרות ← בינוניות ← עמוקות, בעלייה הדרגתית בעצימות.', cue: 'לעולם לא לזרוק עמוק "קר" — זה המתכון לפציעת כתף.' },
+            { name: 'One-Knee Throwing Drill', category: 'mechanics', duration: '10 זריקות', equipment: 'ללא ציוד', desc: 'זריקה מיציבה על ברך אחת — מבודדת את מכניקת פלג הגוף העליון בלי מעורבות רגליים.', cue: 'הכל קורה מהאגן והחזה, לא רק מהיד.' },
+            { name: 'Follow-Through Freeze Drill', category: 'mechanics', duration: '10 זריקות', equipment: 'ללא ציוד', desc: 'אחרי כל זריקה — הקפאה של 2 שניות בעמדת הסיום, לחיזוק ההרגל המוטורי.', cue: 'היד הזורקת מסיימת ליד המותן הנגדית.' },
+            { name: 'Progression Read Drill', category: 'reads', duration: '10 חזרות', equipment: 'שותף/מאמן מאותת', desc: 'שותף מאותת (בכרטיס/יד) איזה רסיבר "פתוח" תוך כדי ה-Drop — ה-QB חייב לעבור בסדר הקריאה הנכון.', cue: 'עיניים על ההגנה, לא על הרסיבר שאתה מתכנן לזרוק אליו.' },
+            { name: 'Hot Read Recognition Drill', category: 'reads', duration: '10 חזרות', equipment: 'שותף מדמה בליץ', desc: 'שותף פורץ אקראית מכיוון לא ידוע — ה-QB חייב לזהות ולשחרר Hot Read תוך פחות משנייה וחצי.', cue: 'זהה את הרודף, לא את הרסיבר — הרודף מכתיב לאן זורקים.' },
+            { name: 'Pre-Snap ID Drill', category: 'reads', duration: '15 תמונות/סבבים', equipment: 'תמונות/וידאו הגנות', desc: 'זיהוי מהיר (2-3 שניות) של מספר Safeties עמוקים וסוג הכיסוי הסביר, מתוך תמונת מגרש.', cue: 'קודם ספור Safeties, אחר כך תחליט הכל.' },
+            { name: 'Two-Minute Drill Simulation', category: 'reads', duration: 'סבב אחד (2 דק׳)', equipment: 'שעון עצר', desc: 'סימולציית ניהול זמן וקריאות מהירות תחת לחץ שעון, כולל בחירה בין קליק אאוט ל-Spike.', cue: 'לדעת בכל רגע כמה זמן ובאיזה דאון-דיסטנס אתה נמצא.' },
+            { name: 'Climb the Pocket Drill', category: 'pocket', duration: '8 חזרות', equipment: 'שני קונוסים (מדמים Rush)', desc: 'תרגול "טיפוס" קדימה בכיס כתגובה ללחץ מהצדדים, בלי לאבד עמדת זריקה.', cue: 'קדימה, לא אחורה — אחורה זה איפה שה-Sack קורה.' },
+            { name: 'Contain/Escape Drill', category: 'pocket', duration: '8 חזרות', equipment: 'שותף מדמה Edge Rusher', desc: 'בריחה מבוקרת מהכיס כשהלחץ מגיע מהצד, עם איפוס רגליים לפני זריקה מחוץ לכיס.', cue: 'עצור, אפס רגליים, ואז זרוק — לא לזרוק תוך כדי ריצה אם לא חייבים.' },
+            { name: 'Under Pressure Quick-Release Drill', category: 'pocket', duration: '10 חזרות', equipment: 'שותף מדמה לחץ מיידי', desc: 'שחרור כדור תוך פחות משנייה מרגע קבלת הלחץ הישיר — מתרגל קבלת החלטה תחת עומס.', cue: 'לפעמים הזריקה הכי טובה היא הכי מהירה, לא הכי "יפה".' }
+        ];
+
+        function renderDrillCategoryTabs() {
+            const container = document.getElementById('drillCategoryTabs');
+            let html = `<button onclick="filterDrills('all')" id="drillcat-all" class="drillcat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-600 bg-slate-700 text-white transition">הכל (${DRILLS_DATABASE.length})</button>`;
+            Object.keys(DRILL_CATEGORY_META).forEach(c => {
+                const m = DRILL_CATEGORY_META[c];
+                const count = DRILLS_DATABASE.filter(d => d.category === c).length;
+                html += `<button onclick="filterDrills('${c}')" id="drillcat-${c}" class="drillcat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition">${m.icon} ${m.label} (${count})</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        let currentDrillFilter = 'all';
+
+        function filterDrills(cat) {
+            currentDrillFilter = cat;
+            document.querySelectorAll('.drillcat-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-700', 'bg-orange-600', 'text-white', 'border-slate-600', 'border-orange-400');
+                btn.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            });
+            const btn = document.getElementById('drillcat-' + cat);
+            if (btn) {
+                btn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                btn.classList.add('bg-orange-600', 'text-white', 'border-orange-400');
+            }
+            renderDrillsGrid();
+        }
+
+        function renderDrillsGrid() {
+            const filtered = DRILLS_DATABASE.filter(d => currentDrillFilter === 'all' || d.category === currentDrillFilter);
+            const container = document.getElementById('drillsGrid');
+            container.innerHTML = filtered.map(d => {
+                const meta = DRILL_CATEGORY_META[d.category];
+                return `
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 hover:border-orange-400/50 transition">
+                    <div class="flex justify-between items-start gap-2 mb-2">
+                        <h4 class="font-bold text-white text-sm">${d.name}</h4>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style="color:${meta.color}; background:${meta.color}20; border:1px solid ${meta.color}50;">${meta.icon}</span>
+                    </div>
+                    <div class="flex gap-2 text-[10px] text-slate-400 mb-2">
+                        <span class="bg-slate-800 px-2 py-0.5 rounded">⏱️ ${d.duration}</span>
+                        <span class="bg-slate-800 px-2 py-0.5 rounded">🛠️ ${d.equipment}</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed mb-2">${d.desc}</p>
+                    <p class="text-[11px] text-amber-300 border-t border-slate-800 pt-2">💡 ${d.cue}</p>
+                </div>`;
+            }).join('');
+        }
+
+        function exportWorkoutData() {
+            const backup = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('qbmc_ex_')) backup[key] = localStorage.getItem(key);
+            }
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qb_master_class_workouts_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importWorkoutData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    Object.entries(backup).forEach(([key, value]) => {
+                        if (key.startsWith('qbmc_ex_')) localStorage.setItem(key, value);
+                    });
+                    initExerciseTracking();
+                    alert('השחזור הושלם בהצלחה!');
+                } catch (err) {
+                    alert('קובץ לא תקין. ודא שזה קובץ גיבוי שיוצא מהמערכת.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function initExerciseTracking() {
+            document.querySelectorAll('input[type="checkbox"][data-ex-id]').forEach(chk => {
+                const id = chk.getAttribute('data-ex-id');
+                let saved = '0';
+                try { saved = localStorage.getItem('qbmc_ex_' + id) || '0'; } catch (e) {}
+                if (saved === '1') {
+                    chk.checked = true;
+                    const card = document.getElementById('card-' + id);
+                    if (card) { card.classList.add('opacity-50', 'line-through'); }
+                }
+            });
+            ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].forEach(updateDayProgress);
+        }
+
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderDrillCategoryTabs();
+            renderDrillsGrid();
+            initExerciseTracking();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לימוד: מכניקה, שרשרת קינטית ו-Pre-Snap - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        @media print {
+            nav, .no-print, button, select, input[type=range] {
+                display: none !important;
+            }
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            .bg-slate-900, .bg-slate-800, .bg-slate-800\/50, .bg-slate-900\/90, .bg-slate-900\/80 {
+                background-color: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+            }
+            .text-white, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400 {
+                color: #0f172a !important;
+            }
+            .text-sky-400, .text-amber-400, .text-emerald-400, .text-rose-400, .text-purple-400 {
+                color: #0284c7 !important;
+                font-weight: bold;
+            }
+            canvas {
+                max-width: 100% !important;
+            }
+            .print-only-target {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <script src="nav.js"></script>
+
+    <header class="max-w-7xl mx-auto px-4 pt-8 pb-6 text-center">
+        <div class="inline-block px-4 py-1.5 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-400 text-sm font-semibold mb-3">
+            QB MASTER CLASS • לימוד
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-3">
+            לימוד: מכניקה, שרשרת קינטית ו-Pre-Snap
+        </h1>
+        <p class="text-slate-300 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
+            הזרוע היא רק המצליף – הרגליים, הליבה והמוח הם המנוע. כאן לומדים את הבסיס: מכניקת הזריקה, שרשרת התנועה, פרוטוקול לפני ה-Snap ומילון המונחים.
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 space-y-12">
+
+        <section id="mechanics" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-sky-400 flex items-center gap-2">
+                    <span>⚙️</span> חלק 1: זוויות זריקה (Arm Slots) ודמות הקוורטרבק
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-2">
+                    הדמיה ויזואלית של מנח הגוף, זווית הזרוע וגובה השחרור (Release Point) של הקוורטרבק.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-700 rounded-2xl p-5 text-center shadow-xl">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">סימולטור אנטומי</span>
+                        <span id="armSlotBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">Three-Quarter (2:00)</span>
+                    </div>
+
+                    <div class="relative w-full flex justify-center bg-slate-950/80 rounded-xl border border-slate-800 p-3">
+                        <canvas id="qbAvatarCanvas" width="340" height="360" class="max-w-full rounded-lg"></canvas>
+                    </div>
+
+                    <div class="flex justify-center gap-2 mt-4">
+                        <button onclick="setArmSlot('overTheTop')" id="btnSlotOver" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-sky-600 transition border border-slate-700">Over-the-Top (12:00)</button>
+                        <button onclick="setArmSlot('threeQuarter')" id="btnSlotThree" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white transition border border-sky-400">3/4 Slot (2:00)</button>
+                        <button onclick="setArmSlot('sidearm')" id="btnSlotSide" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-sky-600 transition border border-slate-700">Sidearm (3:00)</button>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 space-y-4">
+                    <div id="armSlotDescBox" class="bg-slate-900/90 border border-sky-500/40 p-5 rounded-2xl shadow-lg">
+                        <h3 id="armSlotTitle" class="text-xl font-bold text-sky-400 mb-2">Three-Quarter Slot (שעה 2:00 - ברירת המחדל)</h3>
+                        <p id="armSlotDetail" class="text-xs md:text-sm text-slate-300 leading-relaxed mb-3">
+                            זווית הזריקה הקלאסית והיעילה ביותר בפוטבול. מאפשרת רוטציית כתפיים טבעית, שחרור מהיר, ועוצמה מרבית שנוצרת מחיבור האגן והטורסו.
+                        </p>
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
+                                <span class="text-sky-300 font-bold block">שימושיות עיקרית:</span>
+                                <span id="armSlotUse" class="text-slate-300">מסירות בינוניות, Slants, Outs, Curls.</span>
+                            </div>
+                            <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
+                                <span class="text-amber-300 font-bold block">מאפיין מכני:</span>
+                                <span id="armSlotMech" class="text-slate-300">איזון אופטימלי בין שחרור מהיר לדיוק.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-700">
+                        <h3 class="text-center font-bold text-slate-200 text-sm md:text-base mb-1">השוואת ביצועים לפי זווית הזרוע</h3>
+                        <div class="chart-container">
+                            <canvas id="armSlotsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="throwing-sequence" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6">
+                <span class="px-3 py-1 bg-sky-500/20 text-sky-300 font-bold text-xs rounded-full border border-sky-500/30">ביומכניקה ושרשרת קינטית (Kinetic Chain)</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mt-2 flex items-center gap-2">
+                    <span>🎯</span> חלק 2: תהליך הזריקה המלא - 6 השלבים המדויקים
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-1">
+                    זריקת פוטבול מקצועית היא תהליך שרשרתי. אנרגיה מופקת מגע במגרש, עוברת דרך הרגליים והאגן, ומואצת דרך הכתף והאצבעות.
+                </p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-4 mb-6 shadow-xl">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">הדמיית שרשרת קינטית ו-Hip-Shoulder Separation</span>
+                </div>
+                <div class="relative w-full overflow-x-auto flex justify-center bg-slate-950/80 rounded-xl border border-slate-800 p-2">
+                    <canvas id="kineticChainCanvas" width="680" height="205" class="max-w-full rounded-lg"></canvas>
+                </div>
+                <div class="flex items-center justify-center gap-5 text-[11px] text-slate-400 mt-2">
+                    <span class="flex items-center gap-1"><span class="w-3 h-1 bg-emerald-400 inline-block rounded"></span> ציר האגן (Hips)</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-1 bg-sky-400 inline-block rounded"></span> ציר הכתפיים (Shoulders)</span>
+                    <span class="text-slate-500">הפער בין שני הצירים בשלבים 3-4 הוא ה-"Separation" שיוצר את כוח השוט של הזריקה.</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-5 relative overflow-hidden flex flex-col justify-between hover:border-sky-400 transition shadow-lg">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="w-8 h-8 rounded-full bg-sky-500 text-slate-950 font-black flex items-center justify-center text-sm">1</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-sky-300">Base & Carriage</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">1. עמידת מוצא ואיסוף (Carriage & Dropback)</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            הכדור מוחזק במרכז החזה בגובה הכתפיים. רגליים ברוחב הכתפיים, ברכיים כפופות קלות (Athletic Stance). 60% מהמשקל יושב על הרגל האחורית מוכן לדחיפה.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-sky-400 font-medium">
+                        ✓ דגש: שמירה על כדור שקט ללא ניעור.
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-5 relative overflow-hidden flex flex-col justify-between hover:border-amber-400 transition shadow-lg">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="w-8 h-8 rounded-full bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm">2</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-amber-300">Energy Loading</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">2. טעינת אנרגיה וזרוע אחורית (Load Phase)</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            ה-QB מתחיל את הצעד קדימה. הכתף הנגדית לפנים, הכתף הזורקת נפתחת אחורה בצורה מעגלית קומפקטית. הברך האחורית נטענת באנרגיה אל הקרקע.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-amber-400 font-medium">
+                        ✓ דגש: הימנעות מהורדת הכדור למותן (No Dip).
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-5 relative overflow-hidden flex flex-col justify-between hover:border-emerald-400 transition shadow-lg">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-sm">3</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-emerald-300">Foot Plant & Hips</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">3. נעיצת רגל קדמית וסיבוב אגן (Lead Foot Plant)</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            הרגל הקדמית פוגשת את הקרקע בצעד קצר (6 אינץ') כשהבוהן פונה בדיוק אל המטרה. נעיצת הרגל בולמת את התנועה הקדימה ומפעילה סיבוב אגן עוצמתי — האגן "פותח" לפני הכתפיים.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-emerald-400 font-medium">
+                        ✓ דגש: הרגל פונה למטרה – מנוע השרשרת הקינטית!
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-5 relative overflow-hidden flex flex-col justify-between hover:border-rose-400 transition shadow-lg">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="w-8 h-8 rounded-full bg-rose-500 text-slate-950 font-black flex items-center justify-center text-sm">4</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-rose-300">Elbow Lead & Whip</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">4. מרפק מוביל והאצת כתף (Elbow Lead)</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            האגן מסתובב ראשון, אחריו החזה, והמרפק הזורק מובל קדימה כשהוא בגובה הכתף. הפער בין סיבוב האגן לסיבוב הכתפיים (Separation) יוצר את האפקט האלסטי ("שוט") המאיץ את הכדור.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-rose-400 font-medium">
+                        ✓ דגש: מרפק מוביל בגובה הכתף, לא צנוח.
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-5 relative overflow-hidden flex flex-col justify-between hover:border-purple-400 transition shadow-lg">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="w-8 h-8 rounded-full bg-purple-500 text-slate-950 font-black flex items-center justify-center text-sm">5</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-purple-300">Release & Wrist Snap</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">5. נקודת שחרור וסנאפ מפרק כף היד (Release Point)</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            הכדור משתחרר בנקודה הגבוהה ביותר של הזרוע. מפרק כף היד מבצע Snap כלפי מטה והחוצה (Pronation), והאצבע המורה היא האחרונה שנוגעת בכדור ליצירת Spiral מושלם.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-purple-400 font-medium">
+                        ✓ דגש: אצבע מורה מכוונת את הספירלה והדיוק.
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-5 relative overflow-hidden flex flex-col justify-between hover:border-indigo-400 transition shadow-lg">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-500 text-slate-950 font-black flex items-center justify-center text-sm">6</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-indigo-300">Follow-Through</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">6. סיום תנועה ומעבר משקל מלא (Follow-Through)</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            הזרוע הזורקת ממשיכה באלכסון אל המותן הנגדית. הרגל האחורית נגררת קדימה בטבעיות, ומשקל הגוף עובר ב-80% לרגל הקדמית. הגוף מסיים בעמדה מוגנת מוכנה לספגת היתקלות.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-indigo-400 font-medium">
+                        ✓ דגש: סיום מלא מונע פציעות מרפק וכתף.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="presnap" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-amber-400 flex items-center gap-2">
+                    <span>🔍</span> חלק 3: פרוטוקול קריאת הגנה לפני הסנאפ (Pre-Snap Protocol)
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-2">
+                    לפני כניסה לרגליים ולסנאפ, ה-QB חייב לעבד 3 שאלות קריטיות כדי להעריך את הכיסוי ואת איום ה-Blitz.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-5 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-amber-500 text-slate-950 font-black px-3 py-1 rounded-bl-lg text-xs">שאלה 1</div>
+                    <h3 class="font-bold text-lg text-white mt-3 mb-2">כמה Safeties עמוקים?</h3>
+                    <ul class="text-xs text-slate-300 space-y-2">
+                        <li class="bg-slate-800/60 p-2 rounded"><strong class="text-amber-400">1 Safety (Single High):</strong> Cover 1 (Man) או Cover 3 (Zone).</li>
+                        <li class="bg-slate-800/60 p-2 rounded"><strong class="text-sky-400">2 Safeties (Two High):</strong> Cover 2, Tampa 2, Cover 4, או Cover 6.</li>
+                        <li class="bg-slate-800/60 p-2 rounded"><strong class="text-rose-400">0 Safeties (Zero Look):</strong> Cover 0 Blitz אגרסיבי!</li>
+                    </ul>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-5 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-sky-500 text-slate-950 font-black px-3 py-1 rounded-bl-lg text-xs">שאלה 2</div>
+                    <h3 class="font-bold text-lg text-white mt-3 mb-2">מה ה-Leverage של ה-CBs?</h3>
+                    <ul class="text-xs text-slate-300 space-y-2">
+                        <li class="bg-slate-800/60 p-2 rounded"><strong class="text-white">Inside Leverage:</strong> סוגר Slants ו-In routes.</li>
+                        <li class="bg-slate-800/60 p-2 rounded"><strong class="text-white">Outside Leverage:</strong> סוגר Out routes ו-Fades.</li>
+                        <li class="bg-slate-800/60 p-2 rounded"><strong class="text-white">Off Coverage (5-8yd):</strong> נותן רווח ל-Curls, Hitch, Quick Out.</li>
+                        <li class="bg-slate-800/60 p-2 rounded"><strong class="text-white">Press / Jam:</strong> מנסה לשבש תזמון על הקו.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-5 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-black px-3 py-1 rounded-bl-lg text-xs">שאלה 3</div>
+                    <h3 class="font-bold text-lg text-white mt-3 mb-2">מאיפה מגיע ה-Blitz?</h3>
+                    <div class="bg-slate-800/60 p-3 rounded text-xs text-slate-300 space-y-2">
+                        <p><strong class="text-emerald-400">Count the Box:</strong> ספור כמה מגינים נמצאים ב-Box (בין ה-Tackles עד 5 יארד עומק).</p>
+                        <p class="text-rose-300">7-8 מגינים ב-Box = צפה ל-Blitz ישיר ולשחרור Hot Read מהיר!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-700">
+                <h3 class="text-center font-bold text-slate-200 text-base mb-1">הסתברות כיסוי הגנתי לפי מספר ה-Safeties עמוק</h3>
+                <div class="chart-container">
+                    <canvas id="safetyCoverageChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="glossary" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6 text-center">
+                <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 font-bold text-xs rounded-full border border-indigo-500/30">מילון מונחים</span>
+                <h2 class="text-2xl md:text-4xl font-black text-indigo-400 mt-2">
+                    📚 מילון מונחי הפוטבול של ה-QB
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-2 max-w-2xl mx-auto">
+                    כל המונחים שמופיעים במדריך במקום אחד — חפש לפי מילה או סנן לפי קטגוריה.
+                </p>
+            </div>
+
+            <div class="max-w-2xl mx-auto mb-5">
+                <input type="text" id="glossarySearch" oninput="renderGlossary()" placeholder="🔍 חפש מונח... (למשל: Blitz, Leverage, Slant)" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-400 placeholder:text-slate-500">
+            </div>
+
+            <div class="flex flex-wrap gap-2 justify-center mb-6" id="glossaryCategoryTabs"></div>
+
+            <div id="glossaryResults" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            <p id="glossaryEmptyState" class="text-center text-slate-500 text-sm mt-6 hidden">לא נמצאו מונחים תואמים.</p>
+        </section>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 border-t border-slate-800 pt-6">
+        <p>QB Master Class 2.0 • מערכת ניתוח טקטי, מכניקה ותוכנית אימונים לקוורטרבקים</p>
+    </footer>
+
+    <script>
+        function setArmSlot(type) {
+            const badge = document.getElementById('armSlotBadge');
+            const title = document.getElementById('armSlotTitle');
+            const detail = document.getElementById('armSlotDetail');
+            const use = document.getElementById('armSlotUse');
+            const mech = document.getElementById('armSlotMech');
+
+            document.getElementById('btnSlotOver').className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-sky-600 transition border border-slate-700';
+            document.getElementById('btnSlotThree').className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-sky-600 transition border border-slate-700';
+            document.getElementById('btnSlotSide').className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-sky-600 transition border border-slate-700';
+
+            if (type === 'overTheTop') {
+                document.getElementById('btnSlotOver').className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white transition border border-sky-400';
+                badge.innerText = 'Over-the-Top (12:00)';
+                title.innerText = 'Over-the-Top (שעה 12:00 - 1:00)';
+                detail.innerText = 'זווית זריקה אנכית גבוהה. מעניקה קשת נהדרת מעל קו ההגנה ומונעת לחלוטין את הטיית הכדור (Batted Balls) על ידי ה-Linemen.';
+                use.innerText = 'מסירות עמוקות (Deep Bombs), Hail Mary, מסירות מעל LB.';
+                mech.innerText = 'זמן שחרור ארוך במעט; דורשת גמישות כתף אנכית.';
+                drawQbAvatar(12);
+            } else if (type === 'sidearm') {
+                document.getElementById('btnSlotSide').className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white transition border border-sky-400';
+                badge.innerText = 'Sidearm (3:00)';
+                title.innerText = 'Sidearm / Off-Platform (שעה 3:00 ומטה)';
+                detail.innerText = 'זריקה אופקית נמוכה המיועדת למצבי חירום ומילוט מלחץ. מאפשרת לעקוף ידיים מורמות של Pass Rusher העומד ישירות מול ה-QB.';
+                use.innerText = 'בריחה מלחץ, Off-platform throw, עקיפת DL, RPO מהיר.';
+                mech.innerText = 'סיכון לחוסר יציבות במסלול הכדור; לא ברירת מחדל!';
+                drawQbAvatar(3);
+            } else {
+                document.getElementById('btnSlotThree').className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white transition border border-sky-400';
+                badge.innerText = 'Three-Quarter (2:00)';
+                title.innerText = 'Three-Quarter Slot (שעה 2:00 - ברירת המחדל)';
+                detail.innerText = 'זווית הזריקה הקלאסית והיעילה ביותר בפוטבול. מאפשרת רוטציית כתפיים טבעית, שחרור מהיר, ועוצמה מרבית שנוצרת מחיבור האגן והטורסו.';
+                use.innerText = 'מסירות בינוניות, Slants, Outs, Curls.';
+                mech.innerText = 'איזון אופטימלי בין שחרור מהיר לדיוק.';
+                drawQbAvatar(2);
+            }
+        }
+
+        // ---- Human QB avatar renderer (tapered-limb "capsule" figure) ----
+        function drawCapsule(ctx, x1, y1, r1, x2, y2, r2, color) {
+            const dx = x2 - x1, dy = y2 - y1;
+            const dist = Math.hypot(dx, dy) || 0.001;
+            const nx = -dy / dist, ny = dx / dist;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x1 + nx * r1, y1 + ny * r1);
+            ctx.lineTo(x2 + nx * r2, y2 + ny * r2);
+            ctx.lineTo(x2 - nx * r2, y2 - ny * r2);
+            ctx.lineTo(x1 - nx * r1, y1 - ny * r1);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath(); ctx.arc(x1, y1, r1, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x2, y2, r2, 0, Math.PI * 2); ctx.fill();
+        }
+
+        function drawCleat(ctx, x, y, angleDeg, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angleDeg * Math.PI / 180);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 15, 6.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Pose rigs for each arm-slot (all coordinates tuned for a 340x360 canvas)
+        const QB_POSES = {
+            12: { // Over-the-Top
+                head: { x: 172, y: 86, r: 21 },
+                neck: { x: 172, y: 110 },
+                shL: { x: 147, y: 126 }, shR: { x: 197, y: 124 },
+                hip: { x: 170, y: 202 }, hipL: { x: 153, y: 202 }, hipR: { x: 187, y: 202 },
+                frontKnee: { x: 138, y: 254 }, frontFoot: { x: 118, y: 316 }, frontFootAngle: -8,
+                backKnee: { x: 198, y: 258 }, backFoot: { x: 220, y: 322 }, backFootAngle: 14,
+                leadElbow: { x: 126, y: 166 }, leadHand: { x: 152, y: 184 },
+                throwElbow: { x: 203, y: 78 }, throwHand: { x: 212, y: 36 },
+                ballAngle: -55, torsoLean: -3
+            },
+            2: { // Three-Quarter (default)
+                head: { x: 172, y: 94, r: 22 },
+                neck: { x: 172, y: 118 },
+                shL: { x: 144, y: 132 }, shR: { x: 202, y: 130 },
+                hip: { x: 168, y: 210 }, hipL: { x: 150, y: 210 }, hipR: { x: 186, y: 210 },
+                frontKnee: { x: 130, y: 262 }, frontFoot: { x: 110, y: 322 }, frontFootAngle: -8,
+                backKnee: { x: 198, y: 266 }, backFoot: { x: 222, y: 326 }, backFootAngle: 16,
+                leadElbow: { x: 122, y: 174 }, leadHand: { x: 150, y: 192 },
+                throwElbow: { x: 227, y: 116 }, throwHand: { x: 253, y: 86 },
+                ballAngle: -28, torsoLean: 2
+            },
+            3: { // Sidearm
+                head: { x: 178, y: 106, r: 22 },
+                neck: { x: 177, y: 130 },
+                shL: { x: 148, y: 146 }, shR: { x: 207, y: 152 },
+                hip: { x: 173, y: 224 }, hipL: { x: 154, y: 224 }, hipR: { x: 192, y: 224 },
+                frontKnee: { x: 134, y: 272 }, frontFoot: { x: 112, y: 328 }, frontFootAngle: -6,
+                backKnee: { x: 206, y: 278 }, backFoot: { x: 232, y: 332 }, backFootAngle: 20,
+                leadElbow: { x: 128, y: 190 }, leadHand: { x: 154, y: 204 },
+                throwElbow: { x: 236, y: 174 }, throwHand: { x: 276, y: 162 },
+                ballAngle: 6, torsoLean: 10
+            }
+        };
+
+        // ---- Kinetic Chain sequence: 6 mini human figures + hip/shoulder separation dial ----
+        const KINETIC_FRAME_POSES = [
+            { head:[0,-95], hip:[0,-45], shL:[-14,-70], shR:[14,-70], frontFoot:[-14,0], backFoot:[14,0], frontKnee:[-14,-22], backKnee:[14,-22], handThrow:[20,-80], elbowThrow:[18,-65], handLead:[-16,-78] },
+            { head:[2,-95], hip:[2,-45], shL:[-10,-72], shR:[20,-68], frontFoot:[-20,2], backFoot:[18,0], frontKnee:[-16,-24], backKnee:[16,-22], handThrow:[34,-95], elbowThrow:[26,-72], handLead:[-14,-80] },
+            { head:[0,-96], hip:[-4,-46], shL:[-16,-70], shR:[18,-68], frontFoot:[-30,3], backFoot:[16,1], frontKnee:[-24,-24], backKnee:[14,-22], handThrow:[32,-92], elbowThrow:[26,-70], handLead:[-18,-78] },
+            { head:[0,-97], hip:[-2,-46], shL:[-18,-72], shR:[22,-72], frontFoot:[-28,3], backFoot:[18,2], frontKnee:[-22,-25], backKnee:[16,-23], handThrow:[38,-82], elbowThrow:[30,-74], handLead:[-20,-76] },
+            { head:[2,-96], hip:[0,-46], shL:[-16,-70], shR:[26,-68], frontFoot:[-26,3], backFoot:[20,4], frontKnee:[-20,-25], backKnee:[18,-24], handThrow:[46,-64], elbowThrow:[34,-70], handLead:[-18,-72] },
+            { head:[4,-92], hip:[2,-44], shL:[-10,-66], shR:[30,-58], frontFoot:[-24,4], backFoot:[26,10], frontKnee:[-18,-24], backKnee:[22,-20], handThrow:[40,-40], elbowThrow:[30,-56], handLead:[-14,-68] }
+        ];
+
+        function drawMiniQbPose(ctx, cx, groundY, frameIdx) {
+            const p = KINETIC_FRAME_POSES[frameIdx];
+            const pt = (arr) => [cx + arr[0], groundY + arr[1]];
+            const head = pt(p.head), hip = pt(p.hip), shL = pt(p.shL), shR = pt(p.shR);
+            const frontFoot = pt(p.frontFoot), backFoot = pt(p.backFoot);
+            const frontKnee = pt(p.frontKnee), backKnee = pt(p.backKnee);
+            const handThrow = pt(p.handThrow), elbowThrow = pt(p.elbowThrow), handLead = pt(p.handLead);
+
+            const JERSEY = '#0ea5e9', PANTS = '#1e293b', SKIN = '#c48a5c', HELMET = '#f59e0b';
+
+            drawCapsule(ctx, hip[0] + 4, hip[1], 6, backKnee[0], backKnee[1], 5, PANTS);
+            drawCapsule(ctx, backKnee[0], backKnee[1], 4.5, backFoot[0], backFoot[1], 3.5, PANTS);
+            drawCapsule(ctx, (shL[0] + shR[0]) / 2, (shL[1] + shR[1]) / 2, 11, hip[0], hip[1], 8, JERSEY);
+            drawCapsule(ctx, hip[0] - 4, hip[1], 6, frontKnee[0], frontKnee[1], 5, PANTS);
+            drawCapsule(ctx, frontKnee[0], frontKnee[1], 4.5, frontFoot[0], frontFoot[1], 3.5, PANTS);
+            drawCapsule(ctx, shL[0], shL[1], 5, handLead[0], handLead[1], 3.5, JERSEY);
+            drawCapsule(ctx, shR[0], shR[1], 5.5, elbowThrow[0], elbowThrow[1], 4, JERSEY);
+            drawCapsule(ctx, elbowThrow[0], elbowThrow[1], 4, handThrow[0], handThrow[1], 3, SKIN);
+
+            ctx.fillStyle = '#7c4a1e';
+            ctx.beginPath(); ctx.ellipse(handThrow[0] + 3, handThrow[1] - 1, 5, 3, 0.3, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = HELMET;
+            ctx.beginPath(); ctx.arc(head[0], head[1], 8, 0, Math.PI * 2); ctx.fill();
+        }
+
+        function drawHipShoulderDial(ctx, cx, cy, r, hipAngleDeg, shoulderAngleDeg) {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(148,163,184,0.3)'; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + r + 12, cy); ctx.stroke();
+            ctx.setLineDash([]);
+
+            const hipRad = hipAngleDeg * Math.PI / 180;
+            ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(cx - Math.cos(hipRad) * r, cy - Math.sin(hipRad) * r);
+            ctx.lineTo(cx + Math.cos(hipRad) * r, cy + Math.sin(hipRad) * r);
+            ctx.stroke();
+
+            const shRad = shoulderAngleDeg * Math.PI / 180;
+            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx - Math.cos(shRad) * r, cy - Math.sin(shRad) * r);
+            ctx.lineTo(cx + Math.cos(shRad) * r, cy + Math.sin(shRad) * r);
+            ctx.stroke();
+
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawKineticChainSequence() {
+            const canvas = document.getElementById('kineticChainCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+            const bg = ctx.createLinearGradient(0, 0, 0, h);
+            bg.addColorStop(0, '#0b1220'); bg.addColorStop(1, '#0f2027');
+            ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+
+            const frames = 6;
+            const frameW = w / frames;
+            const groundY = h - 40;
+            const dialY = h - 18;
+            const angles = [
+                { hip: 80, sh: 80 }, { hip: 75, sh: 85 }, { hip: 40, sh: 75 },
+                { hip: 15, sh: 45 }, { hip: 5, sh: 10 }, { hip: 0, sh: -10 }
+            ];
+
+            for (let i = 0; i < frames; i++) {
+                const cx = frameW * i + frameW / 2;
+                if (i > 0) {
+                    ctx.strokeStyle = 'rgba(148,163,184,0.15)'; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(frameW * i, 8); ctx.lineTo(frameW * i, h - 8); ctx.stroke();
+                }
+                ctx.strokeStyle = 'rgba(56,189,248,0.25)'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.moveTo(frameW * i + 6, groundY); ctx.lineTo(frameW * (i + 1) - 6, groundY); ctx.stroke();
+
+                drawMiniQbPose(ctx, cx, groundY, i);
+                drawHipShoulderDial(ctx, cx, dialY, 15, angles[i].hip, angles[i].sh);
+
+                ctx.fillStyle = 'rgba(245,158,11,0.15)';
+                ctx.beginPath(); ctx.arc(cx, 15, 10, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 11px Rubik, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(String(i + 1), cx, 15);
+            }
+        }
+
+        function drawClockDial(ctx, cx, cy, activeHour) {
+            const r = 58;
+            ctx.save();
+            ctx.strokeStyle = 'rgba(148,163,184,0.25)';
+            ctx.setLineDash([2, 4]);
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+            ctx.setLineDash([]);
+
+            const hourAngle = (hr) => (hr / 12) * Math.PI * 2 - Math.PI / 2;
+            [12, 1, 2, 3].forEach(hr => {
+                const a = hourAngle(hr);
+                const px = cx + Math.cos(a) * r, py = cy + Math.sin(a) * r;
+                ctx.beginPath();
+                ctx.fillStyle = hr === activeHour ? '#f59e0b' : 'rgba(148,163,184,0.35)';
+                ctx.arc(px, py, hr === activeHour ? 3.5 : 2.2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            const activeA = hourAngle(activeHour);
+            ctx.strokeStyle = 'rgba(245,158,11,0.55)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(activeA) * r, cy + Math.sin(activeA) * r);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawQbAvatar(hour) {
+            const canvas = document.getElementById('qbAvatarCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const pose = QB_POSES[hour] || QB_POSES[2];
+
+            // Backdrop: subtle turf gradient + horizon
+            ctx.clearRect(0, 0, w, h);
+            const bg = ctx.createLinearGradient(0, 0, 0, h);
+            bg.addColorStop(0, '#0b1220');
+            bg.addColorStop(1, '#0f2027');
+            ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = 'rgba(16,185,129,0.12)';
+            ctx.lineWidth = 1;
+            for (let y = 40; y < h; y += 30) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+
+            // Clock dial reference behind the throwing shoulder
+            drawClockDial(ctx, pose.shR.x, pose.shR.y, hour);
+
+            // Ground shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            ctx.beginPath();
+            ctx.ellipse((pose.frontFoot.x + pose.backFoot.x) / 2, pose.backFoot.y + 6, 55, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            const JERSEY = '#0ea5e9';
+            const JERSEY_DK = '#0369a1';
+            const PANTS = '#1e293b';
+            const SKIN = '#c48a5c';
+            const HELMET = '#f59e0b';
+            const CLEAT = '#0f172a';
+
+            // Back leg (drawn first, behind)
+            drawCapsule(ctx, pose.hipR.x, pose.hipR.y, 15, pose.backKnee.x, pose.backKnee.y, 12, PANTS);
+            drawCapsule(ctx, pose.backKnee.x, pose.backKnee.y, 11, pose.backFoot.x, pose.backFoot.y, 8, PANTS);
+            drawCleat(ctx, pose.backFoot.x, pose.backFoot.y, pose.backFootAngle, CLEAT);
+
+            // Torso (tapered capsule, chest wider than waist)
+            drawCapsule(ctx, pose.neck.x, pose.neck.y, 30, pose.hip.x, pose.hip.y, 21, JERSEY);
+            // Pelvis block
+            drawCapsule(ctx, pose.hipL.x, pose.hipL.y, 13, pose.hipR.x, pose.hipR.y, 13, PANTS);
+
+            // Front (stride) leg — drawn over pelvis, in front visually
+            drawCapsule(ctx, pose.hipL.x, pose.hipL.y, 15, pose.frontKnee.x, pose.frontKnee.y, 12, PANTS);
+            drawCapsule(ctx, pose.frontKnee.x, pose.frontKnee.y, 11, pose.frontFoot.x, pose.frontFoot.y, 8, PANTS);
+            drawCleat(ctx, pose.frontFoot.x, pose.frontFoot.y, pose.frontFootAngle, CLEAT);
+
+            // Lead (non-throwing) arm — tucked in front of chest
+            drawCapsule(ctx, pose.shL.x, pose.shL.y, 13, pose.leadElbow.x, pose.leadElbow.y, 10, JERSEY_DK);
+            drawCapsule(ctx, pose.leadElbow.x, pose.leadElbow.y, 9, pose.leadHand.x, pose.leadHand.y, 7, SKIN);
+            ctx.fillStyle = SKIN;
+            ctx.beginPath(); ctx.arc(pose.leadHand.x, pose.leadHand.y, 7.5, 0, Math.PI * 2); ctx.fill();
+
+            // Jersey number on chest
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.font = 'bold 15px Rubik, sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('7', pose.neck.x, (pose.neck.y + pose.hip.y) / 2 - 4);
+
+            // Throwing arm: upper arm + forearm with elbow joint
+            drawCapsule(ctx, pose.shR.x, pose.shR.y, 14, pose.throwElbow.x, pose.throwElbow.y, 10.5, JERSEY);
+            drawCapsule(ctx, pose.throwElbow.x, pose.throwElbow.y, 10, pose.throwHand.x, pose.throwHand.y, 7.5, SKIN);
+
+            // Football gripped in throwing hand
+            ctx.save();
+            ctx.translate(pose.throwHand.x + 6, pose.throwHand.y - 2);
+            ctx.rotate(pose.ballAngle * Math.PI / 180);
+            ctx.fillStyle = '#7c4a1e';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 15, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 1.3;
+            ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(8, 0); ctx.stroke();
+            for (let lx = -6; lx <= 6; lx += 3) {
+                ctx.beginPath(); ctx.moveTo(lx, -2); ctx.lineTo(lx, 2); ctx.stroke();
+            }
+            ctx.restore();
+            ctx.fillStyle = SKIN;
+            ctx.beginPath(); ctx.arc(pose.throwHand.x, pose.throwHand.y, 7, 0, Math.PI * 2); ctx.fill();
+
+            // Neck
+            drawCapsule(ctx, pose.head.x, pose.head.y + pose.head.r - 4, 8, pose.neck.x, pose.neck.y, 11, SKIN);
+
+            // Head + helmet
+            ctx.fillStyle = HELMET;
+            ctx.beginPath(); ctx.arc(pose.head.x, pose.head.y, pose.head.r, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = SKIN;
+            ctx.beginPath(); ctx.arc(pose.head.x + 3, pose.head.y + 6, pose.head.r - 8, 0.2, Math.PI - 0.2); ctx.fill();
+            // facemask
+            ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(pose.head.x + 2, pose.head.y + 4, pose.head.r - 5, 0.35, Math.PI - 0.35);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pose.head.x - (pose.head.r - 7), pose.head.y + 4);
+            ctx.lineTo(pose.head.x - (pose.head.r - 2), pose.head.y + 12);
+            ctx.moveTo(pose.head.x + (pose.head.r - 7), pose.head.y + 4);
+            ctx.lineTo(pose.head.x + (pose.head.r - 2), pose.head.y + 12);
+            ctx.stroke();
+            // helmet shine
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.beginPath(); ctx.ellipse(pose.head.x - 8, pose.head.y - 10, 6, 4, -0.5, 0, Math.PI * 2); ctx.fill();
+
+            // Release-point marker + label
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath(); ctx.arc(pose.throwHand.x + 6, pose.throwHand.y - 2, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = 'rgba(245,158,11,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+            ctx.beginPath(); ctx.moveTo(pose.throwHand.x + 6, pose.throwHand.y - 2); ctx.lineTo(w - 14, pose.throwHand.y - 2); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 9px Rubik, sans-serif';
+            ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            ctx.fillText('Release Point', w - 14, pose.throwHand.y - 12);
+        }
+
+        // ---- Glossary ----
+        const GLOSSARY_CATEGORY_META = {
+            mechanics: { label: 'מכניקה', icon: '⚙️', color: '#38bdf8' },
+            defense: { label: 'הגנה', icon: '🛡️', color: '#f59e0b' },
+            offense: { label: 'התקפה ומסלולים', icon: '🏈', color: '#10b981' },
+            general: { label: 'כללי', icon: '📋', color: '#a855f7' },
+            situational: { label: 'פרסונל ומצבי משחק', icon: '🧮', color: '#ef4444' }
+        };
+
+        const GLOSSARY_DATABASE = [
+            { term: 'Arm Slot', category: 'mechanics', def: 'זווית שחרור הזרוע ביחס לגוף (Over-the-Top, Three-Quarter, Sidearm), נמדדת לרוב לפי מטאפורת שעון.' },
+            { term: 'Release Point', category: 'mechanics', def: 'הנקודה המדויקת במרחב שבה הכדור עוזב את היד.' },
+            { term: 'Kinetic Chain', category: 'mechanics', def: 'שרשרת העברת האנרגיה מהקרקע, דרך הרגליים והאגן, ועד לזרוע ולכדור.' },
+            { term: 'Hip-Shoulder Separation', category: 'mechanics', def: 'הפער הזוויתי בין סיבוב האגן לסיבוב הכתפיים במהלך הזריקה — מקור עיקרי לעוצמה.' },
+            { term: 'Follow-Through', category: 'mechanics', def: 'השלמת תנועת הזריקה אחרי השחרור, כולל מעבר משקל מלא לרגל הקדמית.' },
+            { term: 'Pocket', category: 'mechanics', def: 'האזור המוגן שיוצר קו ההתקפה סביב ה-QB לפני המסירה.' },
+            { term: 'Dropback', category: 'mechanics', def: 'הנסיגה האחורית של ה-QB אחרי הסנאפ (למשל 3-Step, 5-Step, 7-Step Drop).' },
+            { term: 'Pronation', category: 'mechanics', def: 'סיבוב כף היד כלפי מטה והחוצה ברגע השחרור, יוצר את הספירלה של הכדור.' },
+            { term: 'Single High', category: 'defense', def: 'מבנה הגנתי עם Safety עמוק בודד במרכז המגרש (Cover 1 / Cover 3).' },
+            { term: 'Two High', category: 'defense', def: 'מבנה הגנתי עם שני Safeties עמוקים (Cover 2 / Cover 4 / Cover 6).' },
+            { term: 'Zero Look / Cover 0', category: 'defense', def: 'הגנה ללא שום Safety עמוק — בליץ אגרסיבי עם שמירה אישית לכל האורך.' },
+            { term: 'Man-to-Man', category: 'defense', def: 'שמירה אישית צמודה של כל מגין על שחקן התקפה ספציפי.' },
+            { term: 'Zone Coverage', category: 'defense', def: 'כיסוי אזורי — כל מגין אחראי על שטח מוגדר במגרש, לא על שחקן ספציפי.' },
+            { term: 'Pattern Match', category: 'defense', def: 'הגנת Zone דינמית שהופכת לשמירה אישית ברגע שרסיבר חוצה סף עומק מסוים.' },
+            { term: 'Leverage', category: 'defense', def: 'המנח הצדדי של ה-CB ביחס לרסיבר (Inside/Outside Leverage) — קובע לאיזה כיוון הוא "סוגר".' },
+            { term: 'Press Coverage', category: 'defense', def: 'עמידת CB צמודה על קו ההתקפה, מנסה לשבש את שחרור הרסיבר בקו.' },
+            { term: 'Off Coverage', category: 'defense', def: 'עמידת CB ברווח (5-8 יארד) מהרסיבר לפני הסנאפ.' },
+            { term: 'Box (Count the Box)', category: 'defense', def: 'מספר המגינים הממוקמים קרוב לקו (עד כ-5 יארד עומק), רלוונטי לזיהוי איום ריצה/בליץ.' },
+            { term: 'Blitz', category: 'defense', def: 'שליחת מגינים נוספים (מעבר לקו ההתקפה) בלחץ ישיר על ה-QB.' },
+            { term: 'Fire Zone Blitz', category: 'defense', def: 'בליץ מוסווה שבו שחקן קו הגנתי "נופל" לכיסוי Zone במקום לפרוץ.' },
+            { term: 'Robber', category: 'defense', def: 'מגין (לרוב Safety) שיורד לאזור אמצעי-קצר "לגנוב" מסירות פנימיות.' },
+            { term: 'Spy', category: 'defense', def: 'מגין שממוקד אך ורק במעקב אחר ה-QB במקרה של בריחה מהכיס (Scramble).' },
+            { term: 'Bracket Coverage', category: 'defense', def: 'כיסוי כפול על רסיבר בודד (מגן אחד מלמעלה, מגן אחד מלמטה/מהצד).' },
+            { term: 'Disguise', category: 'defense', def: 'הצגת מבנה הגנתי שונה לפני הסנאפ ממה שההגנה בפועל מבצעת אחריו.' },
+            { term: 'Route Tree', category: 'offense', def: 'מערכת מספור סטנדרטית של מסלולי ריצה (1-9) — אי-זוגי החוצה, זוגי פנימה.' },
+            { term: 'Slant', category: 'offense', def: 'מסלול חיתוך מהיר ורדוד (3-5 יארד) בזווית 45° פנימה.' },
+            { term: 'Out', category: 'offense', def: 'מסלול שחותך 90° החוצה לכיוון קו השדה.' },
+            { term: 'Curl', category: 'offense', def: 'מסלול שעוצר בפתאומיות בעומק בינוני ומסתובב חזרה לכיוון ה-QB.' },
+            { term: 'Dig / In', category: 'offense', def: 'מסלול שחותך 90° פנימה לרוחב מרכז המגרש בעומק בינוני-עמוק.' },
+            { term: 'Post', category: 'offense', def: 'מסלול אלכסוני עמוק לכיוון עמוד השער במרכז המגרש.' },
+            { term: 'Corner', category: 'offense', def: 'מסלול אלכסוני עמוק לכיוון פינת ה-End Zone.' },
+            { term: 'Comeback', category: 'offense', def: 'מסלול עמוק שעוצר וחוזר החוצה לכיוון ה-QB והקו הצדדי.' },
+            { term: 'Go / Fly / Streak', category: 'offense', def: 'ריצה אנכית ישרה במלוא המהירות ללא חיתוך.' },
+            { term: 'Flat', category: 'offense', def: 'מסלול קצר ומיידי לכיוון קו השדה, בעומק נמוך מאוד.' },
+            { term: 'Seam', category: 'offense', def: 'התפר בין שני מגיני Zone עמוקים — יעד קלאסי למסירה אנכית.' },
+            { term: 'Honey Hole', category: 'offense', def: 'האזור הפגיע בין ה-CB לסייפטי ב-Cover 2, יעד מרכזי לתרגיל Smash.' },
+            { term: 'Rub Route / Pick', category: 'offense', def: 'מסלול שנועד "להתנגש" (בטעות מכוונת) עם מגין צמוד לרסיבר אחר.' },
+            { term: 'Progression Reads', category: 'offense', def: 'סדר הקריאה המתוכנן של ה-QB בין הרסיברים לפי עדיפות.' },
+            { term: 'Hot Read', category: 'offense', def: 'מסירה מהירה מתוכננת מראש לשימוש כשה-QB מזהה בליץ בלתי חסום.' },
+            { term: 'Checkdown', category: 'offense', def: 'האופציה הבטוחה האחרונה בסדר הקריאה, לרוב מסירה קצרה ל-RB.' },
+            { term: 'YAC (Yards After Catch)', category: 'offense', def: 'יארדים שרסיבר צובר לאחר קבלת הכדור, לפני שנעצר.' },
+            { term: 'Separation', category: 'offense', def: 'המרחק/פער שרסיבר יוצר בינו לבין המגין הצמוד אליו.' },
+            { term: 'Mismatch', category: 'offense', def: 'התאמה לא הוגנת בין שחקן התקפה למגין (למשל TE גבוה מול LB איטי).' },
+            { term: 'Play-Action (PA)', category: 'offense', def: 'הטעיית מסירה מדומה שמבוססת על תנועת הטעיית ריצה, נועדה למשוך Linebackers/Safeties.' },
+            { term: 'RPO (Run-Pass Option)', category: 'offense', def: 'מהלך שבו ה-QB בוחר בין מסירה לריצה בהתאם לתגובת מגין ספציפי אחרי הסנאפ.' },
+            { term: 'Explosive Play', category: 'offense', def: 'מהלך שמניב יארדים רבים בפעולה אחת (בד"כ 15+ יארד במסירה).' },
+            { term: 'Protection Call / BOB / Slide', category: 'offense', def: 'קריאת הגנת קו שקובעת איך חוסמים חלוקים אחריות מול פורצים (Big-On-Big, Slide Protection וכו׳).' },
+            { term: 'Pre-Snap', category: 'general', def: 'כל מה שקורה/נקרא לפני הסנאפ — זיהוי מבנה הגנתי, ספירת Box, קריאת Leverage.' },
+            { term: 'Post-Snap', category: 'general', def: 'המידע האמיתי שמתגלה רק אחרי הסנאפ, לעיתים שונה ממה שהוצג Pre-Snap (Disguise).' },
+            { term: 'Personnel Grouping', category: 'situational', def: 'קוד דו-ספרתי המתאר את הרכב השחקנים בשטח (RB-TE), למשל 11 Personnel = 1 RB, 1 TE, 3 WR.' },
+            { term: '11 Personnel', category: 'situational', def: '1 Running Back, 1 Tight End, 3 Wide Receivers — ההרכב הנפוץ ביותר בפוטבול המודרני.' },
+            { term: '12 Personnel', category: 'situational', def: '1 Running Back, 2 Tight Ends, 2 Wide Receivers — מוסיף איום ריצה/חסימה תוך שמירה על גמישות מסירה.' },
+            { term: '21 Personnel', category: 'situational', def: '2 Running Backs (או RB+FB), 1 Tight End, 2 Wide Receivers — הרכב "כבד" עם דגש על ריצה והגנת קו.' },
+            { term: 'Red Zone', category: 'situational', def: 'האזור בין קו ה-20 יארד ל-Goal Line של היריב, בו השטח מצטמצם ומחייב דיוק גבוה.' },
+            { term: '2-Minute Drill', category: 'situational', def: 'מצב משחק בזמן קצר לפני חצי/סוף המשחק, מחייב קצב מהיר ותרגילי Quick Game.' },
+            { term: 'Down & Distance', category: 'situational', def: 'הדאון הנוכחי (1st-4th) והמרחק הנדרש ל-First Down — משפיע ישירות על בחירת ההגנה וההתקפה.' },
+            { term: 'Bunch Formation', category: 'offense', def: 'שלושה רסיברים (או יותר) מסודרים צמוד זה לזה לפני הסנאפ, יוצר פקקים טבעיים מול Man Coverage.' },
+            { term: 'Trips', category: 'offense', def: 'שלושה רסיברים לאותו צד של השדה (מול שני רסיברים בצד השני).' },
+            { term: 'Empty Backfield', category: 'offense', def: 'פורמציה ללא Running Back בשדה האחורי — כל 5 העלים (Eligible Receivers) בשטח, ה-QB לבד ב-Gun.' },
+            { term: 'Under Center', category: 'offense', def: 'ה-QB עומד ישירות מאחורי ה-Center לקבלת הסנאפ (בניגוד ל-Shotgun/Pistol).' },
+            { term: 'Shotgun', category: 'offense', def: 'ה-QB עומד כ-5 יארד מאחורי הקו, מקבל סנאפ ישיר — נותן ראייה טובה יותר על ההגנה.' },
+            { term: 'Pistol', category: 'offense', def: 'עמידת ביניים בין Under Center ל-Shotgun — QB קרוב יותר לקו, RB ישר מאחוריו.' },
+            { term: 'Hash Marks', category: 'general', def: 'שני קווים מקבילים לאורך המגרש שמסמנים איפה מניחים את הכדור — משפיעים על "צד רחב" מול "צד צר".' },
+            { term: 'Field / Boundary', category: 'general', def: 'הצד הרחב של המגרש ביחס ל-Hash Mark (Field) מול הצד הצר (Boundary) — משפיע על בחירת הגנה והתקפה.' },
+            { term: 'Man Protection (Half-Slide)', category: 'offense', def: 'הגנת קו המשלבת Slide לצד אחד ושמירה אישית (Man) לשחקן אחד או שניים בצד השני.' },
+            { term: 'Max Protect', category: 'offense', def: 'שמירת כל שחקני הגנת הקו האפשריים (כולל RB/TE) בפנים, במחיר שליחת פחות רסיברים למסלול.' },
+            { term: 'Check-Release', category: 'offense', def: 'RB/TE שבודק תחילה אם יש צורך לחסום, ורק אז "משתחרר" למסלול אם אין איום.' },
+            { term: 'Odd Front / Even Front', category: 'defense', def: 'מספר שחקני הגנת הקו הישר מול קו ההתקפה (Odd = שחקן ישר מול ה-Center; Even = אין) — משפיע על מבנה ה-Gaps.' },
+            { term: 'Freddy Check', category: 'general', def: 'שיטת זיהוי שבה ה-QB/Center מכריזים מי הוא ה-Mike Linebacker לצורך חלוקת אחריות בהגנת הקו.' },
+            { term: 'Personnel (מודל R/T/CB/U/Y)', category: 'situational', def: 'מערכת פרסונל מדויקת המשמשת בפוטבול מקצועי, המפרטת תפקיד כל שחקן (למשל U=H-Back, Y=Tight End צמוד) מעבר לספירת RB/TE/WR הגנרית.' },
+            { term: 'Motion', category: 'offense', def: 'תזוזת שחקן לפני הסנאפ — עוזרת לזהות Man מול Zone (אם מגין "זז איתו" זה בד"כ Man).' },
+            { term: 'Alert / Check', category: 'general', def: 'קריאת התאמה שה-QB מכריז לפני הסנאפ כדי לשנות את המהלך בהתאם למבנה ההגנה שהוא רואה.' }
+        ];
+
+        function renderGlossaryTabs() {
+            const container = document.getElementById('glossaryCategoryTabs');
+            let html = `<button onclick="filterGlossary('all')" id="glocat-all" class="glocat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-600 bg-slate-700 text-white transition">הכל</button>`;
+            Object.keys(GLOSSARY_CATEGORY_META).forEach(c => {
+                const m = GLOSSARY_CATEGORY_META[c];
+                html += `<button onclick="filterGlossary('${c}')" id="glocat-${c}" class="glocat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition">${m.icon} ${m.label}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        let currentGlossaryFilter = 'all';
+
+        function filterGlossary(cat) {
+            currentGlossaryFilter = cat;
+            document.querySelectorAll('.glocat-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-700', 'bg-indigo-600', 'text-white', 'border-slate-600', 'border-indigo-400');
+                btn.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            });
+            const btn = document.getElementById('glocat-' + cat);
+            if (btn) {
+                btn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-400');
+            }
+            renderGlossary();
+        }
+
+        function renderGlossary() {
+            const q = (document.getElementById('glossarySearch').value || '').trim().toLowerCase();
+            const results = GLOSSARY_DATABASE.filter(g => {
+                const matchesCat = currentGlossaryFilter === 'all' || g.category === currentGlossaryFilter;
+                const matchesQ = !q || g.term.toLowerCase().includes(q) || g.def.toLowerCase().includes(q);
+                return matchesCat && matchesQ;
+            }).sort((a, b) => a.term.localeCompare(b.term));
+
+            const container = document.getElementById('glossaryResults');
+            const emptyState = document.getElementById('glossaryEmptyState');
+            emptyState.classList.toggle('hidden', results.length > 0);
+
+            container.innerHTML = results.map(g => {
+                const meta = GLOSSARY_CATEGORY_META[g.category];
+                return `
+                <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 hover:border-indigo-400/50 transition">
+                    <div class="flex justify-between items-start gap-2 mb-1.5">
+                        <h4 class="font-bold text-white text-sm">${g.term}</h4>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style="color:${meta.color}; background:${meta.color}20; border:1px solid ${meta.color}50;">${meta.icon} ${meta.label}</span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">${g.def}</p>
+                </div>`;
+            }).join('');
+        }
+
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderGlossaryTabs();
+            renderGlossary();
+            setArmSlot('threeQuarter');
+            drawKineticChainSequence();
+
+            const armSlotsCtx = document.getElementById('armSlotsChart').getContext('2d');
+            new Chart(armSlotsCtx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        ['מהירות שחרור', '(Release Speed)'],
+                        ['עוצמה ומרחק', '(Power & Depth)'],
+                        ['קשת מעל קו', '(High Altitude)'],
+                        ['דיוק לחלון צפוף', '(Window Precision)'],
+                        ['גמישות מלחץ', '(Off-Platform)']
+                    ],
+                    datasets: [
+                        { label: 'Over-the-Top (12:00)', data: [65, 95, 95, 80, 40], borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.2)' },
+                        { label: '3/4 Slot (2:00)', data: [90, 85, 70, 95, 75], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.2)' },
+                        { label: 'Sidearm (3:00)', data: [95, 60, 30, 65, 95], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#334155' },
+                            grid: { color: '#334155' },
+                            pointLabels: { color: '#cbd5e1', font: { size: 10 } },
+                            ticks: { display: false, backdropColor: 'transparent' },
+                            min: 0, max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    return Array.isArray(label) ? label.join(' ') : label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const safetyCtx = document.getElementById('safetyCoverageChart').getContext('2d');
+            new Chart(safetyCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        ['1 Safety עמוק', '(Single High)'],
+                        ['2 Safeties עמוקים', '(Two High)'],
+                        ['0 Safeties עמוקים', '(Zero Look)']
+                    ],
+                    datasets: [
+                        { label: 'Cover 1 / Cover 3', data: [85, 10, 5], backgroundColor: '#38bdf8' },
+                        { label: 'Cover 2 / Tampa 2 / 4', data: [10, 85, 0], backgroundColor: '#f59e0b' },
+                        { label: 'Cover 0 Blitz', data: [5, 5, 95], backgroundColor: '#ef4444' }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#cbd5e1' } },
+                        y: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#cbd5e1' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    return Array.isArray(label) ? label.join(' ') : label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

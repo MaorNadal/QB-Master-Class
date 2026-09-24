@@ -1,0 +1,2400 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>קריאת משחק: הגנות, מסלולים ומהלכים - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        @media print {
+            nav, .no-print, button, select, input[type=range] {
+                display: none !important;
+            }
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            .bg-slate-900, .bg-slate-800, .bg-slate-800\/50, .bg-slate-900\/90, .bg-slate-900\/80 {
+                background-color: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+            }
+            .text-white, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400 {
+                color: #0f172a !important;
+            }
+            .text-sky-400, .text-amber-400, .text-emerald-400, .text-rose-400, .text-purple-400 {
+                color: #0284c7 !important;
+                font-weight: bold;
+            }
+            canvas {
+                max-width: 100% !important;
+            }
+            .print-only-target {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <script src="nav.js"></script>
+
+    <header class="max-w-7xl mx-auto px-4 pt-8 pb-6 text-center">
+        <div class="inline-block px-4 py-1.5 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-400 text-sm font-semibold mb-3">
+            QB MASTER CLASS • קריאת משחק
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-3">
+            קריאת משחק: הגנות, מסלולים ומהלכים
+        </h1>
+        <p class="text-slate-300 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
+            לוח 11 מערכי ההגנה, עץ המסלולים 1-9, ה-Playbook ההתקפי, הסימולטור הטקטי ובונה המהלכים – כל כלי קריאת המשחק במקום אחד.
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 space-y-12">
+
+        <section id="coverage-board" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6 text-center">
+                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 font-bold text-xs rounded-full border border-emerald-500/30">מנוע שרטוט טקטי מלא 11-על-11</span>
+                <h2 class="text-2xl md:text-4xl font-black text-emerald-400 mt-2">
+                    🛡️ לוח הגנות אינטראקטיבי מלא (11 Coverages + DL & Linebackers)
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-2 max-w-3xl mx-auto">
+                    צפה במערך ההגנתי השלם: Defensive Line, Linebackers (MIKE, WILL, SAM), Cornerbacks ו-Safeties. קרא את דפוסי הנסיגה של הליינבייקרים ואת חלונות המסירה.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2 justify-center mb-6">
+                <button onclick="selectCoverage('cover0')" id="btn-cover0" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-rose-500 transition">Cover 0 Blitz</button>
+                <button onclick="selectCoverage('cover1')" id="btn-cover1" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-sky-400 transition">Cover 1 Man</button>
+                <button onclick="selectCoverage('cover2')" id="btn-cover2" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-400 transition">Cover 2 Zone</button>
+                <button onclick="selectCoverage('tampa2')" id="btn-tampa2" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-amber-500 transition">Tampa 2</button>
+                <button onclick="selectCoverage('cover2man')" id="btn-cover2man" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-orange-400 transition">Cover 2 Man</button>
+                <button onclick="selectCoverage('cover3')" id="btn-cover3" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-400 transition">Cover 3 Sky</button>
+                <button onclick="selectCoverage('cover3match')" id="btn-cover3match" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-teal-400 transition">Cover 3 Match</button>
+                <button onclick="selectCoverage('cover4')" id="btn-cover4" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-purple-400 transition">Cover 4 Quarters</button>
+                <button onclick="selectCoverage('cover4palms')" id="btn-cover4palms" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-fuchsia-400 transition">Cover 4 Palms</button>
+                <button onclick="selectCoverage('cover6')" id="btn-cover6" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-indigo-400 transition">Cover 6 Split</button>
+                <button onclick="selectCoverage('firezone')" id="btn-firezone" class="cov-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-rose-400 transition">Fire Zone Blitz</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-700 rounded-2xl p-4 shadow-xl text-center">
+                    <div class="flex justify-between items-center mb-2 px-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">מערך 11 שחקני הגנה</span>
+                        <span id="fieldSafetyBadge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-sky-400">Single High</span>
+                    </div>
+
+                    <div class="relative w-full flex justify-center bg-emerald-950/60 rounded-xl border border-emerald-800/50 p-2">
+                        <canvas id="fieldBoardCanvas" width="380" height="420" class="max-w-full rounded-lg shadow-inner"></canvas>
+                    </div>
+
+                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-800 px-2">
+                        <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> DL/LB</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> DBs</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span> התקפה</span>
+                        </div>
+                        <button onclick="printCurrentCoverage()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition flex items-center gap-1 shadow">
+                            <span>🖨️</span> הדפס ניתוח זה
+                        </button>
+                    </div>
+                </div>
+
+                <div id="coverageDetailsCard" class="lg:col-span-7 bg-slate-900/90 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-5">
+                    <div>
+                        <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                            <h3 id="covTitle" class="text-2xl font-black text-sky-400">Cover 1 (Man-Free)</h3>
+                            <span id="covTypeTag" class="text-xs font-extrabold px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">שמירה אישית + Safety עמוק</span>
+                        </div>
+                        <p id="covOverview" class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                            מבנה של Single High Safety עמוק המכסה את מרכז השדה. שאר ה-DBs וה-LBs מצומדים בשמירה אישית (Man-to-Man) הדוקה.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-800/90 border border-amber-500/40 p-4 rounded-xl">
+                        <h4 class="font-bold text-amber-400 text-xs md:text-sm mb-1.5 flex items-center gap-1">
+                            <span>👁️</span> תנועת Linebackers וקריאת מפתח לקוורטרבק (LB Keys)
+                        </h4>
+                        <p id="covLbKeys" class="text-xs md:text-sm text-slate-200 leading-relaxed"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800/80 border border-rose-500/30 p-4 rounded-xl">
+                            <h4 class="font-bold text-rose-400 text-sm mb-2 flex items-center gap-1">
+                                <span>⚠️</span> סכנות וחוזקות ההגנה
+                            </h4>
+                            <ul id="covStrengths" class="text-xs text-slate-300 space-y-1.5 list-disc list-inside"></ul>
+                        </div>
+
+                        <div class="bg-slate-800/80 border border-emerald-500/30 p-4 rounded-xl">
+                            <h4 class="font-bold text-emerald-400 text-sm mb-2 flex items-center gap-1">
+                                <span>🎯</span> חולשות ורווחים לניצול
+                            </h4>
+                            <ul id="covWeaknesses" class="text-xs text-slate-300 space-y-1.5 list-disc list-inside"></ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/90 border border-sky-500/30 p-4 rounded-xl">
+                        <h4 class="font-bold text-sky-300 text-sm mb-2 flex items-center gap-1">
+                            <span>🚀</span> תרגילים וקונספטים התקפיים מומלצים
+                        </h4>
+                        <div id="covConceptsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="route-tree" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6 text-center">
+                <span class="px-3 py-1 bg-sky-500/20 text-sky-300 font-bold text-xs rounded-full border border-sky-500/30">ארסנל ההתקפה השלם</span>
+                <h2 class="text-2xl md:text-4xl font-black text-sky-400 mt-2">
+                    🏈 עץ מסלולי ההתקפה הקלאסי (Route Tree 1-9)
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-1 max-w-2xl mx-auto">
+                    מספרי אי-זוגי רצים לכיוון ה-Sideline (החוצה), מספרי זוגי רצים למרכז השדה (פנימה). לחץ על כל מסלול כדי לראות את הניתוח הטקטי.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-700 rounded-2xl p-4 shadow-xl text-center">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">תרשים עץ המסלולים (1-9)</div>
+                    <div class="relative w-full flex justify-center bg-slate-950/90 rounded-xl border border-slate-800 p-2">
+                        <canvas id="routeTreeCanvas" width="360" height="380" class="max-w-full rounded-lg shadow-inner"></canvas>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5 mt-3">
+                        <button onclick="selectRoute(1)" class="px-2 py-1 bg-slate-800 hover:bg-sky-600 rounded text-xs font-bold text-slate-200">1: Flat</button>
+                        <button onclick="selectRoute(2)" class="px-2 py-1 bg-slate-800 hover:bg-sky-600 rounded text-xs font-bold text-slate-200">2: Slant</button>
+                        <button onclick="selectRoute(3)" class="px-2 py-1 bg-slate-800 hover:bg-sky-600 rounded text-xs font-bold text-slate-200">3: Comeback</button>
+                        <button onclick="selectRoute(4)" class="px-2 py-1 bg-slate-800 hover:bg-sky-600 rounded text-xs font-bold text-slate-200">4: Curl</button>
+                        <button onclick="selectRoute(5)" class="px-2 py-1 bg-slate-800 hover:bg-sky-600 rounded text-xs font-bold text-slate-200">5: Out</button>
+                        <button onclick="selectRoute(6)" class="px-2 py-1 bg-slate-800 hover:bg-sky-600 rounded text-xs font-bold text-slate-200">6: Dig/In</button>
+                        <button onclick="selectRoute(7)" class="px-2 py-1 bg-slate-800 hover:bg-sky-600 rounded text-xs font-bold text-slate-200">7: Corner</button>
+                        <button onclick="selectRoute(8)" class="px-2 py-1 bg-slate-800 hover:bg-sky-600 rounded text-xs font-bold text-slate-200">8: Post</button>
+                        <button onclick="selectRoute(9)" class="px-2 py-1 bg-slate-800 hover:bg-sky-600 rounded text-xs font-bold text-slate-200">9: Go/Fly</button>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 bg-slate-900/90 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <h3 id="routeTitle" class="text-2xl font-black text-amber-400">Route 2: Slant (אלכסון מהיר)</h3>
+                        <span id="routeNumBadge" class="text-sm font-black px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">מסלול מספר 2</span>
+                    </div>
+
+                    <p id="routeDesc" class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                        מסלול קצר ומהיר במיוחד. הרסיבר לוקח 3 צעדים אנכיים וחותך ב-45 מעלות אל מרכז השדה ישירות לפני ה-Linebacker.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-sky-300 font-bold block mb-1">עומק ותזמון מסירה:</span>
+                            <span id="routeTiming" class="text-slate-200">3-5 יארד עומק • שחרור מהיר ב-3-Step Drop (צעד 1 מ-Gun).</span>
+                        </div>
+                        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                            <span class="text-emerald-300 font-bold block mb-1">הגנה אידיאלית להכאה:</span>
+                            <span id="routeCounter" class="text-slate-200">Cover 0 Blitz, Cover 1 (Off Coverage), Cover 3 (Short Gap).</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/90 p-4 rounded-xl border border-slate-700">
+                        <span class="text-amber-400 font-bold text-xs block mb-1">🧠 דגש טקטי וביומכני לקוורטרבק:</span>
+                        <p id="routeQbTip" class="text-xs text-slate-300 leading-relaxed">
+                            מסור את הכדור לפני שהרסיבר מסיים את החיתוך (Anticipation Throw). שים את הכדור על החזה הקדמי שלו כדי למנוע היתקבלות מאחור.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="playbook" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6 text-center">
+                <span class="px-3 py-1 bg-teal-500/20 text-teal-300 font-bold text-xs rounded-full border border-teal-500/30">תבניות התקפה, פורמציות וקונספטים ידועים</span>
+                <h2 class="text-2xl md:text-4xl font-black text-teal-400 mt-2">
+                    📖 Playbook — קונספטים התקפיים קלאסיים
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-2 max-w-3xl mx-auto">
+                    אוסף תרגילים (Concepts) מוכרים מהפוטבול המקצועי, עם מפת מסלולים ויזואלית, הפורמציה הנפוצה בה הם רצים, ומתי כדאי לקרוא אותם מול ה-Coverage שזיהית.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2 justify-center mb-4" id="playCategoryTabs"></div>
+            <div class="flex flex-wrap gap-2 justify-center mb-6" id="playButtonsRow"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-700 rounded-2xl p-4 shadow-xl text-center">
+                    <div class="flex justify-between items-center mb-2 px-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">תרשים מסלולים</span>
+                        <span id="playFormationBadge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-teal-400">2x2 Spread</span>
+                    </div>
+                    <div class="relative w-full flex justify-center bg-emerald-950/60 rounded-xl border border-emerald-800/50 p-2">
+                        <canvas id="playbookCanvas" width="380" height="420" class="max-w-full rounded-lg shadow-inner"></canvas>
+                    </div>
+                    <div class="flex items-center justify-center gap-3 text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-800 flex-wrap" id="playLegend"></div>
+                </div>
+
+                <div id="playDetailsCard" class="lg:col-span-7 bg-slate-900/90 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-5">
+                    <div>
+                        <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                            <h3 id="playTitle" class="text-2xl font-black text-teal-400">Mesh Concept</h3>
+                            <span id="playFormationTag" class="text-xs font-extrabold px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">2x2 Spread</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 mb-3">
+                            <span id="playCategoryBadge" class="text-[11px] font-bold px-2.5 py-1 rounded-lg border">Man Beaters</span>
+                            <span id="playPersonnelBadge" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">11 Personnel</span>
+                            <span id="playDownDistanceBadge" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">Down & Distance</span>
+                        </div>
+                        <p id="playOverview" class="text-xs md:text-sm text-slate-300 leading-relaxed"></p>
+                    </div>
+
+                    <div class="bg-slate-800/90 border border-sky-500/40 p-4 rounded-xl">
+                        <h4 class="font-bold text-sky-400 text-xs md:text-sm mb-1.5 flex items-center gap-1">
+                            <span>🕐</span> מתי כדאי לקרוא את התרגיל
+                        </h4>
+                        <p id="playWhenToUse" class="text-xs md:text-sm text-slate-200 leading-relaxed"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800/80 border border-emerald-500/30 p-4 rounded-xl">
+                            <h4 class="font-bold text-emerald-400 text-sm mb-2 flex items-center gap-1">
+                                <span>✅</span> עובד הכי טוב נגד
+                            </h4>
+                            <ul id="playBestAgainst" class="text-xs text-slate-300 space-y-1.5 list-disc list-inside"></ul>
+                        </div>
+
+                        <div class="bg-slate-800/80 border border-rose-500/30 p-4 rounded-xl">
+                            <h4 class="font-bold text-rose-400 text-sm mb-2 flex items-center gap-1">
+                                <span>⚠️</span> להיזהר מפני
+                            </h4>
+                            <ul id="playWatchOut" class="text-xs text-slate-300 space-y-1.5 list-disc list-inside"></ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/90 border border-teal-500/30 p-4 rounded-xl">
+                        <h4 class="font-bold text-teal-300 text-sm mb-2 flex items-center gap-1">
+                            <span>🎯</span> סדר קריאה מומלץ (Progression)
+                        </h4>
+                        <p id="playProgression" class="text-xs text-slate-300 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="simulator" class="bg-slate-800/80 border-2 border-amber-500/60 rounded-2xl p-6 md:p-8 backdrop-blur shadow-2xl">
+            <div class="mb-6 text-center">
+                <span class="px-3 py-1 bg-amber-500/20 text-amber-300 font-bold text-xs rounded-full border border-amber-500/30">סימולטור אבחון טקטי מורחב</span>
+                <h2 class="text-2xl md:text-4xl font-black text-amber-400 mt-2">
+                    ⚡ סימולטור QB Master Class לקריאת הגנות והתאמת מהלך
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-1 max-w-2xl mx-auto">
+                    בחר את נתוני ה-Pre-Snap וה-Post-Snap שאתה מזהה, וקבל ניתוח אבחוני מלא, התאמת הגנת קו (Protection Call) וסדר קריאה מהיר (Progression Reads).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                    <label class="block text-xs font-bold text-slate-300 mb-2">1. מספר Safeties עמוקים</label>
+                    <select id="simSafeties" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-amber-400">
+                        <option value="single">1 Safety (Single High)</option>
+                        <option value="two">2 Safeties (Two High)</option>
+                        <option value="zero">0 Safeties (Zero Look / Blitz)</option>
+                    </select>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                    <label class="block text-xs font-bold text-slate-300 mb-2">2. מנח ומיקום CBs (Leverage)</label>
+                    <select id="simLeverage" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-amber-400">
+                        <option value="off">Off Coverage (רווח 5-8 יארד)</option>
+                        <option value="press">Press / Jam (צמוד על הקו)</option>
+                        <option value="inside">Inside Leverage (סוגר פנים)</option>
+                        <option value="outside">Outside Leverage (סוגר קווים)</option>
+                    </select>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                    <label class="block text-xs font-bold text-slate-300 mb-2">3. עומס Box ומיקום Linebackers</label>
+                    <select id="simBox" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-amber-400">
+                        <option value="normal">6 מגינים ב-Box (סטנדרטי)</option>
+                        <option value="heavy">7-8 מגינים ב-Box (עומס / Blitz)</option>
+                    </select>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                    <label class="block text-xs font-bold text-slate-300 mb-2">4. תנועת Safety/LB ברגע הסנאפ</label>
+                    <select id="simMotion" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-amber-400">
+                        <option value="static">ללא תנועה (Static Alignment)</option>
+                        <option value="dropping">Safety יורד ל-Box (Rolling Box)</option>
+                        <option value="bailing">Safety בורח עמוק (Deep Bail)</option>
+                    </select>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                    <label class="block text-xs font-bold text-slate-300 mb-2">5. Down & Distance</label>
+                    <select id="simDownDistance" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-amber-400">
+                        <option value="1st10">1st & 10</option>
+                        <option value="2ndmed">2nd & Medium (4-6)</option>
+                        <option value="2ndlong">2nd/3rd & Long (7+)</option>
+                        <option value="3rdshort">3rd & Short (1-3)</option>
+                        <option value="redzone">Red Zone</option>
+                        <option value="2min">2-Minute Drill</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="text-center mb-6">
+                <button onclick="runSimulator()" class="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-base rounded-xl transition shadow-lg transform hover:scale-105">
+                    🚀 בצע אבחון טקטי והתאמת מהלך
+                </button>
+            </div>
+
+            <div id="simResult" class="bg-slate-900 border border-amber-500/40 p-6 rounded-xl hidden transition-all duration-300">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 border-b lg:border-b-0 lg:border-l border-slate-800 pb-4 lg:pb-0 lg:pl-6">
+                        <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">כיסוי הגנתי אופייני והסתברות</h4>
+                        <div id="simCoverageTitle" class="text-2xl font-black text-white mb-1">Cover 1 Man</div>
+                        <div id="simProbBadge" class="inline-block px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-3">הסתברות: 85%</div>
+                        <p id="simCoverageDesc" class="text-xs text-slate-300 leading-relaxed"></p>
+                    </div>
+
+                    <div class="lg:col-span-1 border-b lg:border-b-0 lg:border-l border-slate-800 pb-4 lg:pb-0 lg:pl-6">
+                        <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-1">קונספט התקפי מומלץ והגנת קו</h4>
+                        <div id="simConceptTitle" class="text-xl font-bold text-sky-300 mb-1">Mesh / Crossing Routes</div>
+                        <div id="simProtectionCall" class="text-xs font-bold text-amber-300 mb-2">Protection: Slide Left / BOB</div>
+                        <p id="simConceptDesc" class="text-xs text-slate-300 leading-relaxed"></p>
+                    </div>
+
+                    <div class="lg:col-span-1">
+                        <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-1">סדר קריאה (Progression Reads) & Hot Read</h4>
+                        <div id="simProgressionTitle" class="text-base font-bold text-rose-300 mb-1">1: Mesh ➔ 2: Dig ➔ 3: Flat</div>
+                        <p id="simHotRead" class="text-xs text-slate-300 leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-5 border-t border-slate-800">
+                    <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-1">
+                        <span>🏋️</span> תרגילי אימון מומלצים למצב הזה
+                    </h4>
+                    <div id="simDrillsList" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs"></div>
+                </div>
+
+                <div class="mt-6 pt-5 border-t border-slate-800">
+                    <h4 class="text-xs font-bold text-teal-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                        <span>📖</span> קונספטים מומלצים מה-Playbook להגנה הזו
+                    </h4>
+                    <p id="simDownDistanceNote" class="text-[11px] text-slate-500 mb-3"></p>
+                    <div id="simPlaybookSuggestions" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="play-builder" class="bg-slate-800/80 border-2 border-fuchsia-500/60 rounded-2xl p-6 md:p-8 backdrop-blur shadow-2xl">
+            <div class="mb-6 text-center">
+                <span class="px-3 py-1 bg-fuchsia-500/20 text-fuchsia-300 font-bold text-xs rounded-full border border-fuchsia-500/30">בונה מהלכים אינטראקטיבי</span>
+                <h2 class="text-2xl md:text-4xl font-black text-fuchsia-400 mt-2">
+                    🎮 בנה מהלך משלך וקבל ציון וחוות דעת
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-1 max-w-2xl mx-auto">
+                    בחר הגנה ומצב Down & Distance, ואז קבע מסלול לכל אחד מ-5 העלים. המערכת תנתח את המהלך שבנית לפי כללי פוטבול אמיתיים — לא AI, אלא מנוע חוקים המבוסס על אותה מסד הגנות ומסלולים שכבר יש באפליקציה.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                    <label class="block text-xs font-bold text-slate-300 mb-2">1. ההגנה שמולה אתה בונה</label>
+                    <select id="builderCoverage" onchange="drawBuilderField()" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-fuchsia-400"></select>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                    <label class="block text-xs font-bold text-slate-300 mb-2">2. Down & Distance</label>
+                    <select id="builderDownDistance" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-fuchsia-400">
+                        <option value="1st10">1st & 10</option>
+                        <option value="2ndmed">2nd & Medium (4-6)</option>
+                        <option value="2ndlong">2nd/3rd & Long (7+)</option>
+                        <option value="3rdshort">3rd & Short (1-3)</option>
+                        <option value="redzone">Red Zone</option>
+                        <option value="2min">2-Minute Drill</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-6">
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-700 rounded-2xl p-4 shadow-xl text-center">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">המהלך שלך על המגרש</div>
+                    <div class="relative w-full flex justify-center bg-emerald-950/60 rounded-xl border border-emerald-800/50 p-2">
+                        <canvas id="builderCanvas" width="380" height="420" class="max-w-full rounded-lg shadow-inner"></canvas>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 bg-slate-900/90 border border-slate-700 rounded-2xl p-5 shadow-xl">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">3. קבע מסלול לכל על</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs" id="builderRouteSelectors"></div>
+                    <button onclick="evaluateBuilderPlay()" class="w-full mt-5 px-4 py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-black text-sm rounded-xl transition shadow-lg">
+                        📊 בדוק את המהלך וקבל ציון
+                    </button>
+                </div>
+            </div>
+
+            <div id="builderResult" class="bg-slate-900 border border-fuchsia-500/40 p-6 rounded-xl hidden">
+                <div class="flex flex-col md:flex-row items-center gap-6 mb-5">
+                    <div class="text-center shrink-0">
+                        <div id="builderScoreNum" class="text-5xl font-black text-fuchsia-400">--</div>
+                        <div id="builderScoreLabel" class="text-sm font-bold text-slate-300 mt-1">--</div>
+                    </div>
+                    <div class="flex-1 w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                        <div id="builderScoreBar" class="h-full bg-gradient-to-l from-rose-500 via-amber-400 to-emerald-400 transition-all duration-500" style="width:0%"></div>
+                    </div>
+                </div>
+                <div id="builderFeedbackList" class="space-y-2 text-xs"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 border-t border-slate-800 pt-6">
+        <p>QB Master Class 2.0 • מערכת ניתוח טקטי, מכניקה ותוכנית אימונים לקוורטרבקים</p>
+    </footer>
+
+    <script>
+        const COVERAGE_DATABASE = {
+            'cover0': {
+                blitzRisk: 'high',
+                weakZones: ['deep_middle','deep_out','honey_hole'],
+                name: 'Cover 0 (All-Out Blitz)',
+                typeTag: 'Man-to-Man + 0 Safeties',
+                safetyBadge: '0 Safeties (Zero Look)',
+                color: '#ef4444',
+                overview: 'הגנה אגרסיבית ללא שום Safety עמוק! 6-7 שחקנים (כולל LBs) פורצים ב-Pass Rush ישיר והשאר בשמירה אישית צמודה.',
+                lbKeys: 'ה-Linebackers (MIKE & WILL) אינם נסוגים בכיסוי zone אלא טסים ישר לתוך ה-A/B Gaps ב-Blitz אגרסיבי! קרא את הצעד הראשון שלהם קדימה.',
+                strengths: ['לחץ מיידי ואדיר על ה-QB (פחות מ-2 שניות לשחרור).', 'סוגר את ה-Pocket לחלוטין ועוצר את הריצה.'],
+                weaknesses: ['אין שום עזרה עמוקה! טעות של CB פירושה Touchdown.', 'פגיע לתרגילי מסירה מהירים ול-Screens.'],
+                concepts: [
+                    { title: 'Quick Slants (Route 2)', desc: 'מסירה מהירה של 3 יארד לרסיבר שחותך בפנים.' },
+                    { title: 'RB / WR Screen', desc: 'תן ל-Blitz לעבור מעליך ומסור מאחורי הפורצים.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE1');
+                    drawDefender(ctx, w/2 - 30, h - 70, 'DT1');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT2');
+                    drawDefender(ctx, w/2 + 90, h - 70, 'DE2');
+                    drawDefender(ctx, w/2 - 40, h - 100, 'WILL');
+                    drawDefender(ctx, w/2 + 40, h - 100, 'MIKE');
+                    drawRushArrow(ctx, w/2 - 40, h - 100, w/2 - 15, h - 35);
+                    drawRushArrow(ctx, w/2 + 40, h - 100, w/2 + 15, h - 35);
+                    drawDefender(ctx, w/2 - 150, h - 130, 'CB1');
+                    drawDefender(ctx, w/2 + 150, h - 130, 'CB2');
+                    drawDefender(ctx, w/2 - 70, h - 120, 'SS');
+                    drawDefender(ctx, w/2 + 70, h - 120, 'FS');
+                    drawDefender(ctx, w/2 + 110, h - 105, 'SAM');
+                }
+            },
+            'cover1': {
+                blitzRisk: 'medium',
+                weakZones: ['flat'],
+                name: 'Cover 1 (Man-Free)',
+                typeTag: 'Single High + Man Coverage',
+                safetyBadge: '1 Safety עמוק',
+                color: '#38bdf8',
+                overview: 'שמירה אישית (Man-to-Man) צמודה על כל הרסיברים, כאשר Free Safety יחיד פטרול בעומק המגרש.',
+                lbKeys: 'ה-Linebackers נצמדים בשמירה אישית על ה-Tight End וה-Running Back. אם ה-RB נשאר לחסום, ה-MIKE Linebacker עולה כ-Spy על ה-QB.',
+                strengths: ['סוגר תרגילי Zone קצרים.', 'מציב 8 מגינים ב-Box לעצירת הריצה.'],
+                weaknesses: ['אין עזרה באגפים הקצרים (Flats).', 'פגיע למיס-מאצ\'ים של RB/TE מול Linebacker.'],
+                concepts: [
+                    { title: 'Mesh Concept', desc: 'שני רסיברים חוצים מקרוב ויוצרים Pick/Rub.' },
+                    { title: 'Out Routes & Comebacks', desc: 'חיתוך חצי לקו השדרה.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2, 50, 'FS');
+                    drawZoneBubble(ctx, w/2, 60, 110, 45, 'rgba(56,189,248,0.25)');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE1');
+                    drawDefender(ctx, w/2 - 30, h - 70, 'DT1');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT2');
+                    drawDefender(ctx, w/2 + 90, h - 70, 'DE2');
+                    drawDefender(ctx, w/2 - 50, h - 105, 'WILL');
+                    drawDefender(ctx, w/2 + 50, h - 105, 'MIKE');
+                    drawDefender(ctx, w/2 - 150, h - 125, 'CB1');
+                    drawDefender(ctx, w/2 + 150, h - 125, 'CB2');
+                    drawDefender(ctx, w/2 + 80, h - 110, 'SS');
+                    drawDefender(ctx, w/2 + 110, h - 100, 'SAM');
+                }
+            },
+            'cover2': {
+                blitzRisk: 'low',
+                weakZones: ['deep_middle','honey_hole'],
+                name: 'Cover 2 (Zone)',
+                typeTag: 'Two High Safeties + 5 Zone Under',
+                safetyBadge: '2 Safeties עמוקים',
+                color: '#f59e0b',
+                overview: '2 Safeties מחלקים את העומק לשני חצאים. 5 מגינים (3 LBs + 2 CBs) מכסים את האזורים הקצרים (Underneath & Flats).',
+                lbKeys: 'ה-Linebackers נסוגים קדימה לאזורי ה-Hook/Curl (עומק 8-12 יארד). ה-MIKE אחראי על המרכז, וה-WILL/SAM סוגרים את ה-Seams.',
+                strengths: ['סוגרת לחלוטין מסירות עמוקות באגפים.', 'מצוינת מול מסירות קצרות לאגפים.'],
+                weaknesses: ['החור העמוק באמצע (Deep Middle).', 'ה-"Honey Hole" שבין ה-CB ל-Safety.'],
+                concepts: [
+                    { title: 'Smash Concept (5+1)', desc: 'Hitch קצר + Corner route ל-Honey Hole.' },
+                    { title: 'Four Verticals', desc: '4 רסיברים עמוקים; תוקף את התפרים והאמצע.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2 - 80, 60, 'SS');
+                    drawDefender(ctx, w/2 + 80, 60, 'FS');
+                    drawZoneBubble(ctx, w/2 - 85, 70, 75, 45, 'rgba(245,158,11,0.25)');
+                    drawZoneBubble(ctx, w/2 + 85, 70, 75, 45, 'rgba(245,158,11,0.25)');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE'); drawDefender(ctx, w/2 - 30, h - 70, 'DT');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT'); drawDefender(ctx, w/2 + 90, h - 70, 'DE');
+                    drawDefender(ctx, w/2 - 60, h - 110, 'WILL'); drawDefender(ctx, w/2, h - 110, 'MIKE'); drawDefender(ctx, w/2 + 60, h - 110, 'SAM');
+                    drawZoneBubble(ctx, w/2 - 60, h - 120, 35, 25, 'rgba(245,158,11,0.2)');
+                    drawZoneBubble(ctx, w/2, h - 120, 35, 25, 'rgba(245,158,11,0.2)');
+                    drawZoneBubble(ctx, w/2 + 60, h - 120, 35, 25, 'rgba(245,158,11,0.2)');
+                    drawDefender(ctx, w/2 - 150, h - 110, 'CB1'); drawDefender(ctx, w/2 + 150, h - 110, 'CB2');
+                }
+            },
+            'tampa2': {
+                blitzRisk: 'low',
+                weakZones: ['shallow_middle'],
+                name: 'Tampa 2 (Deep Middle MLB)',
+                typeTag: 'Two High Safeties + Deep MLB Drop',
+                safetyBadge: '2 Safeties + MLB עמוק',
+                color: '#eab308',
+                overview: 'ורסיה של Cover 2 שבה ה-Middle Linebacker (MIKE) יורד עמוק מאוד במרכז המגרש כדי לסגור את החור העמוק שבין שני ה-Safeties.',
+                lbKeys: 'ברגע הסנאפ, ה-MIKE מסתובב ב-180 מעלות וטס אחורה ב-Sprint לעומק 15-20 יארד! הוא הופך למעשה ל-Safety שלישי במרכז.',
+                strengths: ['סוגרת את ה-Deep Middle לחלוטין.', 'משמרת כיסוי Flat חזק באגפים.'],
+                weaknesses: ['אזור ה-Short Middle (5-8yd) נחשף מעט.', 'פגועה אם ה-MLB איטי בנסיגה.'],
+                concepts: [
+                    { title: 'Texas Concept / Shallow Cross', desc: 'חיתוך קצר של RB או WR לשטח שה-MLB נטש.' },
+                    { title: 'Levels Concept', desc: 'שני נתיבי In בעומקים שונים המעמיסים על ה-Linebackers.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2 - 90, 60, 'SS'); drawDefender(ctx, w/2 + 90, 60, 'FS');
+                    drawDefender(ctx, w/2, 110, 'MIKE');
+                    drawDropLine(ctx, w/2, h - 110, w/2, 110);
+                    drawZoneBubble(ctx, w/2, 115, 45, 35, 'rgba(234,179,8,0.3)');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE'); drawDefender(ctx, w/2 - 30, h - 70, 'DT');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT'); drawDefender(ctx, w/2 + 90, h - 70, 'DE');
+                    drawDefender(ctx, w/2 - 60, h - 110, 'WILL'); drawDefender(ctx, w/2 + 60, h - 110, 'SAM');
+                    drawDefender(ctx, w/2 - 150, h - 110, 'CB1'); drawDefender(ctx, w/2 + 150, h - 110, 'CB2');
+                }
+            },
+            'cover2man': {
+                blitzRisk: 'medium',
+                weakZones: ['deep_middle'],
+                name: 'Cover 2 Man (Man-Under)',
+                typeTag: 'Two High Safeties + Man Coverage',
+                safetyBadge: '2 Safeties עמוקים',
+                color: '#f97316',
+                overview: 'שמירה אישית צמודה (Man-Under) של כל ה-DBs וה-LBs, בתוספת רשת ביטחון של 2 Safeties עמוקים מלמעלה.',
+                lbKeys: 'ה-Linebackers אינם צופים בעיני ה-QB אלא ננעלים בעיניים על חזה ה-RB וה-TE בשמירה אישית הדוקה. גבם מופנה ל-QB!',
+                strengths: ['כיסוי אטום ביותר מול מסירות עמוקות וקצרות.', 'מקשה מאוד על חלונות מסירה.'],
+                weaknesses: ['אין מגן חופשי ב-Box! QB scramble משיג יארדים רבים.', 'פגיע לתרגילי הצלבה.'],
+                concepts: [
+                    { title: 'Crossing Routes / Mesh', desc: 'חיתוכים אופקיים רחבים שמוציאים את ה-DB מאיזון.' },
+                    { title: 'QB Scramble / Draw', desc: 'בריחה מה-Pocket כשגב ה-DBs מופנה אליך.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2 - 80, 60, 'SS'); drawDefender(ctx, w/2 + 80, 60, 'FS');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE'); drawDefender(ctx, w/2 - 30, h - 70, 'DT');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT'); drawDefender(ctx, w/2 + 90, h - 70, 'DE');
+                    drawDefender(ctx, w/2 - 50, h - 110, 'WILL'); drawDefender(ctx, w/2 + 50, h - 110, 'MIKE');
+                    drawDefender(ctx, w/2 - 150, h - 120, 'CB1'); drawDefender(ctx, w/2 + 150, h - 120, 'CB2');
+                    drawDefender(ctx, w/2 + 105, h - 108, 'SAM');
+                }
+            },
+            'cover3': {
+                blitzRisk: 'low',
+                weakZones: ['flat','seam'],
+                name: 'Cover 3 (Zone Sky)',
+                typeTag: 'Single High + 3 Deep Zone',
+                safetyBadge: '1 Safety עמוק',
+                color: '#10b981',
+                overview: 'השדה העמוק מחולק ל-3 שלישים (2 CBs יורדים עמוק + FS באמצע). 4 מגינים (Strong Safety + 3 LBs) מכסים את האזורים הקצרים.',
+                lbKeys: 'ה-Linebackers וה-Strong Safety יורדים לאזורי Curl/Flat ו-Hook. ה-SS יורד ל-Box (Sky support) ומתנהג כמו LB לכל דבר!',
+                strengths: ['הגנה חזקה נגד הריצה (Safety שמיני ב-Box).', 'מונעת מסירות עמוקות באגפים ובאמצע.'],
+                weaknesses: ['אזורי ה-Flats הקצרים חשופים.', 'התפרים (Seams) שבין ה-Safeties.'],
+                concepts: [
+                    { title: 'Flood Concept', desc: '3 רסיברים באותו צד: Deep Fade, Medium Out, Short Flat.' },
+                    { title: 'Curl-Flat Concept', desc: 'Curl ב-10 יארד + Flat קצר.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2, 50, 'FS');
+                    drawDefender(ctx, w/2 - 140, 75, 'CB1'); drawDefender(ctx, w/2 + 140, 75, 'CB2');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE'); drawDefender(ctx, w/2 - 30, h - 70, 'DT');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT'); drawDefender(ctx, w/2 + 90, h - 70, 'DE');
+                    drawDefender(ctx, w/2 - 70, h - 110, 'WILL'); drawDefender(ctx, w/2, h - 110, 'MIKE');
+                    drawDefender(ctx, w/2 + 60, h - 110, 'SAM'); drawDefender(ctx, w/2 + 110, h - 110, 'SS');
+                }
+            },
+            'cover3match': {
+                blitzRisk: 'low',
+                weakZones: ['seam'],
+                name: 'Cover 3 Match (Pattern Matching)',
+                typeTag: 'Single High + Zone Match Hybrid',
+                safetyBadge: '1 Safety + Pattern Match',
+                color: '#14b8a6',
+                overview: 'הגנת Zone דינמית: המגינים פותחים באזורי Cover 3, אך ברגע שהרסיבר חוצה לעומק, הכיסוי הופך לשמירה אישית (Match).',
+                lbKeys: 'ה-Linebackers שורקים ומחליפים שחקנים! אם ה-Slot יורד ל-Out קצר, ה-LB יורד אליו ככיסוי אישי מלא.',
+                strengths: ['מונעת את החורים של Cover 3 קלאסית.', 'מבלבלת קריאות קלאסיות.'],
+                weaknesses: ['מורכבות תקשורת גבוהה בהגנה.', 'פגועה לתרגילי Double Moves.'],
+                concepts: [
+                    { title: 'Out-and-Up / Pump Fake', desc: 'הטעיית Out וחיתוך אנכי עמוק.' },
+                    { title: 'Switch Routes', desc: 'החלפת מסלולים בין WR ל-TE להורסת ה-Match.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2, 50, 'FS');
+                    drawDefender(ctx, w/2 - 130, 80, 'CB1'); drawDefender(ctx, w/2 + 130, 80, 'CB2');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE'); drawDefender(ctx, w/2 - 30, h - 70, 'DT');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT'); drawDefender(ctx, w/2 + 90, h - 70, 'DE');
+                    drawDefender(ctx, w/2 - 60, h - 110, 'WILL'); drawDefender(ctx, w/2, h - 110, 'MIKE'); drawDefender(ctx, w/2 + 60, h - 110, 'SAM');
+                    drawDefender(ctx, w/2 + 105, h - 100, 'SS');
+                }
+            },
+            'cover4': {
+                blitzRisk: 'low',
+                weakZones: ['intermediate_middle'],
+                name: 'Cover 4 (Quarters)',
+                typeTag: 'Two High + 4 Deep Zone',
+                safetyBadge: '2 Safeties עמוקים',
+                color: '#a855f7',
+                overview: '4 מגינים עמוקים (2 CBs + 2 Safeties) מחלקים את השדה העמוק ל-4 רבעים שווים. מונעת מסירות עמוקות לחלוטין.',
+                lbKeys: 'ה-Linebackers אחראים על השטח הקצר-בינוני ועל הקריאה הראשונית של ה-Play Action! הם יגיבו באגרסיביות ל-Run Fake.',
+                strengths: ['מונעת כמעט 100% מסירות עמוקות.', 'ה-Safeties מגיבים במהירות לריצה.'],
+                weaknesses: ['חור במרכז המגרש הבינוני (Underneath).', 'פגועה ל-Play-Action.'],
+                concepts: [
+                    { title: 'Dagger Concept (6+8)', desc: 'Clear-out Fade + Dig route עמוק לרווח.' },
+                    { title: 'Drive Concept', desc: 'Shallow Drag מתחת + In route בינוני.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2 - 130, 70, 'CB1'); drawDefender(ctx, w/2 - 45, 60, 'SS');
+                    drawDefender(ctx, w/2 + 45, 60, 'FS'); drawDefender(ctx, w/2 + 130, 70, 'CB2');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE'); drawDefender(ctx, w/2 - 30, h - 70, 'DT');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT'); drawDefender(ctx, w/2 + 90, h - 70, 'DE');
+                    drawDefender(ctx, w/2 - 60, h - 110, 'WILL'); drawDefender(ctx, w/2, h - 110, 'MIKE'); drawDefender(ctx, w/2 + 60, h - 110, 'SAM');
+                }
+            },
+            'cover4palms': {
+                blitzRisk: 'low',
+                weakZones: ['seam'],
+                name: 'Cover 4 Palms / Meg Match',
+                typeTag: 'Quarters Match on Slot / Outside',
+                safetyBadge: '2 Safeties + Palms Lock',
+                color: '#c026d3',
+                overview: 'הגנת Quarters חכמה: ה-CB וה-Safety קוראים את מסלול ה-Slot (רסיבר מספר 2). אם מספר 2 רץ החוצה – ה-CB יורד אליו וה-Safety לוקח את מספר 1.',
+                lbKeys: 'ה-Linebacker (SAM/WILL) עוזר לסגור את ה-Underneath היטב ומגן על ה-Hook Zone במידה וה-Slot חותך פנימה.',
+                strengths: ['עוצרת תרגילי Bubble Screen ו-Outs קצרים.', 'שומרת עומק דינמי.'],
+                weaknesses: ['פגועה לתרגילי Vertical של מספר 2.', 'מצריכה קריאה מדויקת מה-QB.'],
+                concepts: [
+                    { title: 'Slot Seam / Wheel', desc: 'מסירה עמוקה בתפר ל-Slot Receiver.' },
+                    { title: 'Post-Corner Combo', desc: 'סיבוב ה-Safety במרכז המגרש.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2 - 130, 80, 'CB1'); drawDefender(ctx, w/2 - 40, 70, 'SS');
+                    drawDefender(ctx, w/2 + 40, 70, 'FS'); drawDefender(ctx, w/2 + 130, 80, 'CB2');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE'); drawDefender(ctx, w/2 - 30, h - 70, 'DT');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT'); drawDefender(ctx, w/2 + 90, h - 70, 'DE');
+                    drawDefender(ctx, w/2 - 50, h - 110, 'WILL'); drawDefender(ctx, w/2 + 50, h - 110, 'MIKE');
+                    drawDefender(ctx, w/2 + 100, h - 100, 'SAM');
+                }
+            },
+            'cover6': {
+                blitzRisk: 'low',
+                weakZones: ['deep_out'],
+                name: 'Cover 6 (Quarter-Quarter-Half)',
+                typeTag: 'Split Field (Cover 4 + Cover 2)',
+                safetyBadge: '2 Safeties (אסימטרי)',
+                color: '#6366f1',
+                overview: 'הגנה אסימטרית: בצד הרחב של המגרש (Field) משחקים Cover 4, ובצד הצר (Boundary) משחקים Cover 2.',
+                lbKeys: 'ה-Linebackers פועלים באסימטריות: ה-LB בצד ה-Cover 2 יורד ל-Hook/Curl קצר, בעוד ה-LB בצד ה-Cover 4 קורא את ה-Seam.',
+                strengths: ['מבלבלת מאוד QBs לפני הסנאפ.', 'מתאימה את עצמה למיקום ה-Hash marks.'],
+                weaknesses: ['מורכבות תיאום גבוהה בהגנה.', 'פגועה במתקפה ממוקדת בצד ה-Cover 2.'],
+                concepts: [
+                    { title: 'Boundary Smash', desc: 'תקיפת צד ה-Cover 2 הצר.' },
+                    { title: 'Field Flood', desc: 'עומס אופקי בצד ה-Cover 4.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2 - 130, 70, 'CB1'); drawDefender(ctx, w/2 - 45, 65, 'SS');
+                    drawDefender(ctx, w/2 + 60, 55, 'FS'); drawDefender(ctx, w/2 + 140, h - 110, 'CB2');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE'); drawDefender(ctx, w/2 - 30, h - 70, 'DT');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT'); drawDefender(ctx, w/2 + 90, h - 70, 'DE');
+                    drawDefender(ctx, w/2 - 50, h - 110, 'WILL'); drawDefender(ctx, w/2 + 50, h - 110, 'MIKE');
+                    drawDefender(ctx, w/2 + 110, h - 100, 'SAM');
+                }
+            },
+            'firezone': {
+                blitzRisk: 'high',
+                weakZones: ['flat'],
+                name: 'Fire Zone Blitz (3 Deep, 3 Under)',
+                typeTag: 'Zone Blitz with Dropping Lineman',
+                safetyBadge: 'Disguised Look',
+                color: '#ef4444',
+                overview: 'הסוואת לחץ! 5 פורצים ב-Blitz, אך שחקן DL אחד נופל אחורה ל-Zone, בעוד 3 DBs מכסים את השדה העמוק.',
+                lbKeys: 'אחד הליינבייקרים (או Safety) טס ב-Blitz ישר, בעוד ה-Defensive End הנגדי נופל ב-Zone drop לאזור ה-Flat! זהה את ה-DL שנסוג.',
+                strengths: ['בלבול מוחלט בקו ההתקפה ובקריאת ה-QB.', 'לחץ פיזי תוך שמירה על Zone עמוק.'],
+                weaknesses: ['ה-DL שנופל אינו מגן מסירה טבעי (איטי).', 'חורים גדולים ב-Flats.'],
+                concepts: [
+                    { title: 'Hot Slant to Blitz Side', desc: 'מסירה מהירה ישירות לחלל ה-Blitz.' },
+                    { title: 'Quick Out / Flat', desc: 'ניצול חוסר במגינים נמוכים.' }
+                ],
+                draw: function(ctx, w, h) {
+                    drawFieldBase(ctx, w, h);
+                    drawOffenseSet(ctx, w, h);
+                    drawDefender(ctx, w/2, 50, 'FS');
+                    drawDefender(ctx, w/2 - 130, 75, 'CB1'); drawDefender(ctx, w/2 + 130, 75, 'CB2');
+                    drawDefender(ctx, w/2 - 90, h - 70, 'DE1'); drawDefender(ctx, w/2 - 30, h - 70, 'DT1');
+                    drawDefender(ctx, w/2 + 30, h - 70, 'DT2'); drawDefender(ctx, w/2 + 90, h - 70, 'DE2');
+                    drawDefender(ctx, w/2 - 40, h - 105, 'WILL'); drawDefender(ctx, w/2 + 40, h - 105, 'MIKE');
+                    drawRushArrow(ctx, w/2 - 40, h - 105, w/2 - 10, h - 35);
+                    drawRushArrow(ctx, w/2 + 40, h - 105, w/2 + 10, h - 35);
+                    drawDropLine(ctx, w/2 + 90, h - 70, w/2 + 110, h - 120);
+                    drawDefender(ctx, w/2 - 110, h - 100, 'SAM');
+                    drawDropLine(ctx, w/2 - 110, h - 65, w/2 - 110, h - 100);
+                    drawDefender(ctx, w/2 - 60, h - 130, 'SS');
+                }
+            }
+        };
+
+        const ROUTE_DATABASE = {
+            1: {
+                zones: ['flat'],
+                name: 'Route 1: Flat (יציאה מהירה לאגף)',
+                desc: 'הרסיבר רץ 1-3 יארד קדימה ופותח מיד החוצה ב-90 מעלות אל קו השדרה (Flat).',
+                timing: '1-3 יארד עומק • שחרור מיידי (Quick Throw / Pre-snap read).',
+                counter: 'Cover 3, Cover 4 (ניצול הרווח מתחת ל-CB שנסוג עמוק).',
+                qbTip: 'זרוק את הכדור אל הכתף החיצונית של הרסיבר כדי שיוכל להסתובב ולהשיג יארדים לאחר התפוסה (YAC).'
+            },
+            2: {
+                zones: ['shallow_middle'],
+                name: 'Route 2: Slant (אלכסון מהיר)',
+                desc: 'הרסיבר לוקח 3 צעדים אנכיים וחותך ב-45 מעלות אל מרכז השדה ישירות לפני ה-Linebacker.',
+                timing: '3-5 יארד עומק • שחרור מהיר ב-3-Step Drop (צעד 1 מ-Gun).',
+                counter: 'Cover 0 Blitz, Cover 1 (Off Coverage), Cover 3.',
+                qbTip: 'מסור את הכדור בציפייה (Anticipation) עוד לפני שהרסיבר ביצע את החיתוך!'
+            },
+            3: {
+                zones: ['deep_out'],
+                name: 'Route 3: Comeback (חזרה אחורה)',
+                desc: 'הרסיבר טס עמוק 12-15 יארד, בולם בחדות וחוזר 2-3 יארד אל האלכסון החיצוני לעבר ה-QB.',
+                timing: '12-15 יארד עומק • שחרור ב-5-Step Drop.',
+                counter: 'Off Coverage, Cover 1, Cover 3.',
+                qbTip: 'דרושה זרוע חזקה! זרוק את הכדור כשהרסיבר מגיע לשיא הגובה, לפני שהוא מסתובב.'
+            },
+            4: {
+                zones: ['intermediate_middle'],
+                name: 'Route 4: Curl (סלסול פנימה)',
+                desc: 'הרסיבר רץ 10-12 יארד, עוצר בפתאומיות, מסתובב 180 מעלות פנימה וחוזר צעד אחד לעבר ה-QB.',
+                timing: '10-12 יארד עומק • שחרור ב-5-Step Drop.',
+                counter: 'Cover 3, Cover 4, Soft Zone.',
+                qbTip: 'שים את הכדור נמוך ובחזה של הרסיבר כדי להגן עליו מפגיעת Linebacker מאחור.'
+            },
+            5: {
+                zones: ['intermediate_out'],
+                name: 'Route 5: Out (יציאה החוצה)',
+                desc: 'הרסיבר רץ 10-12 יארד אנכית, בולם וחותך ב-90 מעלות תחרותית לכיוון קו השדרה.',
+                timing: '10-12 יארד עומק • שחרור ב-5-Step Drop.',
+                counter: 'Cover 1 (Inside Leverage), Cover 3, Cover 4.',
+                qbTip: 'זריקת זווית נקייה! הכדור חייב להגיע אל ה-Sideline לפני שה-CB מספיק להתאושש.'
+            },
+            6: {
+                zones: ['intermediate_middle','seam'],
+                name: 'Route 6: Dig / In (חיתוך פנימה)',
+                desc: 'הרסיבר רץ 10-12 יארד עמוק, בולם בחוזקה וחותך ב-90 מעלות לרוחב מרכז המגרש מאחורי ה-Linebackers.',
+                timing: '10-12 יארד עומק • שחרור ב-5-Step Drop מתחת ל-Safeties.',
+                counter: 'Cover 2, Cover 4 (Dagger Concept), Cover 3.',
+                qbTip: 'חכה שה-Linebackers ירדו או יימשכו קדימה, וזרוק בחלון שבינם לבין ה-Safety.'
+            },
+            7: {
+                zones: ['honey_hole','deep_out'],
+                name: 'Route 7: Corner (פינה פינתית)',
+                desc: 'הרסיבר רץ 10-12 יארד אנכית וחותך ב-45 מעלות אל הפינה העמוקה של ה-End Zone (Honey Hole).',
+                timing: '12-15 יארד עומק • שחרור בקשת נאה.',
+                counter: 'Cover 2 Zone (Smash Concept), Cover 1.',
+                qbTip: 'השתמש בקשת (Touch Ball) מעל ה-CB הנמוך ולפני ה-Safety העמוק.'
+            },
+            8: {
+                zones: ['deep_middle','seam'],
+                name: 'Route 8: Post (עמוד מרכזי)',
+                desc: 'הרסיבר רץ 12-15 יארד עמוק וחותך ב-45 מעלות לכיוון עמוד השער במרכז המגרש.',
+                timing: '12-15+ יארד עומק • 5 או 7-Step Drop.',
+                counter: 'Cover 2 (תקיפת ה-Deep Middle), Cover 3 (בין ה-CB ל-FS).',
+                qbTip: 'הזז את ה-Free Safety עם העיניים לכיוון הנגדי לפני שאתה משחרר את ה-Post!'
+            },
+            9: {
+                zones: ['deep_out','seam'],
+                name: 'Route 9: Go / Fly (פצצה עמוקה)',
+                desc: 'ריצה אנכית בשיא המהירות בקו ישר במעלה המגרש לעבר ה-End Zone.',
+                timing: '15+ יארד עומק • שחרור עמוק ב-7-Step Drop או Play-Action.',
+                counter: 'Cover 0 Blitz, Cover 1 (Press Coverage beat), Single High.',
+                qbTip: 'שים את הכדור 3-5 יארד לפני הרסיבר מעבר לכתף החיצונית שלו (Fade / Streak).'
+            }
+        };
+
+        function drawFieldBase(ctx, w, h) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = '#022c22';
+            ctx.fillRect(0, 0, w, h);
+            ctx.strokeStyle = '#059669';
+            ctx.lineWidth = 1.5;
+            for (let y = 40; y < h; y += 40) {
+                ctx.beginPath(); ctx.moveTo(10, y); ctx.lineTo(w - 10, y); ctx.stroke();
+            }
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(10, h - 35); ctx.lineTo(w - 10, h - 35); ctx.stroke();
+        }
+
+        function drawOffenseSet(ctx, w, h) {
+            const losY = h - 35;
+            // QB (shotgun, ~5yd behind the line)
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath(); ctx.arc(w/2, h - 12, 6, 0, Math.PI * 2); ctx.fill();
+            // RB offset behind the QB (5th eligible receiver)
+            ctx.beginPath(); ctx.arc(w/2 + 22, h - 8, 6, 0, Math.PI * 2); ctx.fill();
+            // 5 Offensive Linemen on the LOS
+            for (let i = -2; i <= 2; i++) {
+                ctx.fillRect(w/2 + (i * 18) - 5, losY - 5, 10, 10);
+            }
+            // 4 eligible receivers split 2x2 (outside WRs + slot/TE)
+            ctx.beginPath(); ctx.arc(w/2 - 150, losY, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(w/2 + 150, losY, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(w/2 - 110, losY, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(w/2 + 110, losY, 6, 0, Math.PI * 2); ctx.fill();
+        }
+
+        function drawDefender(ctx, x, y, label) {
+            ctx.fillStyle = label.startsWith('CB') || label.startsWith('FS') || label.startsWith('SS') ? '#f59e0b' : '#ef4444';
+            ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 8px Rubik, sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(label, x, y);
+        }
+
+        function drawZoneBubble(ctx, x, y, rx, ry, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+        }
+
+        function drawRushArrow(ctx, x1, y1, x2, y2) {
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        }
+
+        function drawDropLine(ctx, x1, y1, x2, y2) {
+            ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.setLineDash([3, 3]);
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function printCurrentCoverage() {
+            window.print();
+        }
+
+        // ---- Offensive Playbook: known route concepts ----
+        function posSet(w, h) {
+            return {
+                X: { x: w/2 - 150, y: h - 35 },
+                H: { x: w/2 - 90, y: h - 35 },
+                Y: { x: w/2 + 90, y: h - 35 },
+                Z: { x: w/2 + 150, y: h - 35 },
+                RB: { x: w/2 + 15, y: h - 15 }
+            };
+        }
+
+        // ---- Interactive Play Builder ----
+        // sideSign: -1 for left-aligned positions (X, H), +1 for right-aligned (Y, Z, RB).
+        // Route shapes are stored with positive lateral = "toward the sideline" (outside);
+        // multiplying by sideSign correctly mirrors the break direction for either side.
+        const BUILDER_POSITIONS = [
+            { id: 'X', color: '#38bdf8', sideSign: -1 },
+            { id: 'H', color: '#10b981', sideSign: -1 },
+            { id: 'Y', color: '#a855f7', sideSign: 1 },
+            { id: 'Z', color: '#f59e0b', sideSign: 1 },
+            { id: 'RB', color: '#ef4444', sideSign: 1 }
+        ];
+
+        const BUILDER_ROUTE_SHAPES = {
+            0: { label: 'ללא מסלול (הישאר לחסום)', points: [[0, 0], [0, -15]] },
+            1: { label: '1: Flat', points: [[0, 0], [0, -20], [90, -25]] },
+            2: { label: '2: Slant', points: [[0, 0], [0, -40], [-70, -75]] },
+            3: { label: '3: Comeback', points: [[0, 0], [0, -220], [80, -170]] },
+            4: { label: '4: Curl', points: [[0, 0], [0, -180], [-55, -155]] },
+            5: { label: '5: Out', points: [[0, 0], [0, -180], [110, -180]] },
+            6: { label: '6: Dig', points: [[0, 0], [0, -180], [-110, -180]] },
+            7: { label: '7: Corner', points: [[0, 0], [0, -200], [110, -280]] },
+            8: { label: '8: Post', points: [[0, 0], [0, -200], [-110, -280]] },
+            9: { label: '9: Go / Fly', points: [[0, 0], [0, -300]] }
+        };
+
+        // shallow/intermediate/deep classification, reused for level-diversity scoring
+        const BUILDER_ROUTE_DEPTH = { 1: 'shallow', 2: 'shallow', 4: 'intermediate', 5: 'intermediate', 6: 'intermediate', 3: 'deep', 7: 'deep', 8: 'deep', 9: 'deep' };
+
+        function populateBuilderCoverageSelect() {
+            const select = document.getElementById('builderCoverage');
+            select.innerHTML = Object.keys(COVERAGE_DATABASE).map(key =>
+                `<option value="${key}">${COVERAGE_DATABASE[key].name}</option>`
+            ).join('');
+        }
+
+        function populateBuilderRouteSelectors() {
+            const container = document.getElementById('builderRouteSelectors');
+            const defaults = { X: 9, H: 2, Y: 6, Z: 5, RB: 1 };
+            container.innerHTML = BUILDER_POSITIONS.map(pos => `
+                <div class="bg-slate-800/80 border border-slate-700 rounded-lg p-2.5">
+                    <label class="flex items-center gap-1.5 text-[11px] font-bold mb-1.5" style="color:${pos.color}">
+                        <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${pos.color}"></span> ${pos.id}
+                    </label>
+                    <select id="builderRoute${pos.id}" onchange="drawBuilderField()" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-1.5 text-[11px] text-white focus:outline-none" style="border-color:${pos.color}66">
+                        ${Object.entries(BUILDER_ROUTE_SHAPES).map(([num, r]) =>
+                            `<option value="${num}" ${parseInt(num) === defaults[pos.id] ? 'selected' : ''}>${r.label}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+            `).join('');
+        }
+
+        function drawBuilderField() {
+            const canvas = document.getElementById('builderCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            drawFieldBase(ctx, w, h);
+
+            const losY = h - 35;
+            ctx.fillStyle = '#94a3b8';
+            for (let i = -2; i <= 2; i++) { ctx.fillRect(w/2 + i*18 - 5, losY - 5, 10, 10); }
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath(); ctx.arc(w/2, losY + 18, 6, 0, Math.PI * 2); ctx.fill();
+
+            const p = posSet(w, h);
+            BUILDER_POSITIONS.forEach(pos => {
+                const routeNum = parseInt(document.getElementById('builderRoute' + pos.id).value);
+                const shape = BUILDER_ROUTE_SHAPES[routeNum];
+                const start = p[pos.id];
+                const absPoints = shape.points.map(pt => [start.x + pt[0] * pos.sideSign, start.y + pt[1]]);
+
+                ctx.strokeStyle = pos.color; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(absPoints[0][0], absPoints[0][1]);
+                for (let i = 1; i < absPoints.length; i++) ctx.lineTo(absPoints[i][0], absPoints[i][1]);
+                ctx.stroke();
+
+                if (routeNum !== 0) {
+                    const last = absPoints[absPoints.length - 1];
+                    const prev = absPoints[absPoints.length - 2];
+                    drawArrowhead(ctx, prev[0], prev[1], last[0], last[1], pos.color, 8);
+                }
+
+                ctx.fillStyle = pos.color;
+                ctx.beginPath(); ctx.arc(start.x, start.y, 8, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.3; ctx.stroke();
+                ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px Rubik, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(pos.id, start.x, start.y);
+            });
+        }
+
+        // Small table of the specific route(s) that most precisely exploit each coverage,
+        // beyond the generic zone-tag match — this is what gives the score real sensitivity
+        // to WHICH exact route a position runs, not just which zone-family it belongs to.
+        const IDEAL_ROUTES_BY_COVERAGE = {
+            cover0: [{ route: 2, bonus: 9, reason: 'Slant הוא Hot Read קלאסי מול בליץ מיידי' }, { route: 1, bonus: 6, reason: 'Flat משחרר מהר לפני שהלחץ מגיע' }],
+            cover1: [{ route: 1, bonus: 8, reason: 'Flat חשוף — אין עזרה באגפים הקצרים' }, { route: 9, bonus: 5, reason: 'Go מול Press יכול לנצל Man צמוד' }],
+            cover2: [{ route: 7, bonus: 11, reason: 'Corner ל-Honey Hole הוא הניצול הקלאסי של Cover 2' }, { route: 8, bonus: 8, reason: 'Post תוקף את החור העמוק באמצע' }],
+            tampa2: [{ route: 2, bonus: 9, reason: 'Slant תוקף את השטח הקצר-אמצעי שנחשף כשה-MLB יורד עמוק' }],
+            cover2man: [{ route: 6, bonus: 7, reason: 'Dig חוצה ומוציא מגין ממאבק אחד-על-אחד' }],
+            cover3: [{ route: 1, bonus: 8, reason: 'Flat חשוף מתחת לכיסוי העמוק' }, { route: 9, bonus: 6, reason: 'תקיפת התפר בין ה-CB ל-FS' }],
+            cover3match: [{ route: 9, bonus: 7, reason: 'מסלול אנכי מקשה על מנגנון ה-Match לזהות אחריות' }],
+            cover4: [{ route: 4, bonus: 8, reason: 'Curl תוקף את השטח הבינוני שה-Safeties לא אחראים עליו' }, { route: 6, bonus: 7, reason: 'Dig דומה — אזור Underneath חשוף' }],
+            cover4palms: [{ route: 9, bonus: 7, reason: 'מסלול Vertical של מספר 2 קשה ל-Palms Match' }],
+            cover6: [{ route: 3, bonus: 7, reason: 'Comeback תוקף את צד ה-Cover 2 הצר' }],
+            firezone: [{ route: 2, bonus: 9, reason: 'מסירה מהירה לחלל שה-Blitz פינה' }]
+        };
+
+        function evaluateBuilderPlay() {
+            const covKey = document.getElementById('builderCoverage').value;
+            const coverage = COVERAGE_DATABASE[covKey];
+            const weakZones = coverage.weakZones || [];
+            const downDist = document.getElementById('builderDownDistance').value;
+
+            const selections = BUILDER_POSITIONS.map(pos => ({
+                id: pos.id,
+                route: parseInt(document.getElementById('builderRoute' + pos.id).value)
+            })).filter(s => s.route !== 0);
+
+            let score = 35;
+            const feedback = [];
+
+            if (!selections.length) {
+                feedback.push({ type: 'bad', text: '🚨 לא הוגדר אף מסלול — כל 5 העלים נשארו לחסום. אין שום איום התקפי.' });
+                renderBuilderResult(0, feedback);
+                return;
+            }
+
+            // 1) Weak-zone exploitation — now PROPORTIONAL (fraction of receivers that hit a
+            // weak zone), not a hard cap. Every single route swap can move this component.
+            let weakHitCount = 0;
+            selections.forEach(s => {
+                const zones = ROUTE_DATABASE[s.route].zones || [];
+                if (zones.some(z => weakZones.includes(z))) weakHitCount++;
+            });
+            const weakRatio = weakHitCount / selections.length;
+            score += Math.round(25 * weakRatio);
+            if (weakHitCount > 0) {
+                feedback.push({ type: 'good', text: `✅ ${weakHitCount} מתוך ${selections.length} המסלולים פוגעים באזורי החולשה של ${coverage.name}.` });
+            } else {
+                feedback.push({ type: 'bad', text: `⚠️ אף מסלול לא פוגע באזורי החולשה של ${coverage.name} (${weakZones.join(', ') || 'אין מתועדות'}).` });
+            }
+
+            // 2) Ideal-route bonus — rewards the SPECIFIC route number that best exploits this
+            // exact coverage, per position, on top of the generic zone match above.
+            const idealList = IDEAL_ROUTES_BY_COVERAGE[covKey] || [];
+            let idealBonus = 0;
+            selections.forEach(s => {
+                const match = idealList.find(i => i.route === s.route);
+                if (match) {
+                    idealBonus += match.bonus;
+                    feedback.push({ type: 'good', text: `🎯 ${s.id} רץ ${ROUTE_DATABASE[s.route].name.split(':')[0]}: ${match.reason}.` });
+                }
+            });
+            score += Math.min(20, idealBonus);
+
+            // 3) Depth-level diversity (continuous, not capped-and-done)
+            const depthCounts = { shallow: 0, intermediate: 0, deep: 0 };
+            selections.forEach(s => depthCounts[BUILDER_ROUTE_DEPTH[s.route]]++);
+            const depthsUsed = Object.values(depthCounts).filter(c => c > 0).length;
+            score += depthsUsed * 4;
+            if (depthsUsed >= 3) feedback.push({ type: 'good', text: '✅ פיזור עומקים מלא (רדוד + בינוני + עמוק).' });
+            else if (depthsUsed === 1) feedback.push({ type: 'bad', text: '⚠️ כל המסלולים באותו עומק בדיוק — ההגנה יכולה להתמקד באזור יחיד.' });
+
+            // 4) Pressure/hot-read sensitivity — now scaled across ALL 11 coverages via
+            // blitzRisk, with weight proportional to risk, instead of an on/off switch for 2.
+            const hasShallow = depthCounts.shallow > 0;
+            const riskWeights = { high: { yes: 12, no: -18 }, medium: { yes: 6, no: -6 }, low: { yes: 2, no: 0 } };
+            const rw = riskWeights[coverage.blitzRisk || 'low'];
+            score += hasShallow ? rw.yes : rw.no;
+            if (coverage.blitzRisk === 'high' && !hasShallow) feedback.push({ type: 'bad', text: '🚨 אין מסלול רדוד מול הגנה עם סיכון בליץ גבוה — חשיפה גדולה ל-Sack.' });
+            else if (coverage.blitzRisk === 'high' && hasShallow) feedback.push({ type: 'good', text: '✅ יש מענה מהיר (Hot Read) מול הגנה עם סיכון בליץ גבוה.' });
+
+            // 5) Redundancy — every duplicate now costs points, not just 3+ of the same route.
+            const counts = {};
+            selections.forEach(s => { counts[s.route] = (counts[s.route] || 0) + 1; });
+            let dupPenalty = 0;
+            Object.values(counts).forEach(c => { if (c > 1) dupPenalty += (c - 1) * 6; });
+            if (dupPenalty > 0) {
+                score -= dupPenalty;
+                feedback.push({ type: 'bad', text: '⚠️ יש מסלולים חוזרים על עצמם — פחות הפרדה טבעית בין המטרות.' });
+            }
+
+            // 6) Down & Distance — now actually affects score, not just informational text.
+            const ddZones = new Set();
+            selections.forEach(s => (ROUTE_DATABASE[s.route].zones || []).forEach(z => ddZones.add(z)));
+            if (downDist === 'redzone') {
+                const compressed = ['honey_hole', 'flat', 'shallow_middle'].some(z => ddZones.has(z));
+                if (compressed) { score += 8; feedback.push({ type: 'good', text: '✅ יש מסלול מותאם לשטח המצומצם של ה-Red Zone.' }); }
+                else { score -= 6; feedback.push({ type: 'bad', text: '⚠️ ב-Red Zone השטח מצומצם — כדאי מסלול קצר/פינתי, לא רק אנכי.' }); }
+            } else if (downDist === '3rdshort') {
+                const allShallow = selections.every(s => BUILDER_ROUTE_DEPTH[s.route] === 'shallow');
+                if (allShallow) { score -= 10; feedback.push({ type: 'bad', text: '⚠️ כל המסלולים רדודים מדי ל-3rd & Short — ספק אם חוצים את קו ה-First Down.' }); }
+                else { score += 5; }
+            } else if (downDist === '2min') {
+                const hasSideline = ['flat', 'intermediate_out', 'deep_out'].some(z => ddZones.has(z));
+                if (hasSideline) { score += 6; feedback.push({ type: 'good', text: '✅ יש מסלול לכיוון קו השדה — טוב לעצירת שעון ב-2-Minute Drill.' }); }
+            }
+            const ddNote = DOWN_DISTANCE_NOTES[downDist];
+            if (ddNote) feedback.push({ type: 'info', text: 'ℹ️ ' + ddNote });
+
+            score = Math.max(0, Math.min(100, Math.round(score)));
+            renderBuilderResult(score, feedback);
+        }
+
+        function renderBuilderResult(score, feedback) {
+            document.getElementById('builderResult').classList.remove('hidden');
+            document.getElementById('builderScoreNum').innerText = score;
+            document.getElementById('builderScoreBar').style.width = score + '%';
+
+            let label;
+            if (score >= 85) label = 'מהלך מצוין 🌟';
+            else if (score >= 70) label = 'מהלך טוב 👍';
+            else if (score >= 50) label = 'מהלך סביר';
+            else label = 'המהלך זקוק לשיפור';
+            document.getElementById('builderScoreLabel').innerText = label;
+
+            const colorMap = { good: 'text-emerald-300 border-emerald-500/30 bg-emerald-500/10', bad: 'text-rose-300 border-rose-500/30 bg-rose-500/10', info: 'text-sky-300 border-sky-500/30 bg-sky-500/10' };
+            document.getElementById('builderFeedbackList').innerHTML = feedback.map(f =>
+                `<div class="border rounded-lg p-2.5 ${colorMap[f.type]}">${f.text}</div>`
+            ).join('');
+        }
+
+        const CATEGORY_META = {
+            quick_game: { label: 'Quick Game', color: '#38bdf8', icon: '⚡', personnel: '11 Personnel (1 RB, 1 TE, 3 WR)', downDistance: 'כל דאון • אידיאלי ב-3rd & Short/Medium ומול בליץ', description: 'זריקות מהירות (מתחת ל-2 שניות) שמטרתן לנטרל לחץ ולתת מענה בטוח בלי תלות בזמן הגנה ארוך.' },
+            man_beaters: { label: 'Man Beaters', color: '#a855f7', icon: '🎯', personnel: '11 Personnel (1 RB, 1 TE, 3 WR)', downDistance: '2nd/3rd & Medium (5-7) — כשזוהה Man-to-Man', description: 'מסלולים שמנצלים חציות, פקקים טבעיים (Rub) ומיסמאצ׳ים כדי ליצור הפרדה מול שמירה אישית.' },
+            zone_beaters: { label: 'Zone Beaters', color: '#f59e0b', icon: '🕸️', personnel: '11 Personnel (1 RB, 1 TE, 3 WR)', downDistance: '2nd/3rd & Medium-Long (6-10) — מול Zone קלאסי', description: 'תרגילי High-Low ו-Flood שמעמיסים על מגין זונה בודד עם שני איומים או יותר באותו אזור.' },
+            shot_plays: { label: 'Shot Plays', color: '#ef4444', icon: '🚀', personnel: '11 Personnel (1 RB, 1 TE, 3 WR)', downDistance: '1st & 10 / 2nd & Long — כשיש זמן הגנה ורצון לסיכון', description: 'מסלולי עומק שמטרתם יארדים גדולים בזריקה אחת (Explosive Play) מול כיסוי עמוק בודד.' },
+            pa_boot: { label: 'Play-Action / Boot', color: '#10b981', icon: '🎭', personnel: '12 Personnel (1 RB, 2 TE, 2 WR)', downDistance: '1st & 10 — כשאיום הריצה אמין ומוקדם במשחק', description: 'הטעיית ריצה שמושכת Linebackers ופותחת שטח בזריקה, לרוב עם תזוזת QB מחוץ לכיס.' },
+            screens_draws: { label: 'Screens & Draws', color: '#6366f1', icon: '🛡️', personnel: '10/11 Personnel (Screen) / 21 Personnel (Draw)', downDistance: '3rd & Long מול בליץ צפוי, או כהאטת קצב בכל דאון', description: 'תרגילים שהופכים לחץ הגנתי אגרסיבי לחיסרון, ע"י ניצול השטח שהפורצים משאירים מאחוריהם.' },
+            rb_schemes: { label: 'RB Schemes', color: '#14b8a6', icon: '🏃', personnel: '21 Personnel (2 RB, 1 TE, 2 WR)', downDistance: '3rd & Short-Medium, או Red Zone', description: 'מסלולים שממנפים את ה-RB כאיום מסירה נוסף, לרוב מול Linebacker או Blitz ממוקד.' },
+            red_zone: { label: 'Red Zone', color: '#c026d3', icon: '🥅', personnel: '12/13 Personnel (2-3 TE, שטח מצטמצם)', downDistance: 'בתוך קו ה-20 (Red Zone) — כל דאון', description: 'תרגילים ייעודיים לשטח מצומצם: פחות מקום לרוץ אחרי תפוסה, יותר תלות בדיוק, פיזיות ו-Rub Routes.' }
+        };
+
+        const PLAYBOOK_DATABASE = {
+            'mesh': {
+                category: 'man_beaters',
+                label: 'Mesh',
+                name: 'Mesh Concept',
+                formation: '2x2 Spread (Gun)',
+                overview: 'שני רסיברים (H ו-Y) רצים מסלולי חציה רדודים מאוד (4-5 יארד) שחוצים זה את זה קרוב מאוד למרכז המגרש, כמעט תוך כדי "פגיעה" (Rub/Pick) בשומרים הצמודים אליהם. X עמוק מנקה את השטח, ו-Z רץ Comeback לצד הנגדי.',
+                whenToUse: 'מצוין נגד Man-to-Man (Cover 1 / Cover 2 Man): הצלבת המסלולים יוצרת Natural Pick שמאט את המגינים. גם יעיל נגד Zone רך כי קל למצוא כיס פנוי בין המגינים שנעים.',
+                bestAgainst: ['Cover 1 Man-Free', 'Cover 2 Man', 'Blitz מבוקר (RB נשאר לחסום)'],
+                watchOut: ['Cover 3 Match / Pattern-Match שמחליף שחקנים על החוצים.', 'LB מהיר שיכול לרדוף אחרי החוצה במקום להתנגש.'],
+                progression: '1: החוצה הפתוחה (Mesh) הכי קרובה ← 2: Comeback של Z בצד השני ← 3: Checkdown ל-RB בפלט.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'H', color:'#38bdf8', path:[[p.H.x,p.H.y],[p.H.x,p.H.y-55],[p.H.x+130,p.H.y-95]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-55],[p.Y.x-130,p.Y.y-95]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-245]] },
+                    { label:'Z', color:'#10b981', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-115],[p.Z.x-30,p.Z.y-105]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+45,p.RB.y-20]] }
+                ]; }
+            },
+            'verticals': {
+                category: 'shot_plays',
+                label: 'Four Verticals',
+                name: 'Four Verticals',
+                formation: '2x2 Spread / Empty',
+                overview: 'ארבעת הרסיברים (X, H, Y, Z) משחררים אנכית בו-זמנית ליצירת "ארבע עמודים" שמותחים כל שכבת הגנה עמוקה. ה-RB נשאר לבדוק שחרור קצר (Checkdown).',
+                whenToUse: 'תרגיל Home-Run קלאסי נגד כיסוי Single High (Cover 1/Cover 3) — יש רק Safety אחד שלא יכול לכסות את כל ארבעת התפרים (Seams).',
+                bestAgainst: ['Cover 1 (Single High)', 'Cover 3', 'Blitz עם Man מאחור'],
+                watchOut: ['Cover 4 Quarters — 4 מגינים עמוקים תואמים בדיוק את 4 האנכיים.', 'זמן הגנת קו ארוך; דורש Protection נקי.'],
+                progression: '1: תפר הכי חלש (בד"כ מול ה-Safety השני) ← 2: התפר הנגדי ← 3: Checkdown ל-RB.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-265]] },
+                    { label:'H', color:'#f59e0b', path:[[p.H.x,p.H.y],[p.H.x+30,p.H.y-265]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x-30,p.Y.y-265]] },
+                    { label:'Z', color:'#10b981', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-265]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-45]] }
+                ]; }
+            },
+            'smash': {
+                category: 'zone_beaters',
+                label: 'Smash',
+                name: 'Smash Concept',
+                formation: 'Trips / 2x2',
+                overview: 'קונספט High-Low קלאסי לצד אחד: הרסיבר החיצוני (Z) עוצר מהר ב-Hitch (5 יארד), בעוד ה-Slot/TE (Y) רץ Corner עמוק ל-"Honey Hole" מעל ה-Hitch. X בצד הנגדי מנקה שטח עמוק.',
+                whenToUse: 'התרגיל המובהק נגד Cover 2 Zone: ה-CB חייב לבחור בין ה-Hitch הקצר ל-Corner העמוק — מתמתח ולא יכול לכסות את שניהם.',
+                bestAgainst: ['Cover 2 Zone', 'Cover 2 Man (מיסמאץ׳ גובה)', 'Tampa 2'],
+                watchOut: ['Cover 4 / Cover 3 עם Safety שיושב על ה-Corner מההתחלה.', 'קורנר אגרסיבי שממהר לצאת מה-Hitch ל-Corner.'],
+                progression: '1: Corner (Y) אם ה-Safety עמוק מדי ← 2: Hitch (Z) אם ה-CB יורד ל-Corner ← 3: Go (X) בצד הנגדי.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-35]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-125],[p.Y.x+60,p.Y.y-165]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+50,p.H.y-25]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x-35,p.RB.y-15]] }
+                ]; }
+            },
+            'flood': {
+                category: 'zone_beaters',
+                label: 'Flood',
+                name: 'Flood Concept',
+                formation: '3x1 (Trips)',
+                overview: 'שלושה עומקים שונים (Go / Out / Flat) לאותו צד — "מציף" מגין הגנתי אחד עם שלוש איומים בו-זמנית לאורך אותה קו-רוחב.',
+                whenToUse: 'מצוין נגד Cover 3 (מוציא את ה-Flat Defender מאיזון) וגם נגד בליץ מהצד המוצף — הרוחב יוצר מסירה מהירה וקלה.',
+                bestAgainst: ['Cover 3', 'Cover 1', 'Blitz מהצד המוצף'],
+                watchOut: ['Cover 2 עם שני Safeties שיכולים לתמוך על ה-Go העמוק.', 'צריך RB זמין לפלט בזמן.'],
+                progression: '1: ה-Flat (RB) אם פתוח מיד ← 2: ה-Out הבינוני (Y) ← 3: ה-Go העמוק (Z) אם Single Coverage.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-225]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-125],[p.Y.x+60,p.Y.y-125]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+75,p.RB.y-25]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-125],[p.X.x+60,p.X.y-125]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+50,p.H.y-20]] }
+                ]; }
+            },
+            'dagger': {
+                category: 'shot_plays',
+                label: 'Dagger',
+                name: 'Dagger Concept',
+                formation: '2x2 Spread',
+                overview: 'רסיבר חיצוני (X) רץ Post/Go עמוק לניקוי שטח (Clear-out), בעוד ה-Slot (H) רץ Dig עמוק (14-15 יארד) שיושב מתחת ל-Safeties ומעל ה-Linebackers שנמשכים קדימה.',
+                whenToUse: 'נהדר נגד Cover 4/Cover 2 — ה-Clear-out מרוקן את השטח שה-Dig צריך, וה-Linebackers שנמשכים ל-Play Action פותחים חלון ענק.',
+                bestAgainst: ['Cover 4 Quarters', 'Cover 2', 'הגנות עם Linebackers שקוראים Run-first'],
+                watchOut: ['Cover 3 Match שמעביר LB לכסות את ה-Dig.', 'דורש זמן הגנה טוב ל-Drop עמוק.'],
+                progression: '1: ה-Dig (H) ברגע שהוא חוצה את ה-Linebackers ← 2: Comeback צד שני (Z) ← 3: Checkdown RB.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-145],[p.X.x+50,p.X.y-225]] },
+                    { label:'H', color:'#f59e0b', path:[[p.H.x,p.H.y],[p.H.x,p.H.y-155],[p.H.x+110,p.H.y-155]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x-20,p.Z.y-115]] },
+                    { label:'Y', color:'#10b981', path:[[p.Y.x,p.Y.y],[p.Y.x-30,p.Y.y-20]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x-30,p.RB.y-15]] }
+                ]; }
+            },
+            'levels': {
+                category: 'zone_beaters',
+                label: 'Levels',
+                name: 'Levels Concept',
+                formation: '2x2 Spread',
+                overview: 'שני מסלולי In/Dig ב"מדרגות" עומק שונות (H רדוד ~5 יארד, Y עמוק ~15 יארד) שמעמיסים על אותו Linebacker — קריאה קלה של High-Low על אזור זהה.',
+                whenToUse: 'יעיל נגד Zone (Cover 2/3/4) — ה-Linebacker לא יכול לכסות גם את הרדוד וגם את העמוק. גם טוב נגד Man כי המסלולים חוצים ומייצרים הפרדה.',
+                bestAgainst: ['Cover 2', 'Cover 3', 'Cover 4'],
+                watchOut: ['Man-to-Man צמוד עם Safety עוזר במרכז.', 'בליץ פנימי שמפריע לזמן ה-Drop.'],
+                progression: '1: ה-Dig העמוק (Y) אם ה-LB נשאר נמוך ← 2: ה-Drag הרדוד (H) אם ה-LB עולה ← 3: Checkdown.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'H', color:'#38bdf8', path:[[p.H.x,p.H.y],[p.H.x+130,p.H.y-35]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-155],[p.Y.x-110,p.Y.y-155]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'Z', color:'#10b981', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x-20,p.Z.y-115]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'stick': {
+                category: 'quick_game',
+                label: 'Stick',
+                name: 'Stick Concept',
+                formation: 'Trips / 2x2 (Quick Game)',
+                overview: 'תרגיל מסירה מהירה קלאסי: ה-Y "יושב" באזור ה-Stick (5 יארד, פונה ל-QB), Z רץ Out/Flat קצר, ו-RB יוצא ל-Flat בצד הנגדי — שלושה שחרורים מהירים לכיסוי כל אזור.',
+                whenToUse: 'המענה המושלם ל-Blitz או ל-Zone רך — הכדור יוצא תוך 2 שניות, לפני שהלחץ מגיע. גם נגד Cover 2/3 שמשאיר את ה-Underneath קליל.',
+                bestAgainst: ['Blitz / Cover 0', 'Zone רך (Off Coverage)', 'Cover 3'],
+                watchOut: ['Man צמוד עם ג׳אם על ה-Stick.', 'לא יעיל אם ה-Box עמוס מדי (עדיף Screen).'],
+                progression: '1: Stick (Y) ← 2: Flat/Out (Z) ← 3: Flat הנגדי (RB) — קריאה מהירה לפי תגובת ה-Flat Defender.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Y', color:'#38bdf8', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-35]] },
+                    { label:'Z', color:'#f59e0b', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-20],[p.Z.x+30,p.Z.y-20]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x-75,p.RB.y-20]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-185]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+60,p.H.y-20]] }
+                ]; }
+            },
+            'spot': {
+                category: 'quick_game',
+                label: 'Spot / Snag',
+                name: 'Spot / Snag Concept',
+                formation: 'Trips / 2x2 (Quick Game)',
+                overview: 'משולש High-Low-Flat: Z רץ Corner עמוק, Y מבצע "Snag" (פנייה חדה פנימה ועצירה סביב 5 יארד), ו-RB יוצא ל-Flat — משולש קלאסי שמכריח מגין בודד לבחור.',
+                whenToUse: 'עובד נהדר נגד Zone רך ו-Cover 3, בדומה ל-Smash אך עם משולש נמוך יותר, ולכן טוב גם נגד בליץ קליל.',
+                bestAgainst: ['Cover 3', 'Zone רך', 'Blitz מבוקר'],
+                watchOut: ['Man-to-Man הדוק בלי עזרה על ה-Corner.', 'Cover 4 עם Safety נמוך שסוגר את ה-Snag.'],
+                progression: '1: Snag (Y) אם פתוח מיד ← 2: Flat (RB) ← 3: Corner (Z) אם השטח נקי.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-115],[p.Z.x+40,p.Z.y-155]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x+20,p.Y.y-35],[p.Y.x,p.Y.y-40]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+55,p.RB.y-25]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-185]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+50,p.H.y-20]] }
+                ]; }
+            },
+            'shallowcross': {
+                category: 'man_beaters',
+                label: 'Y-Cross',
+                name: 'Shallow Cross (Y-Cross)',
+                formation: '2x2 Spread',
+                overview: 'רסיבר (H) רץ Drag רדוד מאוד (2-3 יארד) לכל רוחב המגרש, בעוד Y רץ Dig/Post עמוק בצד הנגדי. X מנקה שטח עמוק כדי לפנות למרדף אחרי ה-Drag.',
+                whenToUse: 'התרגיל האהוב על צוותי Air-Raid נגד כל סוגי ה-Man — קשה מאוד לרדוף אחרי Drag לאורך כל השדה. יעיל גם נגד Zone כי ה-Drag חוצה כמה אזורים.',
+                bestAgainst: ['Man-to-Man (כל הסוגים)', 'Cover 3', 'Blitz פנימי'],
+                watchOut: ['Zone Match שמעביר בין מגינים על ה-Drag.', 'ה-QB חייב לזוז עם ה-Pocket כדי לשמור על זווית מסירה.'],
+                progression: '1: Drag (H) לרוב מיד פתוח ← 2: Dig/Post (Y) עמוק יותר ← 3: Checkdown RB.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'H', color:'#38bdf8', path:[[p.H.x,p.H.y],[p.H.x+70,p.H.y-15],[p.H.x+220,p.H.y-20]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-155],[p.Y.x-100,p.Y.y-175]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'Z', color:'#10b981', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x-20,p.Z.y-115]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'slantflat': {
+                category: 'quick_game',
+                label: 'Slant-Flat',
+                name: 'Slant-Flat (Quick Game)',
+                formation: '2x2 Spread (Quick Game)',
+                overview: 'תרגיל מהיר קלאסי: הרסיבר החיצוני חותך Slant מהיר, וה-RB/H יוצא ל-Flat מתחתיו — יוצר High-Low מהיר מאוד על ה-Flat Defender, בדרך כלל בשני הצדדים בו-זמנית (Double Slant-Flat).',
+                whenToUse: 'המענה המהיר ביותר ל-Cover 0 / Blitz — הכדור יוצא כמעט מיידית. גם מצוין נגד Off Coverage רך.',
+                bestAgainst: ['Cover 0 Blitz', 'Off Coverage', 'Zone רך'],
+                watchOut: ['Press Man שיכול לשבש את ה-Slant בקו.', 'Cover 2 Man עם עזרה עמוקה על ה-Slant.'],
+                progression: '1: זהה את צד ה-Blitz וזרוק Hot לשם מיד ← 2: Slant אם פתוח ← 3: Flat כ-Checkdown אוטומטי.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x-40,p.Z.y-30]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+75,p.RB.y-20]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x+40,p.X.y-30]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+30,p.H.y-5]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-20]] }
+                ]; }
+            },
+            'yankee': {
+                category: 'shot_plays',
+                label: 'Yankee',
+                name: 'Yankee Concept',
+                formation: '2x2 Spread',
+                overview: 'שני מסלולי עומק חוצים: X רץ Post עמוק מצד אחד, Y (Slot/TE) רץ Deep Over/Crosser עוד יותר עמוק מהצד השני — שני איומים אנכיים-אלכסוניים שחוצים באמצע המגרש.',
+                whenToUse: 'תרגיל Explosive-Play קלאסי נגד Single High — שני העומקים החוצים מפצלים את ה-Safety הבודד לשני כיוונים מנוגדים.',
+                bestAgainst: ['Cover 1', 'Cover 3', 'Man-to-Man כללי'],
+                watchOut: ['Cover 4 עם שני Safeties שיכולים לחלק את השטח.', 'דורש זמן הגנה ארוך יחסית.'],
+                progression: '1: ה-Crosser העמוק (Y) אם ה-Safety נשאר על ה-Post ← 2: ה-Post (X) אם ה-Safety עוקב אחרי ה-Crosser.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-160],[p.X.x+90,p.X.y-235]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-190],[p.Y.x-220,p.Y.y-210]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x-20,p.Z.y-115]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+50,p.H.y-20]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'china': {
+                category: 'pa_boot',
+                label: 'China (7-Corner)',
+                name: 'China (7-Corner)',
+                formation: '2x2 / Y-Attached',
+                overview: 'ה-TE (Y) משתחרר פנימה כאילו הולך ל-Drag ואז שובר החוצה ל-Corner עמוק — תזמון מיוחד שמנצל את התגובה הראשונית של ה-LB/Safety. משולב עם Comeback בצד הנגדי.',
+                whenToUse: 'מצוין נגד הגנות שה-LB/Nickel שלהן קופץ מהר על שחרור פנימי של TE — ה-Break החוצה תופס אותם באיזון שגוי.',
+                bestAgainst: ['Cover 3', 'Cover 1 עם LB על ה-TE', 'Zone עם קריאה איטית'],
+                watchOut: ['Cover 4 Palms שקורא נכון את שחרור ה-TE.', 'עיתוי לא מדויק הופך למסירה מיותרת מדי גבוהה.'],
+                progression: '1: Corner (Y) ברגע שהמגן קופץ פנימה ← 2: Comeback (Z) בצד הנגדי ← 3: Checkdown RB.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x-30,p.Y.y-45],[p.Y.x+70,p.Y.y-165]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-160],[p.Z.x-20,p.Z.y-150]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+50,p.H.y-20]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x-30,p.RB.y-15]] }
+                ]; }
+            },
+            'divide': {
+                category: 'shot_plays',
+                label: 'Divide',
+                name: 'Divide Concept',
+                formation: '2x2 Spread',
+                overview: 'שני מסלולי In/Dig עמוקים (12-15 יארד) לכיוונים מנוגדים לשני צדי המגרש, באותו עומק בערך — "מחלק" Safety בודד לשני חלונות רחוקים זה מזה.',
+                whenToUse: 'עובד מצוין נגד Single High — ה-Safety פיזית לא יכול לכסות שני חלונות מרוחקים באותו עומק.',
+                bestAgainst: ['Cover 1', 'Cover 3', 'Single High כללי'],
+                watchOut: ['Cover 4/Cover 2 עם שני Safeties נפרדים לכל צד.', 'זמן הגנה ארוך נדרש לשני העומקים.'],
+                progression: '1: הצד שה-Safety נטה ממנו ← 2: הצד השני אם ה-Safety נשאר מרכזי ← 3: Checkdown.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-165],[p.X.x+110,p.X.y-165]] },
+                    { label:'Z', color:'#f59e0b', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-165],[p.Z.x-110,p.Z.y-165]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x,p.H.y-225]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-225]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'allcurls': {
+                category: 'quick_game',
+                label: 'All-Curls',
+                name: 'All-Curls (Ohio)',
+                formation: '2x2 / Trips',
+                overview: 'כל הרסיברים הזמינים רצים Curl (עצירה וסיבוב פנימה) בעומק אחיד של כ-10-12 יארד — תרגיל "בטוח" ופשוט שממלא כל אזור Hook/Curl בו-זמנית.',
+                whenToUse: 'תרגיל תגובה מהיר ופשוט נגד Zone Blitz או כשלא בטוחים בזיהוי הכיסוי — כמעט תמיד יש Curl פתוח באחד האזורים.',
+                bestAgainst: ['Zone Blitz', 'Cover 3', 'Cover 4'],
+                watchOut: ['Man-to-Man צמוד (אין הפרדה טבעית).', 'לא מייצר יארדים גדולים - תרגיל מילוט לא Explosive.'],
+                progression: 'קריאה לפי עומס: זרוק לצד עם פחות מגינים באזור ה-Curl, בסדר שווה בין הצדדים.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-155],[p.X.x+15,p.X.y-145]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x,p.H.y-125],[p.H.x+15,p.H.y-115]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-125],[p.Y.x-15,p.Y.y-115]] },
+                    { label:'Z', color:'#f59e0b', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-155],[p.Z.x-15,p.Z.y-145]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'sluggo': {
+                category: 'shot_plays',
+                label: 'Sluggo',
+                name: 'Sluggo (Slant-and-Go)',
+                formation: '2x2 / Isolation',
+                overview: 'Double Move קלאסי: הרסיבר מדמה Slant מהיר (2-3 צעדים פנימה) ואז שובר מיד אנכית ל-Go עמוק — מטרה: לגרום ל-CB "לקפוץ" על ה-Slant המדומה.',
+                whenToUse: 'מצוין נגד Press Man אגרסיבי או CBs שממהרים לסגור מסירות קצרות — התגובה שלהם ל-Slant המדומה פותחת אותם לגמרי מאחור.',
+                bestAgainst: ['Cover 1 Press', 'Cover 0', 'CB אגרסיבי עם היסטוריית Jump'],
+                watchOut: ['Zone רך שלא "נושך" על ההטעיה.', 'עזרת Safety עמוק בצד הזה.'],
+                progression: 'זריקה בודדת: אם ה-CB קפץ על ה-Slant, שחרר מיד את ה-Go מעל הכתף החיצונית.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#ef4444', path:[[p.Z.x,p.Z.y],[p.Z.x-35,p.Z.y-35],[p.Z.x-15,p.Z.y-240]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x-40,p.Y.y-20]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+50,p.H.y-20]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'doublepost': {
+                category: 'shot_plays',
+                label: 'Double Post',
+                name: 'Double Post (Deuce)',
+                formation: '2x2 / Trips',
+                overview: 'שני רסיברים לאותו צד רצים Post בשני עומקים שונים (אחד ~10 יארד, שני ~18 יארד) — "מציף" את ה-Safety הבודד עם שני איומי Post בו-זמנית.',
+                whenToUse: 'תרגיל אגרסיבי נגד Single High — ה-Safety חייב לבחור איזה Post לכסות, והשני נשאר פתוח לגמרי.',
+                bestAgainst: ['Cover 1', 'Cover 3', 'Single High'],
+                watchOut: ['Cover 4/Cover 2 עם עזרה כפולה במרכז.', 'סיכון ליירוט אם שני הרסיברים "מתנגשים" בטיימינג לא מדויק.'],
+                progression: '1: ה-Post הרדוד יותר אם ה-Safety נשאר עמוק ← 2: ה-Post העמוק אם ה-Safety יורד להתחלה.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-135],[p.Y.x-70,p.Y.y-175]] },
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-210],[p.Z.x-90,p.Z.y-280]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-160],[p.X.x+20,p.X.y-150]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+50,p.H.y-20]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x-30,p.RB.y-15]] }
+                ]; }
+            },
+            'yoption': {
+                category: 'man_beaters',
+                label: 'Y-Option',
+                name: 'Y-Option',
+                formation: '2x2 / 12 Personnel',
+                overview: 'ה-TE (Y) רץ לעומק 6-8 יארד ואז בוחר כיוון (פנימה/החוצה/עצירה) בהתאם ללחיצת ה-LB או ה-Nickel שמכסה אותו — מסלול "חי" שנקרא תוך כדי ריצה.',
+                whenToUse: 'נהדר נגד Man-to-Man עם Linebacker איטי על ה-TE — ה-TE תמיד "בוחר" את הכיוון הפתוח.',
+                bestAgainst: ['Cover 1 עם LB על TE', 'Cover 2 Man', 'Zone רך עם LB בודד'],
+                watchOut: ['דורש סנכרון גבוה בין ה-QB ל-TE (שניהם צריכים לקרוא את אותו הדבר).', 'Double coverage על ה-TE.'],
+                progression: 'קריאה משותפת QB-TE: אם ה-LB לוחץ פנימה, TE יוצא החוצה ולהיפך — QB זורק לכיוון שנפתח.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-70],[p.Y.x+60,p.Y.y-90]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x-20,p.Z.y-115]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+50,p.H.y-20]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x-30,p.RB.y-15]] }
+                ]; }
+            },
+            'choice': {
+                category: 'man_beaters',
+                label: 'Choice Route',
+                name: 'Choice Route (Sight Adjust)',
+                formation: 'Isolation / 2x2',
+                overview: 'הרסיבר החיצוני "קורא" את ה-Leverage של ה-CB ברגע השחרור: אם Outside Leverage — חותך פנימה; אם Inside Leverage — חותך החוצה; אם Off Coverage רך — עוצר ב-Hitch.',
+                whenToUse: 'כלי בסיסי נגד כל סוגי ה-Man-to-Man — מייצר הפרדה מובטחת כי הרסיבר תמיד בוחר בכיוון ההפוך למנח ה-CB.',
+                bestAgainst: ['Man-to-Man (כל הסוגים)', 'Press Coverage', 'Off Coverage'],
+                watchOut: ['Zone (אין "Leverage" יחיד לקרוא נגדו).', 'דורש סנכרון עין מלא בין ה-QB לרסיבר.'],
+                progression: 'זריקה מבוססת קריאה משותפת — אין Progression קלאסי, זו זריקה 1-על-1 מהירה ברגע שההפרדה נוצרת.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#ef4444', path:[[p.Z.x,p.Z.y],[p.Z.x-60,p.Z.y-60]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x-40,p.Y.y-20]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+50,p.H.y-20]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'wheel': {
+                category: 'rb_schemes',
+                label: 'Wheel',
+                name: 'Wheel Route',
+                formation: '2x2 / Trips (RB Wheel)',
+                overview: 'ה-RB משתחרר לכיוון ה-Flat כאילו הולך ל-Screen/Swing, ואז פונה חדות אנכית במעלה ה-Sideline — מנצל מגין שמזהה "RB בפלט" ומאבד אותו כשהוא פונה עמוק.',
+                whenToUse: 'קטלני נגד Man-to-Man כשה-LB המכסה את ה-RB לא "רץ איתו" עמוק, וגם נגד Zone שמאבד את ה-RB במעבר בין אזורים.',
+                bestAgainst: ['Man-to-Man עם LB על RB', 'Zone שמאבד מעקב', 'Blitz (RB דולף מהבליץ)'],
+                watchOut: ['LB מהיר שנשאר צמוד לאורך כל המסלול.', 'עלול להתנגש עם רסיבר אחר אם התזמון לא מדויק (לכן לרוב מגיע עם Rub/Pick מכוון).'],
+                progression: '1: Wheel (RB) אם ה-LB נשאר בפלט ← 2: Drag/Flat קצר בצד הנגדי ← 3: Checkdown לרסיבר אחר.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+70,p.RB.y-15],[p.RB.x+150,p.RB.y-190]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-30],[p.Y.x-30,p.Y.y-35]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+60,p.H.y-20]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x-20,p.Z.y-115]] }
+                ]; }
+            },
+            'angle': {
+                category: 'rb_schemes',
+                label: 'Texas / Angle',
+                name: 'Texas / Angle Route',
+                formation: '2x2 (RB Angle)',
+                overview: 'ה-RB משתחרר החוצה כאילו לפלט, ואז "מזווית" חדות פנימה לכיוון מרכז המגרש — תרגיל ייעודי נגד Linebacker בבליץ שמאבד את ה-RB בשינוי הכיוון הפתאומי.',
+                whenToUse: 'המענה הקלאסי ל-Man Blitz — ה-LB שאמור לכסות את ה-RB בדרך כלל מאבד אותו כשהוא מזווה פנימה תוך כדי הבליץ שלו.',
+                bestAgainst: ['Man Blitz', 'Cover 1 Blitz', 'Zero Blitz'],
+                watchOut: ['Zone Blitz שבו LB אחר "לוקח" את ה-RB.', 'לא יעיל אם אין בליץ (הזווית פחות פותחת שטח).'],
+                progression: 'זריקה מהירה ומיידית ל-RB ברגע שהוא מזווה פנימה — לרוב ה-Hot Read הראשון מול בליץ.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+55,p.RB.y-10],[p.RB.x-10,p.RB.y-45]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-225]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+40,p.H.y-15]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x-40,p.Y.y-15]] }
+                ]; }
+            },
+            'bunch': {
+                category: 'man_beaters',
+                label: 'Bunch Rub',
+                name: 'Bunch Rub Concept',
+                formation: 'Bunch (3 WR צמודים)',
+                overview: 'שלושה רסיברים מסודרים צמוד זה לזה (Bunch) לפני הסנאפ. שחרוריהם הצפופים יוצרים "פקקים" טבעיים (Natural Picks) שמקשים על מעקב Man-to-Man.',
+                whenToUse: 'יעיל מאוד נגד Man-to-Man צמוד — הצפיפות הפיזית מקשה על המגינים לרדוף בלי להיתקל זה בזה.',
+                bestAgainst: ['Man-to-Man', 'Press Coverage', 'Cover 1'],
+                watchOut: ['Zone שממתין ולא רודף — הצפיפות פחות משפיעה.', 'סיכון לעונשי Pick/Interference אם התזמון קרוב מדי לקו.'],
+                progression: '1: הרסיבר החוצה הכי מהר מהצפיפות ← 2: הרסיבר האמצעי ← 3: העמוק כמוצא אחרון.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'H', color:'#38bdf8', path:[[p.H.x+20,p.H.y],[p.H.x+70,p.H.y-25]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.H.x+10,p.H.y],[p.H.x-30,p.H.y-40]] },
+                    { label:'X', color:'#a855f7', path:[[p.H.x,p.H.y],[p.H.x-10,p.H.y-220]] },
+                    { label:'Z', color:'#10b981', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x-20,p.Z.y-115]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'switchverts': {
+                category: 'zone_beaters',
+                label: 'Switch Verticals',
+                name: 'Switch Verticals',
+                formation: 'Trips / 2x2',
+                overview: 'שני רסיברים סמוכים מחליפים מסלולי שחרור (חוצים קצר ליד הקו) לפני שממשיכים אנכית — מבלבל את מנגנון ה-Man Match כי כל מגן "עוקב" אחרי הרסיבר הלא נכון לרגע.',
+                whenToUse: 'עובד מצוין נגד Man Match / Pattern-Match זונות — ההחלפה בתחילת המסלול שוברת את שיוך המגינים.',
+                bestAgainst: ['Cover 3 Match', 'Cover 4 Match', 'Man-to-Man עם החלפות'],
+                watchOut: ['Man-to-Man "טהור" בלי החלפות (המגין פשוט נשאר על הרסיבר המקורי שלו).', 'תזמון החלפה לא מדויק עלול לגרום להתנגשות.'],
+                progression: '1: הרסיבר שקיבל את ה-Mismatch הטוב יותר לאחר ההחלפה ← 2: השני כאיום משני.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'H', color:'#38bdf8', path:[[p.H.x,p.H.y],[p.H.x+40,p.H.y-25],[p.H.x+10,p.H.y-235]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x-40,p.Y.y-25],[p.Y.x-10,p.Y.y-235]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'Z', color:'#10b981', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-225]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'paboot': {
+                category: 'pa_boot',
+                label: 'PA Boot',
+                name: 'PA Boot (Naked Bootleg)',
+                formation: 'Play-Action / Boot',
+                overview: 'הטעיית ריצה מלאה, ואז ה-QB "בורח" (Bootleg) לצד אחד מחוץ לכיס. רסיברים בצד הבריחה יוצרים Flood (עמוק/בינוני/פלט) בעוד ה-Line חוסם כאילו ריצה.',
+                whenToUse: 'מצוין נגד הגנות שקוראות Run First אגרסיבי (Linebackers שנעים מהר לריצה) ונגד Cover 3/1 שנחשפות בצד הבריחה.',
+                bestAgainst: ['הגנות Run-Heavy Read', 'Cover 3', 'Cover 1'],
+                watchOut: ['Cover 4/2 עם Contain Defender ממושמע שלא נופל ל-Play-Fake.', 'סכנת Sack אם ה-Contain לא נופל — אין הרבה זמן Protection.'],
+                progression: '1: הפלט המיידי (RB/H) אם פתוח ← 2: הבינוני (Y Out/Comeback) ← 3: העמוק (Z) אם הכל פתוח.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-225]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-125],[p.Y.x+40,p.Y.y-125]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+90,p.RB.y-30]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-160],[p.X.x+60,p.X.y-160]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+40,p.H.y-15]] }
+                ]; }
+            },
+            'sail': {
+                category: 'pa_boot',
+                label: 'Sail',
+                name: 'Sail Concept',
+                formation: 'Play-Action / Boot / Dropback',
+                overview: '"הפלגה" תלת-שכבתית לאותו צד: Corner עמוק, Out בינוני, ו-Flat קצר — לרוב מתבצע מתוך Boot אך גם מ-Dropback רגיל.',
+                whenToUse: 'עובד היטב נגד Cover 3/Cover 2 — כמו Flood אך עם עומק ה-Corner מודגש יותר, ומתאים גם מתוך Play-Action.',
+                bestAgainst: ['Cover 3', 'Cover 2', 'Man Blitz (מתוך Boot)'],
+                watchOut: ['Cover 4 עם עזרה כפולה על ה-Corner.', 'ה-QB חייב לשמור זווית מסירה נכונה תוך תנועה (אם מתוך Boot).'],
+                progression: '1: Flat (מיידי) ← 2: Out בינוני ← 3: Corner עמוק אם יש זמן.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x+50,p.Z.y-165]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-95],[p.Y.x+50,p.Y.y-95]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+75,p.RB.y-20]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+40,p.H.y-15]] }
+                ]; }
+            },
+            'jailbreak': {
+                category: 'screens_draws',
+                label: 'Jailbreak Screen',
+                name: 'Jailbreak Screen',
+                formation: '2x2 / Screen',
+                overview: 'מסירת Screen לרסיבר חיצוני, כשה-Offensive Linemen (ולעיתים רסיברים נוספים) משתחררים קדימה במכוון לחסום עבורו במרחב פתוח — יוצר "פריצת כלא" של חוסמים.',
+                whenToUse: 'תרגיל נהדר נגד Blitz אגרסיבי או Press Man — הלחץ שהגנה מפעילה "רץ מעבר" לרסיבר שמקבל את הכדור בשטח פתוח עם חוסמים.',
+                bestAgainst: ['Blitz / Cover 0', 'Press Man אגרסיבי', 'Zone Blitz'],
+                watchOut: ['הגנה ממושמעת שמזהה Screen ושומרת LB/DL אחורה (Screen Awareness).', 'תזמון לא מדויק בין ה-QB לחוסמים.'],
+                progression: 'אין Progression קלאסי — זו זריקה מתוכננת מראש לרסיבר עם המסך, מיד לאחר Pump/Look קצר לצד השני.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#ef4444', path:[[p.Z.x,p.Z.y],[p.Z.x-20,p.Z.y-15],[p.Z.x-40,p.Z.y-5]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-160]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-160]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x,p.H.y-20]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x-20,p.RB.y-10]] }
+                ]; }
+            },
+            'swingscreen': {
+                category: 'screens_draws',
+                label: 'RB Swing Screen',
+                name: 'RB Swing / Wheel Screen',
+                formation: 'Any (RB Check-Release)',
+                overview: 'ה-RB יוצא לאט לכיוון ה-Flat כאילו לחיפוי חסימה, ואז "משתחרר" (Check-Release) לקבלת מסירה קצרה בשטח פתוח, עם קו חוסם שמתקדם לפניו.',
+                whenToUse: 'תרגיל בטוח ואפקטיבי נגד Blitz פנימי כבד — ה-RB נשאר כמעט תמיד פתוח כי המגינים ממוקדים בלחץ על ה-QB.',
+                bestAgainst: ['Blitz פנימי', 'Cover 0', 'Zone Blitz עם עומס Box'],
+                watchOut: ['LB מהיר שממשיך לעקוב אחרי ה-RB ולא מגיע ללחץ.', 'תלוי בבלימת שטח נקייה מה-Line.'],
+                progression: 'זריקה מתוכננת ל-RB אם הבליץ מזוהה מוקדם — לרוב Check מהיר לפני הסנאפ או Hot Read ראשון.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+60,p.RB.y-10],[p.RB.x+100,p.RB.y-15]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-185]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-185]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x,p.H.y-20]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-20]] }
+                ]; }
+            },
+            'draw': {
+                category: 'screens_draws',
+                label: 'Draw',
+                name: 'Draw (Delay Run vs Blitz)',
+                formation: 'Dropback (Disguised Run)',
+                overview: 'ה-QB מדמה הכנה למסירה (Drop-back רגיל), ואז מוסר לאט ל-RB שממתין — מנצל את קווי ה-Rush שכבר "עברו" את קו ההתקפה במרדף אחרי ה-QB.',
+                whenToUse: 'תגובה קלאסית ל-Blitz פנימי אגרסיבי או Pass Rush מהיר מדי — הלהיטות של הפורצים פותחת נתיבי ריצה גדולים.',
+                bestAgainst: ['Blitz פנימי אגרסיבי', 'Cover 0', 'Pass Rush מהיר'],
+                watchOut: ['הגנה ממושמעת עם Spy/Contain על ה-RB.', 'לא יעיל נגד Rush שמור (Contained Rush).'],
+                progression: 'אין Progression — זו ריצה מתוכננת; ה-QB רק מוודא שה-Rush "קנה" את הפייק לפני המסירה.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x-15,p.RB.y-10],[p.RB.x-40,p.RB.y-100]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-185]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-185]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x,p.H.y-20]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-20]] }
+                ]; }
+            },
+            'postwheel': {
+                category: 'rb_schemes',
+                label: 'Post-Wheel',
+                name: 'Post-Wheel Combo',
+                formation: '2x2 (RB Wheel + WR Post)',
+                overview: 'רסיבר חיצוני רץ Post עמוק לאותו צד שה-RB עושה Wheel — יוצר High-Low אנכי על אותו מגין Flat/LB: אם הוא נשאר על ה-Wheel, ה-Post פתוח מעליו; אם עולה על ה-Post, ה-Wheel פתוח מתחתיו.',
+                whenToUse: 'משולב מצוין נגד Cover 3/Man כאשר LB בודד אחראי גם על ה-Flat וגם קרוב לאזור ה-Post.',
+                bestAgainst: ['Cover 3', 'Man-to-Man עם LB יחיד באזור', 'Cover 1'],
+                watchOut: ['Cover 4 עם שני Safeties נפרדים לכל איום.', 'תזמון קריטי בין שני המסלולים כדי לא "להיאכל" זה בזה.'],
+                progression: '1: Wheel (RB) אם ה-LB עולה על ה-Post ← 2: Post (Z) אם ה-LB/Safety נשאר על ה-Wheel.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-150],[p.Z.x-70,p.Z.y-220]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x+80,p.RB.y-15],[p.RB.x+150,p.RB.y-160]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-185]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+40,p.H.y-15]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x-40,p.Y.y-15]] }
+                ]; }
+            },
+            'drift': {
+                category: 'man_beaters',
+                label: 'Drift',
+                name: 'Drift (Deep Over Man-Beater)',
+                formation: '2x2 / Trips',
+                overview: 'רסיבר בודד רץ Drag ארוך ועמוק יחסית (8-10 יארד) לאורך כל רוחב המגרש — "סוחף" (Drift) את המגין שלו דרך מספר רב של עומסים ובלוקים טבעיים.',
+                whenToUse: 'קטלני נגד Man-to-Man לאורך כל המגרש — קשה במיוחד למגין "לרדוף" מסלול ארוך כזה בלי לאבד קשר עין או להיתקל במגינים אחרים.',
+                bestAgainst: ['Man-to-Man (כל הסוגים)', 'Cover 1', 'Cover 0'],
+                watchOut: ['Zone Match שמעביר בין מגינים לאורך המסלול.', 'ה-QB חייב לעקוב אחרי הרסיבר לאורך כל רוחב המגרש.'],
+                progression: 'זריקה מתוכננת ל-Drift ברגע שהוא חוצה את האמצע ומרוויח הפרדה — לרוב הקריאה הראשונה בהגנת Man.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'H', color:'#38bdf8', path:[[p.H.x,p.H.y],[p.H.x+60,p.H.y-45],[p.H.x+250,p.H.y-55]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-225]] },
+                    { label:'Z', color:'#10b981', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x-20,p.Z.y-115]] },
+                    { label:'Y', color:'#f59e0b', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-20]] },
+                    { label:'RB', color:'#ef4444', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'slotfade': {
+                category: 'shot_plays',
+                label: 'Slot Fade',
+                name: 'Slot Fade',
+                formation: '2x2 / Trips (Slot Isolation)',
+                overview: 'ה-Slot (H) רץ Fade/Go ישירות מהסלוט — מנצל מיסמאץ׳ מובהק כאשר Nickel קטן/איטי או Linebacker מכסים אותו במקום Safety.',
+                whenToUse: 'תרגיל מדויק למיסמאץ׳ ידוע מראש — Slot מהיר וגבוה מול Nickel/LB איטי, בעיקר נגד Man או Blitz שמוציא Safety מהעומק.',
+                bestAgainst: ['Man-to-Man עם מיסמאץ׳ בסלוט', 'Cover 0/1 Blitz', 'Zone עם Nickel חשוף'],
+                watchOut: ['Cover 4/2 עם Safety שיושב על הסלוט מלמעלה.', 'דורש דיוק זריקה גבוה על הכתף החיצונית.'],
+                progression: 'זריקה בודדת מתוכננת מראש למיסמאץ׳ — אין Progression, זו קריאת Pre-Snap מובהקת.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'H', color:'#ef4444', path:[[p.H.x,p.H.y],[p.H.x+10,p.H.y-245]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-125],[p.X.x+20,p.X.y-115]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-125],[p.Y.x-20,p.Y.y-115]] },
+                    { label:'Z', color:'#10b981', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125],[p.Z.x-20,p.Z.y-115]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-25]] }
+                ]; }
+            },
+            'rzfade': {
+                category: 'red_zone',
+                label: 'Back-Shoulder Fade',
+                name: 'Red Zone Back-Shoulder Fade',
+                formation: 'Goal Line / 12 Personnel',
+                overview: 'רסיבר חיצוני רץ Fade לפינת ה-End Zone, אך במקום להמשיך רדוף אחרי הכדור — הוא "עוצר" ומצפה לכדור על הכתף האחורית, לפני ה-CB.',
+                whenToUse: 'התרגיל האמין ביותר קרוב לגול-ליין נגד Press Man — אין עומק לרוץ אליו, אז יתרון המהירות של הרסיבר פחות רלוונטי; הטכניקה קובעת.',
+                bestAgainst: ['Press Man Coverage', 'Cover 1 Goal Line', 'CB גבוה שמנסה לשחות מעל'],
+                watchOut: ['Double coverage / Bracket על הרסיבר.', 'דורש תזמון מדויק בין QB לרסיבר — זריקה מוקדמת מדי או מאוחרת מדי נכשלת.'],
+                progression: 'זריקה בודדת מתוכננת — הכל תלוי בקריאת Leverage לפני הסנאפ.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#c026d3', path:[[p.Z.x,p.Z.y],[p.Z.x-10,p.Z.y-60],[p.Z.x-35,p.Z.y-75]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-70]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x-20,p.Y.y-40]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+20,p.H.y-40]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x-25,p.RB.y-15]] }
+                ]; }
+            },
+            'rzpick': {
+                category: 'red_zone',
+                label: 'Pick/Rub (Goal Line)',
+                name: 'Red Zone Pick/Rub',
+                formation: 'Bunch / Goal Line',
+                overview: 'שני רסיברים צמודים בקבוצה קרובה לקו — האחד "חוסם" (Rub) באופן חוקי את המגין של השני ברגע השחרור, בשטח מצומצם שבו למגינים אין מקום לעקוף.',
+                whenToUse: 'עובד הכי טוב ממש קרוב לגול-ליין (5 יארד ופחות) נגד Man-to-Man — השטח הצפוף הופך את הרוב הטבעי ליעיל במיוחד.',
+                bestAgainst: ['Man-to-Man צמוד', 'Goal Line Man Coverage'],
+                watchOut: ['סיכון עונש Offensive Pass Interference אם התזמון קרוב מדי לגבול החוקי.', 'Zone Coverage שלא "רודף" אחרי הרסיברים.'],
+                progression: 'הרסיבר שמשתחרר ראשון מהצמד לרוב הכי פתוח — קריאה מהירה, אין הרבה זמן בגול-ליין.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'H', color:'#38bdf8', path:[[p.H.x+20,p.H.y],[p.H.x+50,p.H.y-30]] },
+                    { label:'Y', color:'#c026d3', path:[[p.H.x+10,p.H.y],[p.H.x-20,p.H.y-25]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-60]] },
+                    { label:'Z', color:'#10b981', path:[[p.Z.x,p.Z.y],[p.Z.x-15,p.Z.y-50]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x,p.RB.y-20]] }
+                ]; }
+            },
+            'rzcornerflat': {
+                category: 'red_zone',
+                label: 'Corner-Flat (RZ Smash)',
+                name: 'Red Zone Corner-Flat',
+                formation: '2x2 Compressed',
+                overview: 'גרסה מכווצת של Smash לגול-ליין: Flat מיידי מתחת, Corner קצר-יחסית מעליו — אותו עקרון High-Low אך בעומקים הרבה יותר רדודים כי אין שטח.',
+                whenToUse: 'נגד Cover 2/Man בגול-ליין — ה-Flat Defender חייב לבחור, בדיוק כמו Smash רגיל, רק שהחלונות קטנים בהרבה.',
+                bestAgainst: ['Cover 2 Goal Line', 'Cover 2 Man'],
+                watchOut: ['Cover 4/1 עם Safety שיושב מיד על ה-Corner הקצר.', 'דורש דיוק גבוה — אין מקום לטעות בשטח כזה.'],
+                progression: '1: Flat אם פתוח מיד ← 2: Corner הקצר אם ה-CB יורד ל-Flat.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-20]] },
+                    { label:'Y', color:'#c026d3', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-45],[p.Y.x+30,p.Y.y-65]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-60]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+15,p.H.y-15]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x-20,p.RB.y-10]] }
+                ]; }
+            },
+            'rzsnag': {
+                category: 'red_zone',
+                label: 'Compressed Snag',
+                name: 'Red Zone Compressed Snag',
+                formation: 'Trips Compressed',
+                overview: 'גרסה מצומצמת של Spot/Snag: משולש High-Low-Flat אך כל המסלולים דחוסים לתוך ה-10 היארד הראשונות — כל שלושת האיומים באזור צר מאוד.',
+                whenToUse: 'תרגיל "בטוח" בגול-ליין נגד Zone — משולש שלם באזור שההגנה לא יכולה לכסות במלואו, גם בשטח מוגבל.',
+                bestAgainst: ['Cover 3 Goal Line', 'Zone רך בגול-ליין'],
+                watchOut: ['Man-to-Man צמוד (אין הפרדה טבעית בשטח קטן כזה).', 'עומס Box גבוה שמפריע לפרוטקשן.'],
+                progression: '1: Snag (האמצעי) ← 2: Flat ← 3: Corner הקצר אם הכל סגור.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-50],[p.Z.x+15,p.Z.y-65]] },
+                    { label:'Y', color:'#c026d3', path:[[p.Y.x,p.Y.y],[p.Y.x+15,p.Y.y-20],[p.Y.x,p.Y.y-25]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x+35,p.RB.y-10]] },
+                    { label:'X', color:'#a855f7', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-60]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+15,p.H.y-15]] }
+                ]; }
+            },
+            'rzseam': {
+                category: 'red_zone',
+                label: 'TE Seam (Size Mismatch)',
+                name: 'Red Zone TE Seam',
+                formation: '12/13 Personnel',
+                overview: 'ה-TE (Y) רץ Seam ישר לתוך תפר ה-Zone — מנצל את היתרון הפיזי (גובה/משקל) שלו מול Safety/LB קטן יותר בשטח הצפוף.',
+                whenToUse: 'נגד Cover 3/4 בגול-ליין כשיש TE גדול מול מגין קטן — הגודל הפיזי מכריע יותר משטח פתוח.',
+                bestAgainst: ['Cover 3/4 עם TE Mismatch', 'Zone עם Safety קטן על TE'],
+                watchOut: ['Man-to-Man עם Safety גדול שמכסה את ה-TE.', 'Double coverage על ה-TE אם ההגנה מזהה את המיסמאץ׳ מראש.'],
+                progression: 'זריקה בודדת על המיסמאץ׳ — ציפייה גבוהה (Anticipation), לא לחכות שהוא "פתוח לגמרי".',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Y', color:'#c026d3', path:[[p.Y.x,p.Y.y],[p.Y.x-10,p.Y.y-75]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-65]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-65]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+15,p.H.y-15]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x-20,p.RB.y-10]] }
+                ]; }
+            },
+            'rzpylon': {
+                category: 'red_zone',
+                label: 'Pylon Option Route',
+                name: 'Red Zone Pylon Option',
+                formation: 'Goal Line Isolation',
+                overview: 'הרסיבר "קורא" את מנח ה-CB ממש בגול-ליין: אם Leverage פנימי — בוחר בפינה (Pylon); אם Leverage חיצוני — בוחר ב-Fade הפשוט. מסלול "חי" מבוסס קריאה.',
+                whenToUse: 'כלי בסיס לגול-ליין מול כל סוג Man — תמיד נותן לרסיבר את הכיוון הפתוח יותר, בלי תלות בניחוש מראש.',
+                bestAgainst: ['Man-to-Man (כל הסוגים) בגול-ליין'],
+                watchOut: ['Zone (אין Leverage בודד לקרוא נגדו).', 'דורש סנכרון גבוה במיוחד בין QB לרסיבר בשטח כה קטן.'],
+                progression: 'זריקה 1-על-1 מיידית ברגע שההפרדה נוצרת — אין Progression בגול-ליין.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'Z', color:'#c026d3', path:[[p.Z.x,p.Z.y],[p.Z.x-15,p.Z.y-55]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x,p.X.y-60]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x-15,p.Y.y-35]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x+15,p.H.y-15]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x-20,p.RB.y-10]] }
+                ]; }
+            },
+            'bubblescreen': {
+                category: 'screens_draws',
+                label: 'Bubble Screen',
+                name: 'Bubble Screen',
+                formation: 'Trips / 2x2 (Slot Bubble)',
+                overview: 'ה-Slot נע החוצה ואחורה (בועה) לכיוון ה-Sideline לפני קבלת הכדור, עם רסיברים חיצוניים חוסמים מייד — שונה מ-Jailbreak כי הבלוקים מגיעים מבחוץ-פנימה ולא מקו ההתקפה.',
+                whenToUse: 'תגובה מהירה ל-Soft Zone/Off Coverage — ניצול הרווח שה-CB נותן בלי לקחת שום סיכון.',
+                bestAgainst: ['Off Coverage', 'Zone רך', 'Bliz קל'],
+                watchOut: ['Press Man שסוגר את המרחב מהר.', 'CB אגרסיבי שרץ מהר ל-Flat.'],
+                progression: 'אין Progression — זו זריקה מתוכננת מראש ל-Slot, מיד עם קבלת הכדור.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'H', color:'#ef4444', path:[[p.H.x,p.H.y],[p.H.x+35,p.H.y-5],[p.H.x+70,p.H.y-10]] },
+                    { label:'X', color:'#38bdf8', path:[[p.X.x,p.X.y],[p.X.x+30,p.X.y-15]] },
+                    { label:'Z', color:'#a855f7', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125]] },
+                    { label:'Y', color:'#10b981', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-125]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x-20,p.RB.y-10]] }
+                ]; }
+            },
+            'tunnelscreen': {
+                category: 'screens_draws',
+                label: 'Tunnel Screen',
+                name: 'Tunnel Screen',
+                formation: '2x2 (Inside Screen)',
+                overview: 'הרסיבר החיצוני לוקח צעד קדימה (כאילו למסלול רגיל) ואז חוזר פנימה לכיוון מרכז הקו — מקבל כדור בתוך "מנהרת" חוסמים שנוצרת מקו ההתקפה.',
+                whenToUse: 'יעיל מאוד נגד Man Blitz ולחץ פנימי אגרסיבי — הרסיבר רץ בדיוק דרך השטח שהבליץ פינה.',
+                bestAgainst: ['Man Blitz', 'לחץ פנימי אגרסיבי', 'Cover 0/1'],
+                watchOut: ['Zone Blitz עם LB שנשאר לזהות Screen.', 'תזמון קריטי בין הרסיבר לקו החוסם.'],
+                progression: 'אין Progression — תרגיל מתוכנן מראש, תלוי בזיהוי לחץ פנימי.',
+                routes: (w,h) => { const p = posSet(w,h); return [
+                    { label:'X', color:'#ef4444', path:[[p.X.x,p.X.y],[p.X.x+15,p.X.y-15],[p.X.x+70,p.X.y-5]] },
+                    { label:'Z', color:'#38bdf8', path:[[p.Z.x,p.Z.y],[p.Z.x,p.Z.y-125]] },
+                    { label:'Y', color:'#a855f7', path:[[p.Y.x,p.Y.y],[p.Y.x,p.Y.y-125]] },
+                    { label:'H', color:'#10b981', path:[[p.H.x,p.H.y],[p.H.x,p.H.y-20]] },
+                    { label:'RB', color:'#f59e0b', path:[[p.RB.x,p.RB.y],[p.RB.x-20,p.RB.y-10]] }
+                ]; }
+            }
+        };
+
+        function drawPlaybookConcept(ctx, w, h, key) {
+            const concept = PLAYBOOK_DATABASE[key];
+            if (!concept) return;
+            drawFieldBase(ctx, w, h);
+            const losY = h - 35;
+            ctx.fillStyle = '#94a3b8';
+            for (let i = -2; i <= 2; i++) { ctx.fillRect(w/2 + i*18 - 5, losY - 5, 10, 10); }
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath(); ctx.arc(w/2, losY + 18, 6, 0, Math.PI*2); ctx.fill();
+
+            const routes = concept.routes(w, h);
+            routes.forEach(r => {
+                ctx.strokeStyle = r.color; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(r.path[0][0], r.path[0][1]);
+                for (let i = 1; i < r.path.length; i++) ctx.lineTo(r.path[i][0], r.path[i][1]);
+                ctx.stroke();
+                const last = r.path[r.path.length - 1];
+                const prev = r.path[r.path.length - 2];
+                drawArrowhead(ctx, prev[0], prev[1], last[0], last[1], r.color, 8);
+
+                ctx.fillStyle = r.color;
+                ctx.beginPath(); ctx.arc(r.path[0][0], r.path[0][1], 8, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.3; ctx.stroke();
+                ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px Rubik, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(r.label, r.path[0][0], r.path[0][1]);
+            });
+        }
+
+        let currentPlaybookFilter = 'all';
+
+        function renderCategoryTabs() {
+            const container = document.getElementById('playCategoryTabs');
+            let html = `<button onclick="filterPlaybook('all')" id="cat-all" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-600 bg-slate-700 text-white transition">הכל (${Object.keys(PLAYBOOK_DATABASE).length})</button>`;
+            Object.keys(CATEGORY_META).forEach(c => {
+                const m = CATEGORY_META[c];
+                const count = Object.values(PLAYBOOK_DATABASE).filter(p => p.category === c).length;
+                html += `<button onclick="filterPlaybook('${c}')" id="cat-${c}" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition">${m.icon} ${m.label} (${count})</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderPlaybookButtons() {
+            const container = document.getElementById('playButtonsRow');
+            const keys = Object.keys(PLAYBOOK_DATABASE).filter(k =>
+                currentPlaybookFilter === 'all' || PLAYBOOK_DATABASE[k].category === currentPlaybookFilter
+            );
+            container.innerHTML = keys.map(k => `<button onclick="selectPlay('${k}')" id="play-${k}" class="play-btn px-3 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700 hover:border-teal-400 transition">${PLAYBOOK_DATABASE[k].label}</button>`).join('');
+            if (keys.length && !keys.includes(window.currentPlayKey)) {
+                selectPlay(keys[0]);
+            }
+        }
+
+        function filterPlaybook(cat) {
+            currentPlaybookFilter = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-700', 'bg-teal-600', 'text-white', 'border-slate-600', 'border-teal-400');
+                btn.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            });
+            const activeCatBtn = document.getElementById('cat-' + cat);
+            if (activeCatBtn) {
+                activeCatBtn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                activeCatBtn.classList.add('bg-teal-600', 'text-white', 'border-teal-400');
+            }
+            renderPlaybookButtons();
+        }
+
+        function selectPlay(key) {
+            const data = PLAYBOOK_DATABASE[key];
+            if (!data) return;
+            window.currentPlayKey = key;
+
+            document.querySelectorAll('.play-btn').forEach(btn => {
+                btn.classList.remove('bg-teal-600', 'text-white', 'border-teal-400');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            const activeBtn = document.getElementById('play-' + key);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+                activeBtn.classList.add('bg-teal-600', 'text-white', 'border-teal-400');
+            }
+
+            const catMeta = CATEGORY_META[data.category] || {};
+
+            document.getElementById('playTitle').innerText = data.name;
+            document.getElementById('playFormationTag').innerText = data.formation;
+            document.getElementById('playFormationBadge').innerText = data.formation;
+            document.getElementById('playOverview').innerText = data.overview;
+            document.getElementById('playWhenToUse').innerText = data.whenToUse;
+            document.getElementById('playProgression').innerText = data.progression;
+            document.getElementById('playBestAgainst').innerHTML = data.bestAgainst.map(s => `<li>${s}</li>`).join('');
+            document.getElementById('playWatchOut').innerHTML = data.watchOut.map(s => `<li>${s}</li>`).join('');
+
+            const catBadge = document.getElementById('playCategoryBadge');
+            catBadge.innerText = catMeta.icon ? catMeta.icon + ' ' + catMeta.label : '';
+            catBadge.style.color = catMeta.color || '#5eead4';
+            catBadge.style.borderColor = (catMeta.color || '#5eead4') + '80';
+            catBadge.style.backgroundColor = (catMeta.color || '#5eead4') + '20';
+            document.getElementById('playPersonnelBadge').innerText = '👥 ' + (catMeta.personnel || '');
+            document.getElementById('playDownDistanceBadge').innerText = '📍 ' + (catMeta.downDistance || '');
+
+            const canvas = document.getElementById('playbookCanvas');
+            const ctx = canvas.getContext('2d');
+            drawPlaybookConcept(ctx, canvas.width, canvas.height, key);
+
+            const routes = data.routes(canvas.width, canvas.height);
+            document.getElementById('playLegend').innerHTML = routes.map(r =>
+                `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${r.color}"></span>${r.label}</span>`
+            ).join('');
+        }
+
+        function selectCoverage(covKey) {
+            const data = COVERAGE_DATABASE[covKey];
+            if (!data) return;
+
+            document.querySelectorAll('.cov-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white', 'border-sky-400');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            const activeBtn = document.getElementById('btn-' + covKey);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+                activeBtn.classList.add('bg-sky-600', 'text-white', 'border-sky-400');
+            }
+
+            document.getElementById('covTitle').innerText = data.name;
+            document.getElementById('covTitle').style.color = data.color;
+            document.getElementById('covTypeTag').innerText = data.typeTag;
+            document.getElementById('fieldSafetyBadge').innerText = data.safetyBadge;
+            document.getElementById('covOverview').innerText = data.overview;
+            document.getElementById('covLbKeys').innerText = data.lbKeys;
+
+            document.getElementById('covStrengths').innerHTML = data.strengths.map(s => `<li>${s}</li>`).join('');
+            document.getElementById('covWeaknesses').innerHTML = data.weaknesses.map(w => `<li>${w}</li>`).join('');
+
+            document.getElementById('covConceptsList').innerHTML = data.concepts.map(c => `
+                <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-700">
+                    <div class="font-bold text-emerald-400">${c.title}</div>
+                    <div class="text-slate-300 text-[11px] mt-0.5">${c.desc}</div>
+                </div>
+            `).join('');
+
+            const canvas = document.getElementById('fieldBoardCanvas');
+            const ctx = canvas.getContext('2d');
+            data.draw(ctx, canvas.width, canvas.height);
+        }
+
+        function selectRoute(num) {
+            const data = ROUTE_DATABASE[num];
+            if (!data) return;
+
+            document.getElementById('routeTitle').innerText = data.name;
+            document.getElementById('routeNumBadge').innerText = 'מסלול מספר ' + num;
+            document.getElementById('routeDesc').innerText = data.desc;
+            document.getElementById('routeTiming').innerText = data.timing;
+            document.getElementById('routeCounter').innerText = data.counter;
+            document.getElementById('routeQbTip').innerText = data.qbTip;
+
+            drawRouteTreeCanvas(num);
+        }
+
+        function drawArrowhead(ctx, x1, y1, x2, y2, color, size) {
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - size * Math.cos(angle - Math.PI / 7), y2 - size * Math.sin(angle - Math.PI / 7));
+            ctx.lineTo(x2 - size * Math.cos(angle + Math.PI / 7), y2 - size * Math.sin(angle + Math.PI / 7));
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawRouteTreeCanvas(highlightNum) {
+            const canvas = document.getElementById('routeTreeCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width; const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = '#022c22'; ctx.fillRect(0, 0, w, h);
+
+            const startX = w / 2; const startY = h - 40;
+
+            // Yard-line grid, each line = ~5 yards, with a labeled LOS
+            ctx.strokeStyle = '#059669'; ctx.lineWidth = 1;
+            ctx.fillStyle = 'rgba(203,213,225,0.35)';
+            ctx.font = '8px Rubik, sans-serif';
+            ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+            let yardCount = 0;
+            for (let y = startY; y > 0; y -= 34) {
+                ctx.beginPath(); ctx.moveTo(10, y); ctx.lineTo(w - 10, y); ctx.stroke();
+                if (yardCount > 0) ctx.fillText(yardCount * 5 + 'yd', 12, y - 6);
+                yardCount++;
+            }
+
+            // Line of scrimmage
+            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(10, startY); ctx.lineTo(w - 10, startY); ctx.stroke();
+
+            ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(startX, startY, 7, 0, Math.PI * 2); ctx.fill();
+
+            // Route depths follow real route-tree proportions: Slant breaks off
+            // sharply after a short 3-5yd stem (much shallower than the
+            // intermediate in/out-breaking routes), rather than as deep as a
+            // Curl/Out — this was the one true-to-life fix needed here.
+            const routes = [
+                { id: 1, path: [[startX, startY], [startX, startY - 25], [startX - 110, startY - 30]], name: '1: Flat' },
+                { id: 2, path: [[startX, startY], [startX, startY - 45], [startX + 75, startY - 80]], name: '2: Slant' },
+                { id: 3, path: [[startX, startY], [startX, startY - 220], [startX - 100, startY - 175]], name: '3: Comeback' },
+                { id: 4, path: [[startX, startY], [startX, startY - 180], [startX + 60, startY - 155]], name: '4: Curl' },
+                { id: 5, path: [[startX, startY], [startX, startY - 180], [startX - 110, startY - 180]], name: '5: Out' },
+                { id: 6, path: [[startX, startY], [startX, startY - 180], [startX + 110, startY - 180]], name: '6: Dig' },
+                { id: 7, path: [[startX, startY], [startX, startY - 200], [startX - 110, startY - 280]], name: '7: Corner' },
+                { id: 8, path: [[startX, startY], [startX, startY - 200], [startX + 110, startY - 280]], name: '8: Post' },
+                { id: 9, path: [[startX, startY], [startX, startY - 300]], name: '9: Go/Fly' }
+            ];
+
+            routes.forEach(r => {
+                const isHighlight = r.id === highlightNum;
+                ctx.strokeStyle = isHighlight ? '#f59e0b' : 'rgba(255,255,255,0.35)';
+                ctx.lineWidth = isHighlight ? 4 : 1.8;
+                ctx.lineJoin = 'round';
+
+                ctx.beginPath();
+                ctx.moveTo(r.path[0][0], r.path[0][1]);
+                for (let i = 1; i < r.path.length; i++) {
+                    ctx.lineTo(r.path[i][0], r.path[i][1]);
+                }
+                ctx.stroke();
+
+                const lastPt = r.path[r.path.length - 1];
+                const prevPt = r.path[r.path.length - 2];
+                drawArrowhead(ctx, prevPt[0], prevPt[1], lastPt[0], lastPt[1], isHighlight ? '#f59e0b' : 'rgba(255,255,255,0.45)', isHighlight ? 9 : 6);
+
+                ctx.fillStyle = isHighlight ? '#f59e0b' : '#cbd5e1';
+                ctx.font = isHighlight ? 'bold 12px Rubik' : '10px Rubik';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(r.id, lastPt[0] + (r.id % 2 === 1 ? -14 : 14), lastPt[1]);
+            });
+        }
+
+        const DOWN_DISTANCE_NOTES = {
+            '1st10': '1st & 10: איזון בין ריצה למסירה — פתיחות טובה ל-Play-Action ולתרגילי עומק.',
+            '2ndmed': '2nd & Medium: גמישות גבוהה עדיין; ניתן לקחת סיכון מתון בעומק בינוני.',
+            '2ndlong': '2nd/3rd & Long: הגנות נוטות יותר ל-Zone רך ובליץ מתוזמן; Flood/Sail/Levels יעילים.',
+            '3rdshort': '3rd & Short: צפה ליותר Man-to-Man צמוד ועומס Box גבוה; Quick Game ו-RB Schemes עדיפים.',
+            'redzone': 'Red Zone: השטח מצטמצם — עדיפות למסלולי Fade/Slant/Pick Plays על פני עומק.',
+            '2min': '2-Minute Drill: קצב מהיר נדרש; העדף Quick Game ומסלולי Sideline לעצירת השעון.'
+        };
+
+        function jumpToPlay(key) {
+            const data = PLAYBOOK_DATABASE[key];
+            if (!data) return;
+            filterPlaybook(data.category);
+            selectPlay(key);
+            document.getElementById('playbook').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function renderPlaybookSuggestions(keys) {
+            const container = document.getElementById('simPlaybookSuggestions');
+            container.innerHTML = keys.map(k => {
+                const p = PLAYBOOK_DATABASE[k];
+                if (!p) return '';
+                const meta = CATEGORY_META[p.category] || {};
+                return `
+                <button onclick="jumpToPlay('${k}')" class="text-right bg-slate-800/80 hover:bg-slate-700 p-3 rounded-xl border border-slate-700 hover:border-teal-400 transition">
+                    <div class="font-bold text-teal-300 mb-1">${p.label} <span class="text-slate-500 font-normal text-[10px]">${meta.icon || ''}</span></div>
+                    <div class="text-slate-400 text-[11px]">${p.formation}</div>
+                </button>`;
+            }).join('');
+        }
+
+        // Every leverage (off/press/inside/outside) and motion (static/dropping/bailing)
+        // value now maps to a genuinely distinct branch — no dead dropdown options.
+        function getSimulatorBranchKey(safeties, leverage, box, motion) {
+            const family = (safeties === 'zero' || box === 'heavy') ? 'blitz' : (safeties === 'single' ? 'single' : 'two');
+
+            if (family === 'blitz') {
+                return (motion === 'dropping' || leverage === 'off') ? 'blitz_zone' : 'blitz_man';
+            }
+            if (family === 'single') {
+                if (motion === 'dropping') return 'single_buzz';
+                if (motion === 'bailing') return 'single_confirmed';
+                if (leverage === 'press') return 'single_press';
+                if (leverage === 'inside') return 'single_inside';
+                if (leverage === 'outside') return 'single_outside';
+                return 'single_off';
+            }
+            // two-high
+            if (motion === 'dropping') return 'two_rotation';
+            if (motion === 'bailing') return 'two_confirmed';
+            if (leverage === 'press') return 'two_press';
+            if (leverage === 'inside') return 'two_inside';
+            if (leverage === 'outside') return 'two_outside';
+            return 'two_off';
+        }
+
+        const SIMULATOR_BRANCHES = {
+            blitz_man: {
+                title: 'Cover 0 (All-Out Man Blitz)', prob: 90,
+                desc: 'ה-Box עמוס וה-Leverage/תנועה מאשרים שמירה אישית טהורה בלי שום עזרה עמוקה — בליץ Man ישיר.',
+                concept: 'Quick Slants (Route 2) / Screen', protection: 'Protection: Max Protect / Check Release',
+                conceptDesc: 'אל תבצע Dropback ארוך! שחרר את הכדור בצעד הראשון אל ה-Hot Receiver.',
+                progression: '1: Hot Slant ➔ 2: RB Flat', hotRead: 'זהה את השחקן הפורץ ומסור מיד לחלל שננטש מאחוריו!',
+                drills: [
+                    { title: '1-Step Hot Read Drill', desc: 'שותף מדמה בליץ אקראי; שחרור כדור תוך פחות משנייה וחצי.' },
+                    { title: 'Rapid Screen Reps', desc: '15 חזרות Screen מהיר תוך זיהוי הרודף שעובר מעליך.' },
+                    { title: 'Anticipation Slant Timing', desc: 'זריקת Slant לפני סיום החיתוך, מול שעון עצר.' }
+                ],
+                playSuggestions: ['slantflat', 'jailbreak', 'draw']
+            },
+            blitz_zone: {
+                title: 'Fire Zone Blitz (הסוואת Zone Blitz)', prob: 78,
+                desc: 'ה-Box עמוס, אך ה-CBs נשארים ב-Off או שיש סימן לשחקן קו שנופל לכיסוי — זו הסוואת Zone Blitz, לא בליץ Man טהור.',
+                concept: 'Hot Slant לצד הבליץ / Quick Out', protection: 'Protection: זהה את השחקן הנופל לכיסוי',
+                conceptDesc: 'שחקן קו אחד "נופל" אחורה לאזור במקום לפרוץ — שם הכיסוי איטי וניתן לניצול.',
+                progression: '1: Hot Slant לצד הבליץ ➔ 2: Quick Out לצד הנגדי', hotRead: 'זהה מי מפרונט ה-DL לא ממשיך לפרוץ — הוא זה שנופל לזון.',
+                drills: [
+                    { title: 'Dropping Lineman Recognition', desc: 'זיהוי שחקן קו שנסוג לכיסוי במקום לפרוץ, תוך שנייה מהסנאפ.' },
+                    { title: 'Quick Out Timing', desc: '10 זריקות Out מהירות לצד הנגדי לבליץ.' },
+                    { title: 'Rapid Screen Reps', desc: 'תרגול Screen מול זיהוי לחץ מדומה.' }
+                ],
+                playSuggestions: ['slantflat', 'stick', 'jailbreak']
+            },
+            single_press: {
+                title: 'Cover 1 (Man-Free, Press)', prob: 88,
+                desc: 'שמירה אישית צמודה על הקו עם Free Safety בודד בעומק המגרש.',
+                concept: 'Mesh Concept / Out Routes', protection: 'Protection: Half-Slide / BOB',
+                conceptDesc: 'השתמש בחציות רסיברים (Mesh) כדי ליצור Pick/Rub על השומרים האישיים.',
+                progression: '1: Mesh Crosser ➔ 2: TE Out', hotRead: 'קרא את ה-Mismatch הפיזי של ה-WR/TE שלך 1-על-1.',
+                drills: [
+                    { title: 'Mesh Rub Timing', desc: 'תזמון בין שני רסיברים חוצים ברדיוס צר.' },
+                    { title: 'Mismatch Recognition', desc: 'זיהוי מיסמאץ׳ תוך 2 שניות מהסנאפ.' },
+                    { title: 'Scramble Drill', desc: 'בריחה מהכיס כשגב המגינים מופנה אליך.' }
+                ],
+                playSuggestions: ['mesh', 'bunch', 'wheel']
+            },
+            single_off: {
+                title: 'Cover 3 (Zone Sky)', prob: 85,
+                desc: 'כיסוי 3 שלישים עמוקים עם 4 מגינים באזורים הקצרים.',
+                concept: 'Flood Concept (Fade-Out-Flat)', protection: 'Protection: Standard 5-Man Slide',
+                conceptDesc: 'העמס 3 רסיברים באותו צד בשלושה עומקים שונים.',
+                progression: '1: Medium Out (Route 5) ➔ 2: Flat', hotRead: 'תקוף את ה-Flat ברגע שה-CB יורד לשליש העמוק שלו.',
+                drills: [
+                    { title: 'Flood Progression Reps', desc: 'קריאת שלושת העומקים (Flat/Out/Go) לפי סדר בזמן אמת.' },
+                    { title: 'Out-Route Ball Placement', desc: '10 זריקות Out לזווית ה-Sideline לפני שה-CB מתאושש.' },
+                    { title: 'Seam/Flat Recognition', desc: 'זיהוי החלל שנפתח ב-Flat לעומת התפרים.' }
+                ],
+                playSuggestions: ['flood', 'sail', 'levels']
+            },
+            single_buzz: {
+                title: 'Cover 3 Buzz / Disguised Zone', prob: 80,
+                desc: 'ההגנה הראתה Single High, אך ה-Safety יורד ל-Box ברגע הסנאפ כדי לתפוס נתיבי Crossing.',
+                concept: 'Four Verticals / Seam Attack', protection: 'Protection: Slide Right (5-Man)',
+                conceptDesc: 'תקוף את התפרים העמוקים שנותרו חשופים בעקבות ירידת ה-Safety.',
+                progression: '1: Slot Seam ➔ 2: Dig Route', hotRead: 'אל תזרוק Slant עיוור; ה-Safety שירד יושב בדיוק בנתיב המסירה!',
+                drills: [
+                    { title: 'Post-Snap Safety Read', desc: 'זיהוי תנועת Safety ב-0.5 שנייה הראשונות אחרי הסנאפ.' },
+                    { title: 'Seam Window Throws', desc: '10 זריקות תפר מדויקות מעל LB ומתחת ל-Safety שנסוג.' },
+                    { title: 'Disguise Recognition Reps', desc: 'זיהוי Pre-Snap מול Post-Snap לאותה הגנה.' }
+                ],
+                playSuggestions: ['verticals', 'yankee', 'divide']
+            },
+            single_confirmed: {
+                title: 'Cover 1 Man-Free (מאומת — Safety בורח עמוק)', prob: 90,
+                desc: 'תנועת הבריחה העמוקה של ה-Safety ברגע הסנאפ מאשרת Single High אמיתי עם שמירה אישית מתחת — קריאה בטוחה יחסית.',
+                concept: 'Mesh Concept / Deep Comeback', protection: 'Protection: Half-Slide / BOB',
+                conceptDesc: 'ברגע שהזיהוי ודאי, אפשר לקחת סיכון גדול יותר בעומק מול השמירה האישית.',
+                progression: '1: Mesh Crosser ➔ 2: Deep Comeback אם המרדף איטי', hotRead: 'ה-Safety כבר "עזב" — נצל את הביטחון הזה לתקיפה נועזת יותר.',
+                drills: [
+                    { title: 'Deep Comeback Timing', desc: '8 זריקות Comeback בעומק 14-16 יארד מול שמירה אישית.' },
+                    { title: 'Mesh Rub Timing', desc: 'תזמון חציית רסיברים ליצירת הפרדה.' },
+                    { title: 'Safety Bail Recognition', desc: 'זיהוי תנועת בריחה עמוקה תוך כדי ה-Drop.' }
+                ],
+                playSuggestions: ['mesh', 'wheel', 'drift']
+            },
+            single_inside: {
+                title: 'Cover 1 (Inside Leverage)', prob: 78,
+                desc: 'ה-CB סוגר פנימה — לוקח ממך את המסלולים הפנימיים (Slant/Dig), אך חושף את הצד החיצוני.',
+                concept: 'Out Routes / Corner Routes', protection: 'Protection: Standard BOB',
+                conceptDesc: 'אל תילחם ב-Leverage — נצל אותו. תקוף החוצה, לא פנימה.',
+                progression: '1: Out לצד ה-Leverage הפנימי ➔ 2: Comeback', hotRead: 'אל תזרוק פנימה — ה-CB יושב בדיוק שם. זרוק החוצה.',
+                drills: [
+                    { title: 'Leverage Recognition Drill', desc: 'זיהוי מנח CB (פנים/חוץ) ב-2 שניות Pre-Snap.' },
+                    { title: 'Out-Route Ball Placement', desc: '10 זריקות Out לזווית ה-Sideline הפתוחה.' },
+                    { title: 'Back-Shoulder Placement Drill', desc: 'זריקה מכוונת לכתף האחורית כש-CB רודף מבפנים.' }
+                ],
+                playSuggestions: ['choice', 'angle', 'bunch']
+            },
+            single_outside: {
+                title: 'Cover 3 Cloud (Outside Leverage)', prob: 78,
+                desc: 'ה-CB סוגר קווים וסביר שיש לו עזרה בפלט מתחתיו (Cloud) — הפנים פתוח יותר.',
+                concept: 'Dig / Post Routes', protection: 'Protection: Standard BOB',
+                conceptDesc: 'תקוף פנימה — שם הרווח האמיתי, לא בחוץ מול ה-CB הסוגר.',
+                progression: '1: Dig לחלל הפנימי ➔ 2: Post עמוק', hotRead: 'אל תתפתה לזרוק החוצה — שם בדיוק ה-CB רוצה שתזרוק.',
+                drills: [
+                    { title: 'Leverage Recognition Drill', desc: 'זיהוי מנח CB (פנים/חוץ) ב-2 שניות Pre-Snap.' },
+                    { title: 'Dig Timing vs Seam', desc: 'תזמון Dig שחוצה מאחורי ה-Linebackers.' },
+                    { title: 'Post Route Deep Placement', desc: '8 זריקות Post עמוקות עם הזזת עיני ה-Safety.' }
+                ],
+                playSuggestions: ['levels', 'dagger', 'drift']
+            },
+            two_press: {
+                title: 'Cover 2 Man (Man-Under)', prob: 84,
+                desc: 'שמירה אישית צמודה של כל ה-DBs, עם רשת ביטחון של 2 Safeties עמוקים מלמעלה.',
+                concept: 'Crossing Routes / Mesh', protection: 'Protection: Half-Slide',
+                conceptDesc: 'אין מגן חופשי ב-Box — QB Scramble יכול להיות אופציה טובה אם הכל מכוסה.',
+                progression: '1: Crossing Route ליצירת הפרדה ➔ 2: Scramble אם סגור', hotRead: 'גב ה-DBs מופנה אליך — בריחה מהכיס משתלמת כאן.',
+                drills: [
+                    { title: 'Crossing Route Separation', desc: 'תרגול חיתוכים אופקיים רחבים שמוציאים DB מאיזון.' },
+                    { title: 'Scramble Drill', desc: 'בריחה מבוקרת ואיפוס רגליים לפני זריקה.' },
+                    { title: 'Mesh Rub Timing', desc: 'תזמון חציית רסיברים ליצירת פקק טבעי.' }
+                ],
+                playSuggestions: ['mesh', 'bunch', 'switchverts']
+            },
+            two_off: {
+                title: 'Cover 2 Zone / Tampa 2', prob: 90,
+                desc: '2 Safeties עמוקים השומרים על חצאי שדה, עם כיסוי רך מתחת.',
+                concept: 'Smash Concept / Dagger', protection: 'Protection: Standard BOB',
+                conceptDesc: 'תקוף את ה-Honey Hole שבין ה-CB ל-Safety או חתוך Dig מאחורי ה-LBs.',
+                progression: '1: Corner (Honey Hole) ➔ 2: Hitch', hotRead: 'אם הכל מכוסה, צא ל-QB Scramble או מסור ל-RB במרכז.',
+                drills: [
+                    { title: 'Honey Hole Touch Throws', desc: 'זריקת קשת מעל ה-CB ולפני ה-Safety באזור הפינה.' },
+                    { title: 'Dagger Timing vs LB Drop', desc: 'תזמון Dig מאחורי Linebackers שנמשכים ל-Play Action.' },
+                    { title: 'High-Low Hitch/Corner Reps', desc: 'קריאת ה-CB — Hitch אם יורד עמוק, Corner אם נשאר נמוך.' }
+                ],
+                playSuggestions: ['smash', 'dagger', 'doublepost']
+            },
+            two_rotation: {
+                title: 'Cover 3 Rotation from Two-High Look', prob: 82,
+                desc: 'מצג שווא Pre-Snap! ההגנה הראתה 2 Safeties אך מסובבת ל-Cover 3 ברגע הסנאפ.',
+                concept: 'Flood / Seams', protection: 'Protection: Slide Left',
+                conceptDesc: 'עבור לקריאת Single High והפנה את המבט לתפרים.',
+                progression: '1: Seam ➔ 2: Checkdown', hotRead: 'אימות Post-Snap ב-Dropback: ראה לאן ה-Safety המסתובב נע!',
+                drills: [
+                    { title: 'Two-High Rotation Recognition', desc: 'זיהוי סיבוב Safety מ-2 עמוקים ל-1 עמוק תוך כדי ה-Drop.' },
+                    { title: 'Eye Discipline Drill', desc: 'שמירת עיניים על ה-Safety המסתובב, לא על הרסיבר הראשון.' },
+                    { title: 'Seam Attack Reps', desc: '10 זריקות תפר מותאמות לחלון שנפתח אחרי הסיבוב.' }
+                ],
+                playSuggestions: ['verticals', 'divide', 'drift']
+            },
+            two_confirmed: {
+                title: 'Cover 4 Quarters (מאומת)', prob: 88,
+                desc: '2 Safeties נשארים עמוקים באופן מובהק (אחד אף בורח עמוק יותר) — חלוקת Quarters ברורה.',
+                concept: 'Dagger / Levels', protection: 'Protection: Standard BOB',
+                conceptDesc: 'עומק ישיר כמעט בלתי אפשרי — תקוף את השטח הבינוני מתחת לחלוקה.',
+                progression: '1: Levels (רדוד+בינוני) ➔ 2: Checkdown', hotRead: 'אל תנסה עומק ישיר — תקוף מתחת לחלוקת ה-Quarters.',
+                drills: [
+                    { title: 'Underneath Window Throws', desc: 'זריקות לשטח הבינוני שמתחת לחלוקת ה-4 עמוקים.' },
+                    { title: 'Dagger Timing vs LB Drop', desc: 'תזמון Dig אחרי משיכת ה-LBs ב-Play Action.' },
+                    { title: 'Levels Progression Reps', desc: 'קריאת High-Low בין שני מסלולים באותו אזור.' }
+                ],
+                playSuggestions: ['dagger', 'levels', 'doublepost']
+            },
+            two_inside: {
+                title: 'Cover 4 (Inside Leverage Match)', prob: 76,
+                desc: 'ה-CB סוגר פנימה בציפייה ל-Match על מסלול אנכי של מספר 2 — הצד החיצוני נפתח.',
+                concept: 'Out / Comeback Routes', protection: 'Protection: Standard BOB',
+                conceptDesc: 'נצל את ה-Leverage הפנימי — תקוף החוצה.',
+                progression: '1: Out לצד הפתוח ➔ 2: Comeback', hotRead: 'ה-CB מחפש איום פנימי — הכיוון החיצוני הוא הפתרון.',
+                drills: [
+                    { title: 'Leverage Recognition Drill', desc: 'זיהוי מנח CB תוך 2 שניות Pre-Snap.' },
+                    { title: 'Out-Route Ball Placement', desc: '10 זריקות Out לזווית ה-Sideline.' },
+                    { title: 'Comeback Timing', desc: 'זריקת Comeback בשיא גובה הרסיבר לפני הסיבוב.' }
+                ],
+                playSuggestions: ['smash', 'choice', 'angle']
+            },
+            two_outside: {
+                title: 'Cover 6 (Split Field, Boundary Squeeze)', prob: 74,
+                desc: 'צד אחד סוגר קווים (בסגנון Cover 2) — לרוב זה הצד הצר (Boundary); הצד הרחב נשאר Quarters.',
+                concept: 'Boundary Smash / Field Flood', protection: 'Protection: Standard BOB',
+                conceptDesc: 'זהה איזה צד "סוגר קווים" וכוון את התרגיל התקפי בהתאם.',
+                progression: '1: Smash בצד ה-Boundary ➔ 2: Flood בצד ה-Field', hotRead: 'צד אחד הוא Cover 2, הצד השני Quarters — אל תתייחס אליהם אותו דבר.',
+                drills: [
+                    { title: 'Split-Field Recognition', desc: 'זיהוי אסימטריה בין צד Field לצד Boundary Pre-Snap.' },
+                    { title: 'Honey Hole Touch Throws', desc: 'זריקת קשת לצד ה-Cover 2 הצר.' },
+                    { title: 'Flood Progression Reps', desc: 'קריאת שלושת העומקים בצד ה-Field הרחב.' }
+                ],
+                playSuggestions: ['smash', 'flood', 'sail']
+            }
+        };
+
+        function runSimulator() {
+            const safeties = document.getElementById('simSafeties').value;
+            const leverage = document.getElementById('simLeverage').value;
+            const box = document.getElementById('simBox').value;
+            const motion = document.getElementById('simMotion').value;
+            const downDist = document.getElementById('simDownDistance').value;
+
+            const resultDiv = document.getElementById('simResult');
+            const branch = SIMULATOR_BRANCHES[getSimulatorBranchKey(safeties, leverage, box, motion)];
+
+            resultDiv.classList.remove('hidden');
+            document.getElementById('simCoverageTitle').innerText = branch.title;
+            document.getElementById('simProbBadge').innerText = 'הסתברות: ' + branch.prob + '%';
+            document.getElementById('simCoverageDesc').innerText = branch.desc;
+            document.getElementById('simConceptTitle').innerText = branch.concept;
+            document.getElementById('simProtectionCall').innerText = branch.protection;
+            document.getElementById('simConceptDesc').innerText = branch.conceptDesc;
+            document.getElementById('simProgressionTitle').innerText = branch.progression;
+            document.getElementById('simHotRead').innerText = branch.hotRead;
+
+            let playSuggestions = branch.playSuggestions;
+
+            // Down & Distance can override play-call priority even when the coverage read stays the same
+            if (downDist === 'redzone') {
+                playSuggestions = leverage === 'press' || safeties === 'zero'
+                    ? ['rzfade', 'rzpick', 'rzpylon']
+                    : ['rzcornerflat', 'rzsnag', 'rzseam'];
+            } else if (downDist === '3rdshort') {
+                playSuggestions = ['slantflat', 'stick', 'angle'];
+            } else if (downDist === '2min') {
+                playSuggestions = ['allcurls', 'stick', 'slantflat'];
+            }
+
+            document.getElementById('simDownDistanceNote').innerText = DOWN_DISTANCE_NOTES[downDist] || '';
+            renderPlaybookSuggestions(playSuggestions);
+
+            document.getElementById('simDrillsList').innerHTML = branch.drills.map(d => `
+                <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                    <div class="font-bold text-emerald-300 mb-1">${d.title}</div>
+                    <div class="text-slate-400">${d.desc}</div>
+                </div>
+            `).join('');
+        }
+
+
+        window.addEventListener('DOMContentLoaded', () => {
+            selectCoverage('cover1');
+            selectRoute(2);
+            renderCategoryTabs();
+            renderPlaybookButtons();
+            populateBuilderCoverageSelect();
+            populateBuilderRouteSelectors();
+            drawBuilderField();
+            selectPlay('mesh');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דירוג QB בסגנון Madden - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        @media print {
+            nav, .no-print, button, select, input[type=range] {
+                display: none !important;
+            }
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            .bg-slate-900, .bg-slate-800, .bg-slate-800\/50, .bg-slate-900\/90, .bg-slate-900\/80 {
+                background-color: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+            }
+            .text-white, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400 {
+                color: #0f172a !important;
+            }
+            .text-sky-400, .text-amber-400, .text-emerald-400, .text-rose-400, .text-purple-400 {
+                color: #0284c7 !important;
+                font-weight: bold;
+            }
+            canvas {
+                max-width: 100% !important;
+            }
+            .print-only-target {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <script src="nav.js"></script>
+
+    <header class="max-w-7xl mx-auto px-4 pt-8 pb-6 text-center">
+        <div class="inline-block px-4 py-1.5 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-400 text-sm font-semibold mb-3">
+            QB MASTER CLASS • דירוג QB
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-3">
+            דירוג QB בסגנון Madden
+        </h1>
+        <p class="text-slate-300 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
+            מחשבון דירוג שחקן שמושך אוטומטית את הדירוגים האחרונים שתועדו ב"מעקב מדדים".
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 space-y-12">
+
+        <section id="madden-rating" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-6 text-center">
+                <span class="px-3 py-1 bg-purple-500/20 text-purple-300 font-bold text-xs rounded-full border border-purple-500/30">מחשבון איכויות מותאם אישית</span>
+                <h2 class="text-2xl md:text-4xl font-black text-purple-400 mt-2">
+                    🎮 כרטיס דירוג קוורטרבק - פורמט Madden
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base mt-1 max-w-2xl mx-auto">
+                    דרג את היכולות, הפיזיות וה-IQ הטקטי שלך בסולם 0-99. המערכת תחשב את ציון ה-OVR הכללי שלך ותייצר כרטיס שחקן ויזואלי.
+                </p>
+                <div id="realMaddenAutoNote" class="hidden mt-3 max-w-xl mx-auto text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2.5"></div>
+                <div id="realMaddenManualBox" class="hidden mt-4 max-w-xl mx-auto bg-slate-900/80 border border-purple-500/30 rounded-xl p-3">
+                    <p class="text-xs text-slate-300 mb-2">לא נמצאו דירוגים אוטומטית (צפוי כשהדפים נפתחים כקבצים נפרדים — זה ייפתר אוטומטית לגמרי אחרי מעבר לאחסון אתר). אפשר לגשר ידנית:</p>
+                    <div class="flex flex-wrap items-center justify-center gap-2">
+                        <label class="text-xs font-bold px-3 py-1.5 bg-slate-800 border border-slate-700 hover:border-purple-400 text-slate-300 rounded-lg cursor-pointer transition">
+                            📂 העלה קובץ גיבוי מדדים
+                            <input type="file" accept="application/json" onchange="loadRealMaddenFromFile(event)" class="hidden">
+                        </label>
+                    </div>
+                    <p id="realMaddenStatus" class="text-[11px] text-slate-500 mt-2"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-6 space-y-4 bg-slate-900/90 border border-slate-700 p-5 rounded-2xl shadow-xl">
+                    <h3 class="font-bold text-white text-base mb-3 border-b border-slate-800 pb-2 flex justify-between items-center">
+                        <span>סרגל הערכת היכולות שלי</span>
+                        <span id="qbOvrDisplay" class="text-2xl font-black text-amber-400 bg-amber-500/10 px-3 py-1 rounded-xl border border-amber-500/30">OVR: 84</span>
+                    </h3>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <div class="flex justify-between text-slate-300 mb-1">
+                                <span>עוצמת זרוע (Arm Strength):</span>
+                                <span id="valTHP" class="font-bold text-sky-400">85</span>
+                            </div>
+                            <input type="range" id="rateTHP" min="50" max="99" value="85" oninput="updateQbCard()" class="w-full accent-sky-400">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-slate-300 mb-1">
+                                <span>דיוק במסירה קצרה (Short Accuracy):</span>
+                                <span id="valSAC" class="font-bold text-sky-400">88</span>
+                            </div>
+                            <input type="range" id="rateSAC" min="50" max="99" value="88" oninput="updateQbCard()" class="w-full accent-sky-400">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-slate-300 mb-1">
+                                <span>דיוק במסירה בינונית (Medium Accuracy):</span>
+                                <span id="valMAC" class="font-bold text-sky-400">82</span>
+                            </div>
+                            <input type="range" id="rateMAC" min="50" max="99" value="82" oninput="updateQbCard()" class="w-full accent-sky-400">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-slate-300 mb-1">
+                                <span>דיוק במסירה עמוקה (Deep Accuracy):</span>
+                                <span id="valDAC" class="font-bold text-sky-400">78</span>
+                            </div>
+                            <input type="range" id="rateDAC" min="50" max="99" value="78" oninput="updateQbCard()" class="w-full accent-sky-400">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-slate-300 mb-1">
+                                <span>תחישת הכיס ומודעות (Pocket Awareness):</span>
+                                <span id="valAWR" class="font-bold text-sky-400">86</span>
+                            </div>
+                            <input type="range" id="rateAWR" min="50" max="99" value="86" oninput="updateQbCard()" class="w-full accent-sky-400">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-slate-300 mb-1">
+                                <span>מהירות שחרור (Release Speed):</span>
+                                <span id="valRLS" class="font-bold text-sky-400">84</span>
+                            </div>
+                            <input type="range" id="rateRLS" min="50" max="99" value="84" oninput="updateQbCard()" class="w-full accent-sky-400">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-slate-300 mb-1">
+                                <span>ניידות וזריקה בתנועה (Throw on Run & Speed):</span>
+                                <span id="valRUN" class="font-bold text-sky-400">80</span>
+                            </div>
+                            <input type="range" id="rateRUN" min="50" max="99" value="80" oninput="updateQbCard()" class="w-full accent-sky-400">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-6 bg-slate-900/90 border border-purple-500/40 p-5 rounded-2xl shadow-xl text-center">
+                    <h3 class="text-xs font-bold text-purple-300 uppercase tracking-wider mb-2">פרופיל היכולות הויזואלי שלי</h3>
+                    <div class="chart-container">
+                        <canvas id="qbRatingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 border-t border-slate-800 pt-6">
+        <p>QB Master Class 2.0 • מערכת ניתוח טקטי, מכניקה ותוכנית אימונים לקוורטרבקים</p>
+    </footer>
+
+    <script>
+        let qbChartInstance = null;
+
+        // ---- Loading real Madden ratings from the metrics.html dataset ----
+        const MADDEN_SLIDER_MAP = {
+            'Madden: עוצמת זרוע (THP)': 'rateTHP',
+            'Madden: דיוק קצר (SAC)': 'rateSAC',
+            'Madden: דיוק בינוני (MAC)': 'rateMAC',
+            'Madden: דיוק עמוק (DAC)': 'rateDAC',
+            'Madden: תחושת כיס (AWR)': 'rateAWR',
+            'Madden: מהירות שחרור (RLS)': 'rateRLS',
+            'Madden: זריקה בתנועה (RUN)': 'rateRUN'
+        };
+
+        function extractLatestMaddenFromDayMap(dayMap) {
+            // dayMap: { "YYYY-MM-DD": [ {name, value, unit}, ... ], ... }
+            const latest = {}; // name -> { date, value }
+            Object.entries(dayMap).forEach(([date, entries]) => {
+                (entries || []).forEach(e => {
+                    if (!MADDEN_SLIDER_MAP[e.name] && e.name !== 'Madden: OVR כללי (מהמאמן)') return;
+                    if (!latest[e.name] || date > latest[e.name].date) latest[e.name] = { date, value: e.value };
+                });
+            });
+            return latest;
+        }
+
+        function applyMaddenValues(latest) {
+            let count = 0;
+            let mostRecentDate = '';
+            Object.entries(MADDEN_SLIDER_MAP).forEach(([name, sliderId]) => {
+                if (latest[name]) {
+                    document.getElementById(sliderId).value = latest[name].value;
+                    count++;
+                    if (latest[name].date > mostRecentDate) mostRecentDate = latest[name].date;
+                }
+            });
+            if (count > 0) updateQbCard();
+            return { count, mostRecentDate };
+        }
+
+        function tryAutoLoadMaddenData() {
+            const dayMap = {};
+            let found = false;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('qbmc_metrics_')) {
+                    try {
+                        dayMap[key.replace('qbmc_metrics_', '')] = JSON.parse(localStorage.getItem(key));
+                        found = true;
+                    } catch (e) {}
+                }
+            }
+            if (!found) {
+                document.getElementById('realMaddenManualBox').classList.remove('hidden');
+                return;
+            }
+            const latest = extractLatestMaddenFromDayMap(dayMap);
+            const { count, mostRecentDate } = applyMaddenValues(latest);
+            if (count > 0) {
+                const note = document.getElementById('realMaddenAutoNote');
+                note.innerText = `✅ נטענו אוטומטית ${count}/7 דירוגים אמיתיים מלוח המדדים (עדכון אחרון: ${mostRecentDate}).`;
+                note.classList.remove('hidden');
+            } else {
+                document.getElementById('realMaddenManualBox').classList.remove('hidden');
+            }
+        }
+
+        function loadRealMaddenFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    const dayMap = {};
+                    Object.entries(backup).forEach(([key, value]) => {
+                        if (key.startsWith('qbmc_metrics_')) dayMap[key.replace('qbmc_metrics_', '')] = JSON.parse(value);
+                    });
+                    const latest = extractLatestMaddenFromDayMap(dayMap);
+                    const { count, mostRecentDate } = applyMaddenValues(latest);
+                    document.getElementById('realMaddenStatus').innerText = count > 0
+                        ? `✅ נטענו ${count}/7 דירוגים (עדכון אחרון: ${mostRecentDate}).`
+                        : '⚠️ לא נמצאו רישומי Madden בקובץ הזה.';
+                } catch (err) {
+                    document.getElementById('realMaddenStatus').innerText = '❌ קובץ לא תקין.';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function updateQbCard() {
+            const thp = parseInt(document.getElementById('rateTHP').value);
+            const sac = parseInt(document.getElementById('rateSAC').value);
+            const mac = parseInt(document.getElementById('rateMAC').value);
+            const dac = parseInt(document.getElementById('rateDAC').value);
+            const awr = parseInt(document.getElementById('rateAWR').value);
+            const rls = parseInt(document.getElementById('rateRLS').value);
+            const run = parseInt(document.getElementById('rateRUN').value);
+
+            document.getElementById('valTHP').innerText = thp;
+            document.getElementById('valSAC').innerText = sac;
+            document.getElementById('valMAC').innerText = mac;
+            document.getElementById('valDAC').innerText = dac;
+            document.getElementById('valAWR').innerText = awr;
+            document.getElementById('valRLS').innerText = rls;
+            document.getElementById('valRUN').innerText = run;
+
+            const ovr = Math.round((thp * 0.2) + (sac * 0.15) + (mac * 0.2) + (dac * 0.15) + (awr * 0.15) + (rls * 0.08) + (run * 0.07));
+            document.getElementById('qbOvrDisplay').innerText = 'OVR: ' + ovr;
+
+            if (qbChartInstance) {
+                qbChartInstance.data.datasets[0].data = [thp, sac, mac, dac, awr, rls, run];
+                qbChartInstance.update();
+            }
+        }
+
+
+        window.addEventListener('DOMContentLoaded', () => {
+
+
+            const qbRatingCtx = document.getElementById('qbRatingChart').getContext('2d');
+
+            qbChartInstance = new Chart(qbRatingCtx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        ['עוצמת זרוע', '(Arm Strength)'],
+                        ['מסירה קצרה', '(Short Acc)'],
+                        ['מסירה בינונית', '(Med Acc)'],
+                        ['מסירה עמוקה', '(Deep Acc)'],
+                        ['תחושת כיס', '(Pocket AWR)'],
+                        ['מהירות שחרור', '(Release)'],
+                        ['זריקה בתנועה', '(On Run)']
+                    ],
+                    datasets: [{
+                        label: 'דירוג שחקן (Madden OVR)',
+                        data: [85, 88, 82, 78, 86, 84, 80],
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168, 85, 247, 0.25)',
+                        pointBackgroundColor: '#a855f7'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#334155' },
+                            grid: { color: '#334155' },
+                            pointLabels: { color: '#cbd5e1', font: { size: 10 } },
+                            ticks: { display: false, backdropColor: 'transparent' },
+                            min: 50, max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    return Array.isArray(label) ? label.join(' ') : label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            tryAutoLoadMaddenData();
+        });
+    </script>
+</body>
+</html>
