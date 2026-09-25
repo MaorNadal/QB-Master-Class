@@ -29,7 +29,7 @@
 
     <main class="max-w-6xl mx-auto px-4 space-y-6">
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="calendar-stats">
             <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg">
                 <div id="statLoggedDays" class="text-2xl font-extrabold text-fuchsia-400 mb-0.5">0</div>
                 <div class="text-[11px] text-slate-300 font-medium">ימי אימון החודש</div>
@@ -48,7 +48,7 @@
             </div>
         </div>
 
-        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur" id="calendar-grid">
             <div class="flex justify-between items-center mb-4">
                 <button onclick="changeMonth(-1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-fuchsia-600 transition text-white font-bold">→</button>
                 <div class="text-center">
@@ -64,12 +64,12 @@
             <div id="calendarGrid" class="grid grid-cols-7 gap-1.5"></div>
         </div>
 
-        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur" id="calendar-legend">
             <h3 class="font-bold text-slate-200 text-sm mb-3">מקרא סוגי אימון</h3>
             <div id="legendContainer" class="flex flex-wrap gap-2 text-[11px]"></div>
         </div>
 
-        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur" id="calendar-breakdown">
             <h3 class="text-center font-bold text-slate-200 text-sm mb-2">התפלגות פעילויות החודש</h3>
             <div style="height:260px;">
                 <canvas id="monthChart"></canvas>

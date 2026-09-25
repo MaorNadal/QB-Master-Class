@@ -80,7 +80,7 @@
 
     <main class="max-w-6xl mx-auto px-4 space-y-6">
 
-        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur" id="metrics-calendar">
             <div class="flex justify-between items-center mb-4">
                 <button onclick="changeMonth(-1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-cyan-600 transition text-white font-bold">→</button>
                 <div class="text-center">
@@ -97,7 +97,7 @@
             <p class="text-[11px] text-slate-500 mt-3">ימים עם נקודה כחולה כוללים רישום מדד אחד לפחות. לחץ על יום כדי להוסיף/לערוך.</p>
         </div>
 
-        <div class="bg-slate-800/50 border border-purple-500/30 rounded-2xl p-4 md:p-6 backdrop-blur">
+        <div class="bg-slate-800/50 border border-purple-500/30 rounded-2xl p-4 md:p-6 backdrop-blur" id="metrics-madden-card">
             <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
                 <h3 class="font-bold text-purple-300 text-base flex items-center gap-2"><span>🎮</span> כרטיס דירוג Madden (מהמאמן)</h3>
                 <div class="flex items-center gap-2">
@@ -138,7 +138,7 @@
             </div>
         </div>
 
-        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur" id="metrics-trend-chart">
             <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
                 <h3 class="font-bold text-slate-200 text-base">📊 מגמת מדד לאורך זמן</h3>
                 <select id="trendMetricSelect" onchange="renderTrendChart()" class="bg-slate-800 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-cyan-400">
@@ -150,7 +150,7 @@
             <p id="trendEmptyState" class="text-center text-slate-500 text-sm mt-4 hidden">אין עדיין נתונים למדד הזה. הוסף רישום דרך יום כלשהו בלוח השנה למעלה.</p>
         </div>
 
-        <div class="bg-slate-800/50 border border-emerald-500/30 rounded-2xl p-4 md:p-6 backdrop-blur">
+        <div class="bg-slate-800/50 border border-emerald-500/30 rounded-2xl p-4 md:p-6 backdrop-blur" id="metrics-correlation">
             <h3 class="font-bold text-emerald-300 text-base mb-1 flex items-center gap-2"><span>🔗</span> ניתוח מתאם — האם האימונים משתקפים במדדים?</h3>
             <p class="text-xs text-slate-400 mb-4">בוחרים מדד וסוג אימון, והגרף מציג יחד: מגמת המדד (קו) מול תדירות האימון השבועית (עמודות) — כדי לראות אם יש קשר.</p>
 
@@ -181,7 +181,7 @@
             </div>
         </div>
 
-        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur">
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6 backdrop-blur" id="metrics-log-table">
             <h3 class="font-bold text-slate-200 text-base mb-3">📋 כל הרישומים (טבלה)</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-right">

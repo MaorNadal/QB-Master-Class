@@ -8,11 +8,15 @@
           sections: [['coverage-board', 'לוח הגנות מלא'], ['route-tree', 'עץ מסלולים 1-9'], ['playbook', 'Playbook התקפי'], ['simulator', 'סימולטור'], ['play-builder', 'בונה מהלכים']] },
         { file: 'training.html', group: 'train', icon: '🏋️', title: 'אימון', desc: 'ספריית דרילים לקוורטרבק ותוכנית האימונים השבועית עם מעקב ביצוע.',
           sections: [['drills', 'דרילים'], ['workout-plan', 'תוכנית אימונים']] },
-        { file: 'metrics.html', group: 'track', icon: '📈', title: 'מעקב מדדים', desc: 'מדדים פיזיים ודירוגי Madden לאורך זמן, גרפים ודו"ח למאמן.' },
+        { file: 'metrics.html', group: 'track', icon: '📈', title: 'מעקב מדדים', desc: 'מדדים פיזיים ודירוגי Madden לאורך זמן, גרפים ודו"ח למאמן.',
+          sections: [['metrics-calendar', 'לוח מדדים'], ['metrics-madden-card', 'כרטיס Madden'], ['metrics-trend-chart', 'מגמת מדד'], ['metrics-correlation', 'ניתוח מתאם'], ['metrics-log-table', 'טבלת רישומים']] },
         { file: 'madden.html', group: 'track', icon: '🏈', title: 'דירוג QB (Madden)', desc: 'מחשבון דירוג שחקן בסגנון Madden, עם טעינה מהמדדים שלך.' },
-        { file: 'calendar.html', group: 'track', icon: '📅', title: 'לוח שנה', desc: 'יומן אימונים חודשי, רצפים וחגי ישראל.' },
-        { file: 'ai-tools.html', group: 'ai', icon: '🤖', title: 'עזרי AI ותזונה', desc: 'ניתוח וידאו, מחשבון ויומן תזונה וניתוח כולל.' },
-        { file: 'film-study.html', group: 'ai', icon: '🎬', title: 'צפייה וניתוח NFL', desc: 'יומן צפייה בפוטבול ותיעוד מהלכים.' },
+        { file: 'calendar.html', group: 'track', icon: '📅', title: 'לוח שנה', desc: 'יומן אימונים חודשי, רצפים וחגי ישראל.',
+          sections: [['calendar-stats', 'סטטיסטיקות'], ['calendar-grid', 'לוח חודשי'], ['calendar-legend', 'מקרא'], ['calendar-breakdown', 'התפלגות']] },
+        { file: 'ai-tools.html', group: 'ai', icon: '🤖', title: 'עזרי AI ותזונה', desc: 'ניתוח וידאו, מחשבון ויומן תזונה וניתוח כולל.',
+          sections: [['ai-key', 'מפתח API'], ['ai-video', 'ניתוח וידאו'], ['ai-nutrition', 'תזונה'], ['ai-holistic', 'ניתוח כוללני']] },
+        { file: 'film-study.html', group: 'ai', icon: '🎬', title: 'צפייה וניתוח NFL', desc: 'יומן צפייה בפוטבול ותיעוד מהלכים.',
+          sections: [['film-howto', 'איך לצפות'], ['film-checklist', 'מה לבדוק'], ['film-archetypes', 'ארכיטיפים'], ['film-log', 'יומן צפייה'], ['film-links', 'איפה לצפות']] },
         { file: 'backup.html', group: 'backup', icon: '🗄️', title: 'מרכז גיבוי', desc: 'איחוד וגיבוי של כל נתוני האפליקציה בקובץ אחד.' }
     ];
     const GROUPS = [
@@ -32,7 +36,7 @@
     const items = [`<a href="index.html" class="px-3 py-1.5 rounded-lg ${cur === 'index.html' ? 'bg-sky-600 text-white' : 'bg-slate-800 hover:bg-sky-600 text-slate-200'} transition">🏠 מרכז</a>`];
     GROUPS.forEach(g => {
         const pages = PAGES.filter(p => p.group === g.id);
-        const active = curGroup === g.id ? ' ring-2 ring-white/70' : '';
+        const active = curGroup === g.id ? ' ring-2 ring-white ring-offset-2 ring-offset-slate-900' : '';
         if (pages.length === 1) {
             items.push(`<a href="${pages[0].file}" class="px-3 py-1.5 rounded-lg ${g.cls} text-white transition${active}">${g.label}</a>`);
         } else {
@@ -50,7 +54,7 @@
             <a href="index.html" class="flex items-center space-x-3 space-x-reverse">
                 <span class="text-3xl">🏈</span>
                 <span><span class="font-black text-xl tracking-wider text-sky-400 block leading-none">QB MASTER CLASS</span>
-                <span class="text-[10px] text-slate-400 font-medium">${page ? page.icon + ' ' + page.title : 'מרכז הבקרה'}</span></span>
+                <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${page ? 'bg-sky-500/15 text-sky-300 border border-sky-500/40' : 'bg-slate-800 text-slate-400 border border-slate-700'}">${page ? page.icon + ' ' + page.title : '🏠 מרכז הבקרה'}</span></span>
             </a>
             <div class="flex flex-wrap items-center gap-2 text-xs md:text-sm font-semibold">${items.join('')}</div>
         </div></nav>`;
@@ -69,5 +73,38 @@
         document.querySelectorAll('[data-qbdd] > div').forEach(m => {
             if (btn && m.previousElementSibling === btn) m.classList.toggle('hidden'); else m.classList.add('hidden');
         });
+    });
+
+    // ---- Scroll-spy: highlights the chip of whichever section is currently on screen ----
+    // nav.js runs from a <script> tag placed right after <body>, before the rest of the
+    // page (including the sections themselves) has been parsed — so this part has to wait
+    // for DOMContentLoaded, unlike the nav bar and dropdowns above, which don't need it.
+    document.addEventListener('DOMContentLoaded', () => {
+    if (page && page.sections) {
+        const chipLinks = {};
+        document.querySelectorAll('.no-print a[href^="#"]').forEach(a => { chipLinks[a.getAttribute('href').slice(1)] = a; });
+        const ACTIVE = ['bg-sky-600', 'text-white'];
+        const INACTIVE = ['bg-slate-800', 'hover:bg-sky-600', 'text-slate-200'];
+        const setActive = id => Object.keys(chipLinks).forEach(sid => {
+            const a = chipLinks[sid];
+            a.classList.remove(...ACTIVE, ...INACTIVE);
+            a.classList.add(...(sid === id ? ACTIVE : INACTIVE));
+        });
+        const targets = page.sections.map(s => document.getElementById(s[0])).filter(Boolean);
+        if (targets.length) {
+            let current = targets[0].id;
+            setActive(current);
+            const io = new IntersectionObserver(entries => {
+                // Pick whichever visible section is closest to the top of the viewport,
+                // so the chip that highlights matches what the user is actually reading.
+                const visible = entries.filter(e => e.isIntersecting);
+                if (!visible.length) return;
+                visible.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+                const id = visible[0].target.id;
+                if (id !== current) { current = id; setActive(current); }
+            }, { rootMargin: '-84px 0px -70% 0px', threshold: 0 });
+            targets.forEach(t => io.observe(t));
+        }
+    }
     });
 })();
