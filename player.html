@@ -68,7 +68,11 @@
                         <div><label class="block text-slate-400 mb-1">קבוצה / מועדון נוכחי</label><input id="pClub" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
                         <div><label class="block text-slate-400 mb-1">מספר חולצה</label><input id="pJersey" type="number" min="0" max="99" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
                         <div><label class="block text-slate-400 mb-1">גובה (ס"מ)</label><input id="pHeight" type="number" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
-                        <div><label class="block text-slate-400 mb-1">משקל (ק"ג)</label><input id="pWeight" type="number" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">משקל (ק"ג)</label>
+                            <input id="pWeight" type="number" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400">
+                            <p id="pWeightLatestHint" class="no-print text-[10px] text-slate-500 mt-1"></p>
+                        </div>
                         <div><label class="block text-slate-400 mb-1">יד זורקת</label>
                             <select id="pThrowingHand" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400">
                                 <option value="right">ימין</option>
@@ -124,6 +128,64 @@
             </div>
         </section>
 
+
+        <section id="player-game-stats">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">📊 סטטיסטיקות משחק</h2>
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
+                <div class="no-print grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-xs">
+                    <input id="gsGame" placeholder="משחק / יריבה" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <input id="gsDate" type="date" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                </div>
+                <div class="no-print grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                    <div class="bg-slate-900/70 border border-slate-700 rounded-lg p-3">
+                        <div class="text-[10px] font-bold text-amber-300 mb-2">🎯 מסירות (Passing)</div>
+                        <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                            <input id="gsPassComp" type="number" min="0" placeholder="השלמות" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsPassAtt" type="number" min="0" placeholder="ניסיונות" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsPassYds" type="number" placeholder="יארדים" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsPassTD" type="number" min="0" placeholder="TD" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsPassInt" type="number" min="0" placeholder="INT" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsSacked" type="number" min="0" placeholder="נספג (Sacked)" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/70 border border-slate-700 rounded-lg p-3">
+                        <div class="text-[10px] font-bold text-emerald-300 mb-2">🏃 ריצה (Rushing)</div>
+                        <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                            <input id="gsRushAtt" type="number" min="0" placeholder="ריצות" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsRushYds" type="number" placeholder="יארדים" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsRushTD" type="number" min="0" placeholder="TD" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                        </div>
+                        <div class="text-[10px] font-bold text-sky-300 mt-3 mb-2">🙌 תפיסה (Receiving)</div>
+                        <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                            <input id="gsRecRec" type="number" min="0" placeholder="תפיסות" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsRecYds" type="number" placeholder="יארדים" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsRecTD" type="number" min="0" placeholder="TD" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/70 border border-slate-700 rounded-lg p-3">
+                        <div class="text-[10px] font-bold text-rose-300 mb-2">🛡️ הגנה (Defense) — אם רלוונטי</div>
+                        <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                            <input id="gsTackles" type="number" min="0" placeholder="טאקלים" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsSacksMade" type="number" min="0" placeholder="Sacks" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsIntMade" type="number" min="0" placeholder="INT" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                            <input id="gsPBU" type="number" min="0" placeholder="PBU" class="bg-slate-800 border border-slate-600 rounded p-1.5 text-white">
+                        </div>
+                    </div>
+                </div>
+                <button onclick="addGameStat()" class="no-print w-full px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition text-xs mb-4">➕ הוסף שורת סטטיסטיקה</button>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-[11px] text-right">
+                        <thead><tr class="text-slate-400 border-b border-slate-700">
+                            <th class="p-2">תאריך</th><th class="p-2">משחק</th><th class="p-2">מסירות</th><th class="p-2">ריצה</th><th class="p-2">תפיסה</th><th class="p-2">הגנה</th><th class="p-2 no-print"></th>
+                        </tr></thead>
+                        <tbody id="gameStatsTableBody"></tbody>
+                    </table>
+                    <p id="gameStatsEmptyMsg" class="text-slate-500 text-xs text-center py-4 hidden">עדיין לא נוספה סטטיסטיקת משחק.</p>
+                </div>
+            </div>
+        </section>
+
         <section id="player-career">
             <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">📈 היסטוריית קריירה</h2>
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
@@ -156,6 +218,48 @@
                 </div>
                 <ul id="achievementsList" class="space-y-2 text-xs"></ul>
                 <p id="achievementsEmptyMsg" class="text-slate-500 text-xs text-center py-4 hidden">עדיין לא נוספו הישגים.</p>
+            </div>
+        </section>
+
+
+        <section id="player-highlights">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">🎥 קישורי הייטלייטס</h2>
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
+                <div class="no-print flex flex-col md:flex-row gap-2 mb-4 text-xs">
+                    <input id="hlTitle" placeholder="כותרת (לדוגמה: 3 TD מול Eagles)" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-teal-400">
+                    <input id="hlUrl" type="url" placeholder="קישור לסרטון" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-teal-400">
+                    <button onclick="addHighlight()" class="text-xs font-bold px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition">➕ הוסף</button>
+                </div>
+                <ul id="highlightsList" class="space-y-2 text-xs"></ul>
+                <p id="highlightsEmptyMsg" class="text-slate-500 text-xs text-center py-4 hidden">עדיין לא נוספו קישורים.</p>
+            </div>
+        </section>
+
+        <section id="player-goals">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">🎯 יעדים לעונה / לטווח קצר</h2>
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
+                <div class="no-print flex flex-col md:flex-row gap-2 mb-4 text-xs">
+                    <input id="goalText" placeholder="לדוגמה: להגיע ל-65% השלמות עד סוף העונה" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-indigo-400">
+                    <input id="goalDate" type="date" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-indigo-400">
+                    <button onclick="addGoal()" class="text-xs font-bold px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">➕ הוסף</button>
+                </div>
+                <ul id="goalsList" class="space-y-2 text-xs"></ul>
+                <p id="goalsEmptyMsg" class="text-slate-500 text-xs text-center py-4 hidden">עדיין לא נוספו יעדים.</p>
+            </div>
+        </section>
+
+        <section id="player-equipment">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">👟 מידות ציוד</h2>
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div><label class="block text-slate-400 mb-1">מידת נעליים</label><input id="eqShoes" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-orange-400"></div>
+                <div><label class="block text-slate-400 mb-1">מידת כפפות</label><input id="eqGloves" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-orange-400"></div>
+                <div><label class="block text-slate-400 mb-1">מידת קסדה</label><input id="eqHelmet" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-orange-400"></div>
+                <div><label class="block text-slate-400 mb-1">מידת חולצת ריפוד/Jersey</label><input id="eqJersey" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-orange-400"></div>
+                <div class="col-span-2 md:col-span-4"><label class="block text-slate-400 mb-1">הערות ציוד נוספות</label><input id="eqNotes" placeholder="לדוגמה: מגן פה בהתאמה אישית, קסדה עם Guardian Cap" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-orange-400"></div>
+                <div class="col-span-2 md:col-span-4 no-print flex justify-end">
+                    <button onclick="saveEquipment()" class="text-xs font-bold px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white transition">💾 שמור מידות</button>
+                    <span id="equipmentSaved" class="text-[11px] text-emerald-400 mr-3 self-center hidden">✅ נשמר</span>
+                </div>
             </div>
         </section>
 
@@ -207,6 +311,35 @@
             const profile = loadProfile();
             delete profile.photo;
             localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+        }
+
+
+        // ---- Latest body weight, pulled from metrics.html's own log (read-only here,
+        // same cross-file same-origin pattern as the Madden auto-load and the calendar's
+        // workout/drill readers). Never overwrites a saved value silently — it only offers
+        // it, and filling the field still requires the normal "save" click below. ----
+        function getLatestWeightFromMetrics() {
+            let latest = null;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!key || !key.startsWith('qbmc_metrics_')) continue;
+                const ds = key.replace('qbmc_metrics_', '');
+                try {
+                    (JSON.parse(localStorage.getItem(key)) || []).forEach(e => {
+                        if (e.name === 'משקל גוף' && (!latest || ds > latest.date)) latest = { date: ds, value: e.value };
+                    });
+                } catch (e) {}
+            }
+            return latest;
+        }
+        function renderWeightHint() {
+            const latest = getLatestWeightFromMetrics();
+            const hint = document.getElementById('pWeightLatestHint');
+            if (!latest) { hint.innerText = ''; return; }
+            hint.innerHTML = `אחרון שנמדד ב"מעקב מדדים": ${latest.value} ק"ג (${latest.date}) — <button type="button" onclick="applyLatestWeight(${latest.value})" class="text-sky-400 hover:underline">טען לכאן</button>`;
+        }
+        function applyLatestWeight(value) {
+            document.getElementById('pWeight').value = value;
         }
 
         function loadProfile() {
@@ -315,6 +448,151 @@
                 </div>`).join('');
         }
 
+
+        // ---- Per-game stat lines ----
+        const GAME_STATS_KEY = 'qbmc_player_game_stats';
+        function loadGameStats() {
+            try { return JSON.parse(localStorage.getItem(GAME_STATS_KEY)) || []; } catch (e) { return []; }
+        }
+        function numOrNull(id) { const v = document.getElementById(id).value; return v === '' ? null : Number(v); }
+        function addGameStat() {
+            const game = document.getElementById('gsGame').value.trim();
+            if (!game) { alert('נא למלא שם משחק/יריבה.'); return; }
+            const row = {
+                date: document.getElementById('gsDate').value || todayStrPlayer(),
+                game,
+                pass: { comp: numOrNull('gsPassComp'), att: numOrNull('gsPassAtt'), yds: numOrNull('gsPassYds'), td: numOrNull('gsPassTD'), int: numOrNull('gsPassInt'), sacked: numOrNull('gsSacked') },
+                rush: { att: numOrNull('gsRushAtt'), yds: numOrNull('gsRushYds'), td: numOrNull('gsRushTD') },
+                rec: { rec: numOrNull('gsRecRec'), yds: numOrNull('gsRecYds'), td: numOrNull('gsRecTD') },
+                def: { tackles: numOrNull('gsTackles'), sacks: numOrNull('gsSacksMade'), int: numOrNull('gsIntMade'), pbu: numOrNull('gsPBU') }
+            };
+            const rows = loadGameStats();
+            rows.push(row);
+            rows.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+            localStorage.setItem(GAME_STATS_KEY, JSON.stringify(rows));
+            ['gsGame','gsPassComp','gsPassAtt','gsPassYds','gsPassTD','gsPassInt','gsSacked','gsRushAtt','gsRushYds','gsRushTD','gsRecRec','gsRecYds','gsRecTD','gsTackles','gsSacksMade','gsIntMade','gsPBU']
+                .forEach(id => document.getElementById(id).value = '');
+            renderGameStats();
+        }
+        function deleteGameStat(idx) {
+            const rows = loadGameStats();
+            rows.splice(idx, 1);
+            localStorage.setItem(GAME_STATS_KEY, JSON.stringify(rows));
+            renderGameStats();
+        }
+        function fmtLine(parts) {
+            const shown = parts.filter(p => p.v !== null && p.v !== undefined && p.v !== '');
+            return shown.length ? shown.map(p => `${p.v}${p.u}`).join(' ') : '—';
+        }
+        function renderGameStats() {
+            const rows = loadGameStats();
+            document.getElementById('gameStatsEmptyMsg').classList.toggle('hidden', rows.length > 0);
+            document.getElementById('gameStatsTableBody').innerHTML = rows.map((r, i) => `
+                <tr class="border-b border-slate-800/60">
+                    <td class="p-2 text-slate-400">${r.date}</td>
+                    <td class="p-2 text-white font-medium">${escHtml(r.game)}</td>
+                    <td class="p-2 text-amber-300">${fmtLine([{v:(r.pass.comp!=null||r.pass.att!=null)?(r.pass.comp ?? '?')+'/'+(r.pass.att ?? '?'):null,u:''},{v:r.pass.yds,u:' yds'},{v:r.pass.td!=null?r.pass.td+' TD':null,u:''},{v:r.pass.int!=null?r.pass.int+' INT':null,u:''}])}</td>
+                    <td class="p-2 text-emerald-300">${fmtLine([{v:r.rush.att!=null?r.rush.att+' att':null,u:''},{v:r.rush.yds,u:' yds'},{v:r.rush.td!=null?r.rush.td+' TD':null,u:''}])}</td>
+                    <td class="p-2 text-sky-300">${fmtLine([{v:r.rec.rec!=null?r.rec.rec+' rec':null,u:''},{v:r.rec.yds,u:' yds'},{v:r.rec.td!=null?r.rec.td+' TD':null,u:''}])}</td>
+                    <td class="p-2 text-rose-300">${fmtLine([{v:r.def.tackles!=null?r.def.tackles+' TKL':null,u:''},{v:r.def.sacks!=null?r.def.sacks+' SK':null,u:''},{v:r.def.int!=null?r.def.int+' INT':null,u:''},{v:r.def.pbu!=null?r.def.pbu+' PBU':null,u:''}])}</td>
+                    <td class="p-2 no-print"><button onclick="deleteGameStat(${i})" class="text-rose-400 hover:text-rose-300">✕</button></td>
+                </tr>`).join('');
+        }
+        function todayStrPlayer() { return new Date().toISOString().slice(0, 10); }
+
+        // ---- Highlight links ----
+        const HIGHLIGHTS_KEY = 'qbmc_player_highlights';
+        function loadHighlights() { try { return JSON.parse(localStorage.getItem(HIGHLIGHTS_KEY)) || []; } catch (e) { return []; } }
+        function addHighlight() {
+            const title = document.getElementById('hlTitle').value.trim();
+            const url = document.getElementById('hlUrl').value.trim();
+            if (!title || !url) { alert('נא למלא כותרת וקישור.'); return; }
+            const list = loadHighlights();
+            list.unshift({ title, url });
+            localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(list));
+            document.getElementById('hlTitle').value = ''; document.getElementById('hlUrl').value = '';
+            renderHighlights();
+        }
+        function deleteHighlight(idx) {
+            const list = loadHighlights();
+            list.splice(idx, 1);
+            localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(list));
+            renderHighlights();
+        }
+        function renderHighlights() {
+            const list = loadHighlights();
+            document.getElementById('highlightsEmptyMsg').classList.toggle('hidden', list.length > 0);
+            document.getElementById('highlightsList').innerHTML = list.map((h, i) => `
+                <li class="flex justify-between items-center bg-slate-900/60 border border-slate-700/60 rounded-lg px-3 py-2">
+                    <a href="${h.url}" target="_blank" rel="noopener" class="text-teal-300 hover:underline">🎥 ${escHtml(h.title)}</a>
+                    <button onclick="deleteHighlight(${i})" class="no-print text-rose-400 hover:text-rose-300">✕</button>
+                </li>`).join('');
+        }
+
+        // ---- Season / short-term goals ----
+        const GOALS_KEY = 'qbmc_player_goals';
+        function loadGoals() { try { return JSON.parse(localStorage.getItem(GOALS_KEY)) || []; } catch (e) { return []; } }
+        function addGoal() {
+            const text = document.getElementById('goalText').value.trim();
+            if (!text) { alert('נא לתאר את היעד.'); return; }
+            const list = loadGoals();
+            list.push({ text, date: document.getElementById('goalDate').value || '', done: false });
+            localStorage.setItem(GOALS_KEY, JSON.stringify(list));
+            document.getElementById('goalText').value = ''; document.getElementById('goalDate').value = '';
+            renderGoals();
+        }
+        function toggleGoal(idx) {
+            const list = loadGoals();
+            list[idx].done = !list[idx].done;
+            localStorage.setItem(GOALS_KEY, JSON.stringify(list));
+            renderGoals();
+        }
+        function deleteGoal(idx) {
+            const list = loadGoals();
+            list.splice(idx, 1);
+            localStorage.setItem(GOALS_KEY, JSON.stringify(list));
+            renderGoals();
+        }
+        function renderGoals() {
+            const list = loadGoals();
+            document.getElementById('goalsEmptyMsg').classList.toggle('hidden', list.length > 0);
+            document.getElementById('goalsList').innerHTML = list.map((g, i) => `
+                <li class="flex justify-between items-center bg-slate-900/60 border border-slate-700/60 rounded-lg px-3 py-2">
+                    <label class="flex items-center gap-2 cursor-pointer flex-1">
+                        <input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${i})" class="w-3.5 h-3.5">
+                        <span class="${g.done ? 'line-through text-slate-500' : 'text-slate-200'}">${escHtml(g.text)}</span>
+                    </label>
+                    <span class="flex items-center gap-2 text-slate-500">
+                        ${g.date ? `<span class="text-[10px]">${g.date}</span>` : ''}
+                        <button onclick="deleteGoal(${i})" class="no-print text-rose-400 hover:text-rose-300">✕</button>
+                    </span>
+                </li>`).join('');
+        }
+
+        // ---- Equipment sizes ----
+        const EQUIPMENT_KEY = 'qbmc_player_equipment';
+        function saveEquipment() {
+            const eq = {
+                shoes: document.getElementById('eqShoes').value.trim(),
+                gloves: document.getElementById('eqGloves').value.trim(),
+                helmet: document.getElementById('eqHelmet').value.trim(),
+                jersey: document.getElementById('eqJersey').value.trim(),
+                notes: document.getElementById('eqNotes').value.trim()
+            };
+            localStorage.setItem(EQUIPMENT_KEY, JSON.stringify(eq));
+            flashSaved('equipmentSaved');
+        }
+        function renderEquipment() {
+            let eq = {};
+            try { eq = JSON.parse(localStorage.getItem(EQUIPMENT_KEY)) || {}; } catch (e) {}
+            document.getElementById('eqShoes').value = eq.shoes || '';
+            document.getElementById('eqGloves').value = eq.gloves || '';
+            document.getElementById('eqHelmet').value = eq.helmet || '';
+            document.getElementById('eqJersey').value = eq.jersey || '';
+            document.getElementById('eqNotes').value = eq.notes || '';
+        }
+
+
         function loadCareer() {
             try { return JSON.parse(localStorage.getItem(CAREER_KEY)) || []; } catch (e) { return []; }
         }
@@ -388,9 +666,14 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             renderPlayerDetails();
+            renderWeightHint();
             renderTeamStatus();
             renderStaff();
             renderCareer();
+            renderGameStats();
+            renderHighlights();
+            renderGoals();
+            renderEquipment();
             renderAchievements();
         });
     </script>
