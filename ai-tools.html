@@ -872,16 +872,33 @@
         function neutralBadgeHtml(text) {
             return `<span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold border border-slate-600 text-slate-400 bg-slate-800/60">${text}</span>`;
         }
+        // Returns { l, c } for a real grade, or null when this day shouldn't be graded yet
+        // (no target set, or no meals logged) — the same neutral-state rule used everywhere
+        // nutrition adherence is shown in this file.
+        function nutritionGradeInfo(ds) {
+            let target = {};
+            try { target = JSON.parse(localStorage.getItem('qbmc_nutrition_targets') || '{}'); } catch (e) {}
+            if (!target.calories || !target.protein) return null;
+            const sums = computeDaySums(ds);
+            if (!sums.count) return null;
+            const calPct = Math.max(0, Math.min(100, 100 - Math.abs(sums.calories - target.calories) / target.calories * 100));
+            const proPct = Math.max(0, Math.min(100, 100 - Math.abs(sums.protein - target.protein) / target.protein * 100));
+            return nutritionGradeFor((calPct + proPct) / 2);
+        }
         function nutritionDayGradeHtml(ds) {
             let target = {};
             try { target = JSON.parse(localStorage.getItem('qbmc_nutrition_targets') || '{}'); } catch (e) {}
             if (!target.calories || !target.protein) return neutralBadgeHtml('הגדר יעד תזונה');
-            const sums = computeDaySums(ds);
-            if (!sums.count) return neutralBadgeHtml('עדיין לא תועד היום');
-            const calPct = Math.max(0, Math.min(100, 100 - Math.abs(sums.calories - target.calories) / target.calories * 100));
-            const proPct = Math.max(0, Math.min(100, 100 - Math.abs(sums.protein - target.protein) / target.protein * 100));
-            const g = nutritionGradeFor((calPct + proPct) / 2);
+            if (!computeDaySums(ds).count) return neutralBadgeHtml('עדיין לא תועד היום');
+            const g = nutritionGradeInfo(ds);
             return `<span class="text-[10px] px-2 py-0.5 rounded-full font-black border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l}</span>`;
+        }
+        // Tiny letter-only chip for the calendar grid cell — no neutral-state text (there's
+        // no room for it), so an ungraded day simply shows no chip at all, same meaning.
+        function nutritionDayGradeMiniHtml(ds) {
+            const g = nutritionGradeInfo(ds);
+            if (!g) return '';
+            return `<span class="text-[8px] md:text-[9px] font-black leading-none px-1 rounded" style="color:${g.c};background:${g.c}22">${g.l}</span>`;
         }
 
         function renderTodaySummary() {
@@ -1114,7 +1131,10 @@
                 <button onclick="openNutDayModal('${ds}')" class="text-right p-1 md:p-1.5 rounded-lg border ${isToday ? 'border-emerald-400 bg-emerald-500/10' : 'border-slate-800 bg-slate-900/60'} hover:border-emerald-400/60 transition" style="min-height:56px;">
                     <div class="flex justify-between items-start">
                         <span class="text-[10px] md:text-xs font-bold ${isToday ? 'text-emerald-300' : 'text-slate-300'}">${d}</span>
-                        ${holidayTitle ? `<span class="text-[8px]" title="${holidayTitle}">✡️</span>` : ''}
+                        <div class="flex items-center gap-1">
+                            ${nutritionDayGradeMiniHtml(ds)}
+                            ${holidayTitle ? `<span class="text-[8px]" title="${holidayTitle}">✡️</span>` : ''}
+                        </div>
                     </div>
                     ${sums.count ? `<div class="text-[8px] md:text-[9px] text-amber-400 font-bold leading-tight">${sums.calories} קק"ל</div><div class="text-[8px] md:text-[9px] text-emerald-400 font-bold leading-tight">${sums.protein}ג</div>` : ''}
                 </button>`;
@@ -1127,7 +1147,7 @@
         async function openNutDayModal(ds) {
             nutSelectedDate = ds;
             const d = new Date(ds + 'T00:00:00');
-            document.getElementById('nutModalDateTitle').innerText = d.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('nutModalDateTitle').innerHTML = `${d.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} <span class="align-middle mr-1">${nutritionDayGradeHtml(ds)}</span>`;
 
             const holidayNote = document.getElementById('nutModalHolidayNote');
             if (nutHolidaysVisible) {

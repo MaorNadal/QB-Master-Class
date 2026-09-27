@@ -58,6 +58,13 @@
                             </select>
                         </div>
                         <div><label class="block text-slate-400 mb-1">עמדות נוספות</label><input id="pSecondaryPositions" placeholder="לדוגמה: Safety, WR" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">פורמט משחק</label>
+                            <div class="flex gap-3 bg-slate-900 border border-slate-600 rounded-lg p-2">
+                                <label class="flex items-center gap-1.5 text-slate-200 cursor-pointer"><input type="checkbox" id="pFormatTackle" class="w-3.5 h-3.5"> טאקל</label>
+                                <label class="flex items-center gap-1.5 text-slate-200 cursor-pointer"><input type="checkbox" id="pFormatFlag" class="w-3.5 h-3.5"> פלאג</label>
+                            </div>
+                        </div>
                         <div><label class="block text-slate-400 mb-1">קבוצה / מועדון נוכחי</label><input id="pClub" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
                         <div><label class="block text-slate-400 mb-1">מספר חולצה</label><input id="pJersey" type="number" min="0" max="99" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
                         <div><label class="block text-slate-400 mb-1">גובה (ס"מ)</label><input id="pHeight" type="number" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
@@ -95,6 +102,25 @@
                     <button onclick="saveTeamStatus()" class="text-xs font-bold px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition">💾 שמור סטטוס</button>
                     <span id="teamStatusSaved" class="text-[11px] text-emerald-400 mr-3 self-center hidden">✅ נשמר</span>
                 </div>
+            </div>
+        </section>
+
+
+        <section id="player-staff">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">🧑‍🏫 מאמן וצוות אימון</h2>
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
+                <div class="no-print grid grid-cols-2 md:grid-cols-5 gap-2 mb-4 text-xs">
+                    <input id="stfName" placeholder="שם מלא" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-400">
+                    <select id="stfRole" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-400">
+                        <option>ראש מאמנים</option><option>מאמן QB</option><option>מאמן קואורדינטור התקפי</option>
+                        <option>מאמן כוח וכושר</option><option>פיזיותרפיסט / מטפל</option><option>מנהל קבוצה</option><option>אחר</option>
+                    </select>
+                    <input id="stfPhone" placeholder="טלפון" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-400">
+                    <input id="stfEmail" type="email" placeholder="אימייל" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-cyan-400">
+                    <button onclick="addStaffMember()" class="text-xs font-bold px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white transition">➕ הוסף</button>
+                </div>
+                <div id="staffList" class="space-y-2 text-xs"></div>
+                <p id="staffEmptyMsg" class="text-slate-500 text-xs text-center py-4 hidden">עדיין לא נוסף איש צוות.</p>
             </div>
         </section>
 
@@ -193,6 +219,10 @@
                 dob: document.getElementById('pDob').value,
                 position: document.getElementById('pPosition').value,
                 secondaryPositions: document.getElementById('pSecondaryPositions').value.trim(),
+                formats: [
+                    ...(document.getElementById('pFormatTackle').checked ? ['tackle'] : []),
+                    ...(document.getElementById('pFormatFlag').checked ? ['flag'] : [])
+                ],
                 club: document.getElementById('pClub').value.trim(),
                 jersey: document.getElementById('pJersey').value,
                 height: document.getElementById('pHeight').value,
@@ -213,6 +243,8 @@
             document.getElementById('pDob').value = p.dob || '';
             document.getElementById('pPosition').value = p.position || 'QB';
             document.getElementById('pSecondaryPositions').value = p.secondaryPositions || '';
+            document.getElementById('pFormatTackle').checked = (p.formats || []).includes('tackle');
+            document.getElementById('pFormatFlag').checked = (p.formats || []).includes('flag');
             document.getElementById('pClub').value = p.club || '';
             document.getElementById('pJersey').value = p.jersey || '';
             document.getElementById('pHeight').value = p.height || '';
@@ -241,6 +273,46 @@
             document.getElementById('sLeague').value = s.league || '';
             document.getElementById('sSeason').value = s.season || '';
             document.getElementById('sStatus').value = s.status || '';
+        }
+
+
+        const STAFF_KEY = 'qbmc_player_staff';
+        function loadStaff() {
+            try { return JSON.parse(localStorage.getItem(STAFF_KEY)) || []; } catch (e) { return []; }
+        }
+        function addStaffMember() {
+            const name = document.getElementById('stfName').value.trim();
+            if (!name) { alert('נא למלא שם.'); return; }
+            const list = loadStaff();
+            list.push({
+                name,
+                role: document.getElementById('stfRole').value,
+                phone: document.getElementById('stfPhone').value.trim(),
+                email: document.getElementById('stfEmail').value.trim()
+            });
+            localStorage.setItem(STAFF_KEY, JSON.stringify(list));
+            ['stfName', 'stfPhone', 'stfEmail'].forEach(id => document.getElementById(id).value = '');
+            renderStaff();
+        }
+        function deleteStaffMember(idx) {
+            const list = loadStaff();
+            list.splice(idx, 1);
+            localStorage.setItem(STAFF_KEY, JSON.stringify(list));
+            renderStaff();
+        }
+        function renderStaff() {
+            const list = loadStaff();
+            document.getElementById('staffEmptyMsg').classList.toggle('hidden', list.length > 0);
+            document.getElementById('staffList').innerHTML = list.map((m, i) => `
+                <div class="flex justify-between items-center bg-slate-900/60 border border-slate-700/60 rounded-lg px-3 py-2">
+                    <div>
+                        <span class="text-slate-200 font-bold">${escHtml(m.name)}</span>
+                        <span class="text-cyan-400 text-[10px] mr-2">${escHtml(m.role)}</span>
+                        ${m.phone ? `<span class="text-slate-500 text-[10px] mr-2">📞 ${escHtml(m.phone)}</span>` : ''}
+                        ${m.email ? `<span class="text-slate-500 text-[10px] mr-2">✉️ ${escHtml(m.email)}</span>` : ''}
+                    </div>
+                    <button onclick="deleteStaffMember(${i})" class="no-print text-rose-400 hover:text-rose-300">✕</button>
+                </div>`).join('');
         }
 
         function loadCareer() {
@@ -317,6 +389,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             renderPlayerDetails();
             renderTeamStatus();
+            renderStaff();
             renderCareer();
             renderAchievements();
         });
