@@ -275,6 +275,7 @@
                 <h3 id="nutModalDateTitle" class="text-lg font-black text-emerald-400"></h3>
                 <button onclick="closeNutDayModal()" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
             </div>
+            <p id="nutModalGradeExplain" class="text-[11px] text-slate-400 mb-3 leading-relaxed"></p>
             <div id="nutModalHolidayNote" class="text-xs text-amber-300 mb-3 hidden"></div>
 
             <div class="grid grid-cols-2 gap-3 mb-4">
@@ -885,6 +886,18 @@
             const proPct = Math.max(0, Math.min(100, 100 - Math.abs(sums.protein - target.protein) / target.protein * 100));
             return nutritionGradeFor((calPct + proPct) / 2);
         }
+
+        // 1-2 line explanation of the day's nutrition grade, shown under the modal title —
+        // says what the score is actually based on, using this day's real numbers.
+        function nutritionDayGradeExplain(ds) {
+            let target = {};
+            try { target = JSON.parse(localStorage.getItem('qbmc_nutrition_targets') || '{}'); } catch (e) {}
+            if (!target.calories || !target.protein) return 'עדיין לא הוגדר יעד קלוריות וחלבון יומי — הגדר יעד כדי לקבל ציון יומי.';
+            const sums = computeDaySums(ds);
+            if (!sums.count) return 'עדיין לא נרשמה אף ארוחה ביום זה — הציון יחושב לאחר רישום הארוחה הראשונה.';
+            return `הציון מבוסס על הקִרבה ליעד: ${sums.calories} מתוך ${target.calories} קק"ל, ו-${sums.protein} מתוך ${target.protein}ג חלבון. ככל שהערכים קרובים יותר ליעד (לא נמוכים מדי ולא גבוהים מדי) — הציון גבוה יותר.`;
+        }
+
         function nutritionDayGradeHtml(ds) {
             let target = {};
             try { target = JSON.parse(localStorage.getItem('qbmc_nutrition_targets') || '{}'); } catch (e) {}
@@ -1148,6 +1161,7 @@
             nutSelectedDate = ds;
             const d = new Date(ds + 'T00:00:00');
             document.getElementById('nutModalDateTitle').innerHTML = `${d.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} <span class="align-middle mr-1">${nutritionDayGradeHtml(ds)}</span>`;
+            document.getElementById('nutModalGradeExplain').innerText = nutritionDayGradeExplain(ds);
 
             const holidayNote = document.getElementById('nutModalHolidayNote');
             if (nutHolidaysVisible) {
