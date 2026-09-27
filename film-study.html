@@ -119,6 +119,69 @@
             <div id="filmEntriesList" class="space-y-2"></div>
         </section>
 
+
+        <section class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur" id="film-plays">
+            <h2 class="text-2xl md:text-3xl font-black text-rose-400 mb-1 flex items-center gap-2"><span>🎬</span> יומן מהלכים</h2>
+            <p class="text-xs text-slate-400 mb-4">תיעוד ברמת המהלך הבודד — קבוצות, רבע, דאון ומרחק, זמן על השעון, ותוצאה — כדי שכל מהלך שראית יהיה ניתן לאיתור בהמשך, לא רק "משהו שראיתי באיזה משחק".</p>
+
+            <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 mb-5">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-3">
+                    <div class="col-span-2">
+                        <label class="block text-slate-400 mb-1">משחק / קבוצות</label>
+                        <input type="text" id="playGame" list="filmGamesList" placeholder="Chiefs @ Bills" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-rose-400">
+                        <datalist id="filmGamesList"></datalist>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">רבע</label>
+                        <select id="playQuarter" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-rose-400">
+                            <option value="1">רבע 1</option><option value="2">רבע 2</option><option value="3">רבע 3</option><option value="4">רבע 4</option><option value="OT">הארכה (OT)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">זמן על השעון</label>
+                        <input type="text" id="playClock" placeholder="12:45" pattern="[0-9]{1,2}:[0-9]{2}" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-rose-400">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">דאון</label>
+                        <select id="playDown" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-rose-400">
+                            <option value="">—</option><option value="1st">1st</option><option value="2nd">2nd</option><option value="3rd">3rd</option><option value="4th">4th</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">מרחק (יארד)</label>
+                        <input type="number" id="playDistance" min="0" placeholder="10" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-rose-400">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-slate-400 mb-1">תוצאה</label>
+                        <select id="playResult" class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-rose-400">
+                            <option value="">-- בחר תוצאה --</option>
+                            <option>Touchdown</option><option>First Down</option><option>Completion (ללא First Down)</option>
+                            <option>Incomplete</option><option>Interception</option><option>Sack</option><option>Fumble</option>
+                            <option>Penalty</option><option>Punt</option><option>Field Goal</option><option>Turnover on Downs</option>
+                            <option>Spike</option><option>קנס (Penalty)</option><option>אחר</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea id="playDesc" placeholder="תיאור המהלך: איזו הגנה, איזה מסלול/פעולה, מה הוביל לתוצאה..." class="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-rose-400 mb-3" rows="2"></textarea>
+                <div class="mb-3">
+                    <label class="block text-slate-400 text-xs mb-1.5">מה שם לב אליו — תגיות תצפית (מהרשימות למעלה, לבחירה מרובה)</label>
+                    <div id="playTagPicker" class="flex flex-wrap gap-1.5"></div>
+                </div>
+                <button onclick="addFilmPlay()" class="w-full px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl transition text-sm">💾 שמור מהלך ביומן</button>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-3 text-xs">
+                <input type="text" id="playSearch" oninput="renderFilmPlays()" placeholder="🔍 חיפוש חופשי (קבוצות, תיאור)" class="flex-1 min-w-[160px] bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-rose-400">
+                <select id="playResultFilter" onchange="renderFilmPlays()" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-rose-400">
+                    <option value="">כל התוצאות</option>
+                </select>
+                <select id="playTagFilter" onchange="renderFilmPlays()" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-rose-400">
+                    <option value="">כל התגיות</option>
+                </select>
+            </div>
+            <div id="filmPlaysList" class="space-y-2"></div>
+        </section>
+
         <section class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur" id="film-links">
             <h2 class="text-2xl md:text-3xl font-black text-teal-400 mb-4 flex items-center gap-2"><span>🔗</span> איפה לצפות</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -228,6 +291,139 @@
             }
         }
 
+
+        // ---- Play/drive log ----
+        // Point 2 of #15: instead of only the 5 top-level watch-category names, the actual
+        // granular checklist items (WATCH_CATEGORIES[].items) become selectable tags here —
+        // so a specific play can be tagged with exactly what it demonstrated, and later
+        // found by that, not just by which broad category it fell under.
+        const PLAY_TAGS = WATCH_CATEGORIES.flatMap(cat => cat.items.map((item, i) => ({
+            id: `${cat.id}_${i}`, label: item, catIcon: cat.icon, catColor: cat.color
+        })));
+        let selectedPlayTags = new Set();
+
+        function renderPlayTagPicker() {
+            const container = document.getElementById('playTagPicker');
+            container.innerHTML = PLAY_TAGS.map(t => `
+                <button type="button" onclick="togglePlayTag('${t.id}')" id="tagbtn-${t.id}"
+                    class="text-[10px] px-2 py-1 rounded-full border transition"
+                    style="border-color:${t.catColor}50; color:${selectedPlayTags.has(t.id) ? '#0f172a' : t.catColor}; background:${selectedPlayTags.has(t.id) ? t.catColor : t.catColor + '15'}">
+                    ${t.catIcon} ${t.label}
+                </button>`).join('');
+        }
+        function togglePlayTag(id) {
+            if (selectedPlayTags.has(id)) selectedPlayTags.delete(id); else selectedPlayTags.add(id);
+            renderPlayTagPicker();
+        }
+
+        function getFilmPlays() {
+            try { return JSON.parse(localStorage.getItem('qbmc_film_plays')) || []; } catch (e) { return []; }
+        }
+        function setFilmPlays(plays) {
+            try { localStorage.setItem('qbmc_film_plays', JSON.stringify(plays)); } catch (e) {}
+        }
+
+        function addFilmPlay() {
+            const game = document.getElementById('playGame').value.trim();
+            const result = document.getElementById('playResult').value;
+            const desc = document.getElementById('playDesc').value.trim();
+            if (!game) { alert('נא למלא את שם המשחק/הקבוצות.'); return; }
+            if (!result) { alert('נא לבחור תוצאה מהרשימה.'); return; }
+            if (!desc) { alert('נא לתאר בקצרה מה קרה במהלך.'); return; }
+
+            const play = {
+                date: todayStr(),
+                game,
+                quarter: document.getElementById('playQuarter').value,
+                clock: document.getElementById('playClock').value.trim(),
+                down: document.getElementById('playDown').value,
+                distance: document.getElementById('playDistance').value,
+                result,
+                desc,
+                tags: [...selectedPlayTags]
+            };
+            const plays = getFilmPlays();
+            plays.unshift(play);
+            setFilmPlays(plays);
+
+            document.getElementById('playClock').value = '';
+            document.getElementById('playDistance').value = '';
+            document.getElementById('playResult').value = '';
+            document.getElementById('playDesc').value = '';
+            selectedPlayTags = new Set();
+            renderPlayTagPicker();
+            renderFilmPlays();
+        }
+
+        function deleteFilmPlay(idx) {
+            const plays = getFilmPlays();
+            plays.splice(idx, 1);
+            setFilmPlays(plays);
+            renderFilmPlays();
+        }
+
+        function tagLabel(id) {
+            const t = PLAY_TAGS.find(x => x.id === id);
+            return t ? `${t.catIcon} ${t.label}` : id;
+        }
+
+        function renderPlayFilterOptions() {
+            const resultSel = document.getElementById('playResultFilter');
+            const prevResult = resultSel.value;
+            const results = [...new Set(getFilmPlays().map(p => p.result))].sort();
+            resultSel.innerHTML = `<option value="">כל התוצאות</option>` + results.map(r => `<option value="${r}">${r}</option>`).join('');
+            resultSel.value = results.includes(prevResult) ? prevResult : '';
+
+            const tagSel = document.getElementById('playTagFilter');
+            const prevTag = tagSel.value;
+            const usedTagIds = [...new Set(getFilmPlays().flatMap(p => p.tags || []))];
+            tagSel.innerHTML = `<option value="">כל התגיות</option>` + usedTagIds.map(id => `<option value="${id}">${tagLabel(id)}</option>`).join('');
+            tagSel.value = usedTagIds.includes(prevTag) ? prevTag : '';
+        }
+
+        function renderFilmPlays() {
+            const search = document.getElementById('playSearch').value.trim().toLowerCase();
+            const resultFilter = document.getElementById('playResultFilter').value;
+            const tagFilter = document.getElementById('playTagFilter').value;
+
+            let plays = getFilmPlays();
+            if (search) plays = plays.filter(p => (p.game + ' ' + p.desc).toLowerCase().includes(search));
+            if (resultFilter) plays = plays.filter(p => p.result === resultFilter);
+            if (tagFilter) plays = plays.filter(p => (p.tags || []).includes(tagFilter));
+
+            const container = document.getElementById('filmPlaysList');
+            if (!getFilmPlays().length) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-4 text-sm">עדיין אין מהלכים ביומן — תעד את המהלך הראשון למעלה.</p>`;
+            } else if (!plays.length) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-4 text-sm">לא נמצאו מהלכים התואמים את החיפוש/הסינון.</p>`;
+            } else {
+                container.innerHTML = plays.map((p, i) => {
+                    const realIdx = getFilmPlays().indexOf(p);
+                    const downDistance = p.down ? `${p.down} & ${p.distance || '?'}` : '';
+                    return `<div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                        <div class="flex justify-between items-start gap-2 mb-1.5">
+                            <div class="text-xs font-bold text-white">${p.game} <span class="text-slate-500 font-normal">— ${p.date}</span></div>
+                            <button onclick="deleteFilmPlay(${realIdx})" class="text-rose-400 hover:text-rose-300 text-[11px]">מחק</button>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 text-[10px] text-slate-400 mb-1.5">
+                            ${p.quarter ? `<span class="bg-slate-800 px-2 py-0.5 rounded">רבע ${p.quarter}</span>` : ''}
+                            ${p.clock ? `<span class="bg-slate-800 px-2 py-0.5 rounded">⏱️ ${p.clock}</span>` : ''}
+                            ${downDistance ? `<span class="bg-slate-800 px-2 py-0.5 rounded">${downDistance}</span>` : ''}
+                            <span class="bg-rose-500/15 text-rose-300 px-2 py-0.5 rounded border border-rose-500/30">${p.result}</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-1.5">${p.desc}</p>
+                        ${(p.tags || []).length ? `<div class="flex flex-wrap gap-1">${p.tags.map(id => `<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">${tagLabel(id)}</span>`).join('')}</div>` : ''}
+                    </div>`;
+                }).join('');
+            }
+            renderPlayFilterOptions();
+        }
+
+        function refreshFilmGamesList() {
+            const games = [...new Set(getFilmEntries().map(e => e.game).filter(Boolean))];
+            document.getElementById('filmGamesList').innerHTML = games.map(g => `<option value="${g}"></option>`).join('');
+        }
+
         // ---- Film study journal ----
         function getFilmEntries() {
             try {
@@ -256,6 +452,7 @@
             document.getElementById('filmQb').value = '';
             document.getElementById('filmNotes').value = '';
             renderFilmEntries();
+            refreshFilmGamesList();
         }
 
         function deleteFilmEntry(idx) {
@@ -309,6 +506,8 @@
                         if (key.startsWith('qbmc_film_')) localStorage.setItem(key, value);
                     });
                     renderFilmEntries();
+                    refreshFilmGamesList();
+                    renderFilmPlays();
                     alert('השחזור הושלם בהצלחה!');
                 } catch (err) {
                     alert('קובץ לא תקין. ודא שזה קובץ גיבוי שיוצא מהמערכת.');
@@ -322,6 +521,9 @@
             renderWatchCategories();
             document.getElementById('filmDate').value = todayStr();
             renderFilmEntries();
+            refreshFilmGamesList();
+            renderPlayTagPicker();
+            renderFilmPlays();
         });
     </script>
 </body>

@@ -149,7 +149,10 @@
 
             <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 mb-4">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">סיכום היום</div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">סיכום היום</span>
+                        <span id="todayNutritionGrade"></span>
+                    </div>
                     <button onclick="clearTodayMeals()" class="text-[10px] text-rose-400 hover:underline">נקה יום</button>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-3">
@@ -843,12 +846,51 @@
             renderNutritionCalendar();
         }
 
+
+        // ---- Daily nutrition letter grade (A+ to F) ----
+        // Same visual language and thresholds as the Madden/physical-metrics grades
+        // elsewhere in the app, applied to how close a day's totals came to target.
+        // Two states are deliberately NOT graded, matching what was already true of the
+        // weekly/monthly/overall adherence stats above: no target set, and — this is the
+        // exact concern raised earlier about a new day looking like a "failure" — zero
+        // meals logged yet. Both render a neutral gray badge instead of a grade.
+        function nutritionGradeFor(v) {
+            if (v >= 95) return { l: 'A+', c: '#34d399' };
+            if (v >= 90) return { l: 'A', c: '#34d399' };
+            if (v >= 85) return { l: 'A-', c: '#4ade80' };
+            if (v >= 80) return { l: 'B+', c: '#a3e635' };
+            if (v >= 75) return { l: 'B', c: '#a3e635' };
+            if (v >= 70) return { l: 'B-', c: '#facc15' };
+            if (v >= 65) return { l: 'C+', c: '#facc15' };
+            if (v >= 60) return { l: 'C', c: '#fb923c' };
+            if (v >= 55) return { l: 'C-', c: '#fb923c' };
+            if (v >= 50) return { l: 'D+', c: '#f87171' };
+            if (v >= 45) return { l: 'D', c: '#f87171' };
+            if (v >= 40) return { l: 'D-', c: '#f87171' };
+            return { l: 'F', c: '#ef4444' };
+        }
+        function neutralBadgeHtml(text) {
+            return `<span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold border border-slate-600 text-slate-400 bg-slate-800/60">${text}</span>`;
+        }
+        function nutritionDayGradeHtml(ds) {
+            let target = {};
+            try { target = JSON.parse(localStorage.getItem('qbmc_nutrition_targets') || '{}'); } catch (e) {}
+            if (!target.calories || !target.protein) return neutralBadgeHtml('הגדר יעד תזונה');
+            const sums = computeDaySums(ds);
+            if (!sums.count) return neutralBadgeHtml('עדיין לא תועד היום');
+            const calPct = Math.max(0, Math.min(100, 100 - Math.abs(sums.calories - target.calories) / target.calories * 100));
+            const proPct = Math.max(0, Math.min(100, 100 - Math.abs(sums.protein - target.protein) / target.protein * 100));
+            const g = nutritionGradeFor((calPct + proPct) / 2);
+            return `<span class="text-[10px] px-2 py-0.5 rounded-full font-black border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l}</span>`;
+        }
+
         function renderTodaySummary() {
             const meals = getTodayMeals();
             const totalCal = meals.reduce((s, m) => s + (m.calories || 0), 0);
             const totalPro = meals.reduce((s, m) => s + (m.protein || 0), 0);
             document.getElementById('todayCaloriesDisplay').innerText = totalCal;
             document.getElementById('todayProteinDisplay').innerText = totalPro;
+            document.getElementById('todayNutritionGrade').innerHTML = nutritionDayGradeHtml(todayKey());
             updateTargetLabels();
 
             const ds = todayKey();

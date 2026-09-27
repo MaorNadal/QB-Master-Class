@@ -16,7 +16,9 @@
         { file: 'ai-tools.html', group: 'ai', icon: '🤖', title: 'עזרי AI ותזונה', desc: 'ניתוח וידאו, מחשבון ויומן תזונה וניתוח כולל.',
           sections: [['ai-key', 'מפתח API'], ['ai-video', 'ניתוח וידאו'], ['ai-nutrition', 'תזונה'], ['ai-holistic', 'ניתוח כוללני']] },
         { file: 'film-study.html', group: 'ai', icon: '🎬', title: 'צפייה וניתוח NFL', desc: 'יומן צפייה בפוטבול ותיעוד מהלכים.',
-          sections: [['film-howto', 'איך לצפות'], ['film-checklist', 'מה לבדוק'], ['film-archetypes', 'ארכיטיפים'], ['film-log', 'יומן צפייה'], ['film-links', 'איפה לצפות']] },
+          sections: [['film-howto', 'איך לצפות'], ['film-checklist', 'מה לבדוק'], ['film-archetypes', 'ארכיטיפים'], ['film-log', 'יומן צפייה'], ['film-plays', 'יומן מהלכים'], ['film-links', 'איפה לצפות']] },
+        { file: 'player.html', group: 'player', icon: '🪪', title: 'פרטי שחקן', desc: 'פרטים אישיים ופיזיים, מצב קבוצתי, היסטוריית קריירה ותארים.',
+          sections: [['player-details', 'פרטים אישיים'], ['player-status', 'מצב קבוצתי'], ['player-career', 'היסטוריית קריירה'], ['player-achievements', 'הישגים']] },
         { file: 'backup.html', group: 'backup', icon: '🗄️', title: 'מרכז גיבוי', desc: 'איחוד וגיבוי של כל נתוני האפליקציה בקובץ אחד.' }
     ];
     const GROUPS = [
@@ -25,6 +27,7 @@
         { id: 'train', label: '🏋️ אימון', cls: 'bg-rose-700 hover:bg-rose-600', card: 'border-rose-500/40 hover:border-rose-400', text: 'text-rose-400' },
         { id: 'track', label: '📊 מעקב', cls: 'bg-cyan-700 hover:bg-cyan-600', card: 'border-cyan-500/40 hover:border-cyan-400', text: 'text-cyan-400' },
         { id: 'ai', label: '🤖 AI וצפייה', cls: 'bg-violet-700 hover:bg-violet-600', card: 'border-violet-500/40 hover:border-violet-400', text: 'text-violet-400' },
+        { id: 'player', label: '🪪 שחקן', cls: 'bg-rose-700 hover:bg-rose-600', card: 'border-rose-500/40 hover:border-rose-400', text: 'text-rose-400' },
         { id: 'backup', label: '🗄️ גיבוי', cls: 'bg-slate-700 hover:bg-slate-600', card: 'border-slate-500/40 hover:border-slate-400', text: 'text-slate-300' }
     ];
     window.QB_SITE = { PAGES, GROUPS };

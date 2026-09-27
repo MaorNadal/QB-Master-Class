@@ -94,6 +94,12 @@
                 <div id="modalExtraChecks" class="space-y-2"></div>
             </div>
 
+            <div id="modalSpecificWrap" class="mb-5 hidden">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">🎯 תרגילים ודרילים ספציפיים שבוצעו ביום זה</div>
+                <div id="modalSpecificItems" class="space-y-1.5 text-xs"></div>
+                <p class="text-[10px] text-slate-500 mt-2">מסומן אוטומטית מ"תוכנית אימונים" ו"דרילים" — לשינוי, סמן/בטל שם.</p>
+            </div>
+
             <div class="flex gap-2">
                 <button onclick="saveDayModal()" class="flex-1 px-4 py-2.5 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl transition">💾 שמור</button>
                 <button onclick="closeDayModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">ביטול</button>
@@ -224,6 +230,8 @@
                     return c ? `<span class="w-1.5 h-1.5 rounded-full inline-block" style="background:${c.color}"></span>` : '';
                 }).join('');
                 const extraCount = entries.length > 6 ? `<span class="text-[9px] text-slate-500">+${entries.length - 6}</span>` : '';
+                const specificCount = getSpecificItemsForDate(ds).length;
+                const specificBadge = specificCount ? `<span class="text-[8px] md:text-[9px] text-orange-300" title="${specificCount} תרגילים/דרילים ספציפיים">🎯${specificCount}</span>` : '';
 
                 html += `
                 <button onclick="openDayModal('${ds}')" class="day-cell text-right p-1.5 md:p-2 rounded-lg border ${isToday ? 'border-fuchsia-400 bg-fuchsia-500/10' : 'border-slate-800 bg-slate-900/60'} hover:border-fuchsia-400/60 transition flex flex-col justify-between">
@@ -231,7 +239,7 @@
                         <span class="text-xs md:text-sm font-bold ${isToday ? 'text-fuchsia-300' : 'text-slate-300'}">${d}</span>
                     </div>
                     ${holidayTitle ? `<div class="text-[8px] md:text-[9px] text-amber-300 leading-tight truncate" title="${holidayTitle}">✡️ ${holidayTitle}</div>` : ''}
-                    <div class="flex flex-wrap gap-0.5 mt-1">${dots}${extraCount}</div>
+                    <div class="flex flex-wrap gap-0.5 mt-1 items-center">${dots}${extraCount}${specificBadge}</div>
                 </button>`;
             }
             grid.innerHTML = html;
@@ -294,6 +302,26 @@
             });
         }
 
+
+        // ---- Specific exercises/drills done on a given date, pulled from training.html's
+        //      dated logs (same-origin localStorage, read directly — same pattern already
+        //      used elsewhere in the app for cross-page data, e.g. Madden auto-load). This
+        //      is what lets the calendar show which specific items were done, not just the
+        //      generic "Day 3" category chip. Read-only here; marking happens on the
+        //      training page itself so there is exactly one place that can mark an item done. ----
+        function getSpecificItemsForDate(ds) {
+            const items = [];
+            try {
+                const workoutLog = JSON.parse(localStorage.getItem('qbmc_workout_log') || '{}');
+                Object.values(workoutLog).forEach(e => { if ((e.dates || []).includes(ds)) items.push({ name: e.name, icon: '🏋️' }); });
+            } catch (e) {}
+            try {
+                const drillLog = JSON.parse(localStorage.getItem('qbmc_drill_log') || '{}');
+                Object.entries(drillLog).forEach(([name, dates]) => { if ((dates || []).includes(ds)) items.push({ name, icon: '🎯' }); });
+            } catch (e) {}
+            return items;
+        }
+
         async function openDayModal(ds) {
             selectedDateStr = ds;
             const d = new Date(ds + 'T00:00:00');
@@ -319,6 +347,14 @@
 
             document.getElementById('modalSystemChecks').innerHTML = buildChecks('system');
             document.getElementById('modalExtraChecks').innerHTML = buildChecks('extra');
+
+            const specific = getSpecificItemsForDate(ds);
+            document.getElementById('modalSpecificWrap').classList.toggle('hidden', specific.length === 0);
+            document.getElementById('modalSpecificItems').innerHTML = specific.map(it => `
+                <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-lg px-2.5 py-1.5">
+                    <span>${it.icon}</span><span class="text-slate-200">${it.name}</span>
+                </div>`).join('');
+
             document.getElementById('dayModal').classList.remove('hidden');
         }
 

@@ -82,7 +82,7 @@
                     🎮 כרטיס דירוג קוורטרבק - פורמט Madden
                 </h2>
                 <p class="text-slate-300 text-sm md:text-base mt-1 max-w-2xl mx-auto">
-                    דרג את היכולות, הפיזיות וה-IQ הטקטי שלך בסולם 0-99. המערכת תחשב את ציון ה-OVR הכללי שלך ותייצר כרטיס שחקן ויזואלי.
+                    דרג את היכולות, הפיזיות וה-IQ הטקטי שלך בסולם 30-99. המערכת תחשב את ציון ה-OVR הכללי שלך ותייצר כרטיס שחקן ויזואלי.
                 </p>
                 <div id="realMaddenAutoNote" class="hidden mt-3 max-w-xl mx-auto text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2.5"></div>
                 <div id="realMaddenManualBox" class="hidden mt-4 max-w-xl mx-auto bg-slate-900/80 border border-purple-500/30 rounded-xl p-3">
@@ -98,72 +98,15 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div class="lg:col-span-6 space-y-4 bg-slate-900/90 border border-slate-700 p-5 rounded-2xl shadow-xl">
-                    <h3 class="font-bold text-white text-base mb-3 border-b border-slate-800 pb-2 flex justify-between items-center">
+                <div class="lg:col-span-6 space-y-3 bg-slate-900/90 border border-slate-700 p-5 rounded-2xl shadow-xl">
+                    <h3 class="font-bold text-white text-base mb-1 border-b border-slate-800 pb-2 flex justify-between items-center">
                         <span>סרגל הערכת היכולות שלי</span>
                         <span id="qbOvrDisplay" class="text-2xl font-black text-amber-400 bg-amber-500/10 px-3 py-1 rounded-xl border border-amber-500/30">OVR: 84</span>
                     </h3>
-
-                    <div class="space-y-3 text-xs">
-                        <div>
-                            <div class="flex justify-between text-slate-300 mb-1">
-                                <span>עוצמת זרוע (Arm Strength):</span>
-                                <span id="valTHP" class="font-bold text-sky-400">85</span>
-                            </div>
-                            <input type="range" id="rateTHP" min="50" max="99" value="85" oninput="updateQbCard()" class="w-full accent-sky-400">
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-slate-300 mb-1">
-                                <span>דיוק במסירה קצרה (Short Accuracy):</span>
-                                <span id="valSAC" class="font-bold text-sky-400">88</span>
-                            </div>
-                            <input type="range" id="rateSAC" min="50" max="99" value="88" oninput="updateQbCard()" class="w-full accent-sky-400">
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-slate-300 mb-1">
-                                <span>דיוק במסירה בינונית (Medium Accuracy):</span>
-                                <span id="valMAC" class="font-bold text-sky-400">82</span>
-                            </div>
-                            <input type="range" id="rateMAC" min="50" max="99" value="82" oninput="updateQbCard()" class="w-full accent-sky-400">
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-slate-300 mb-1">
-                                <span>דיוק במסירה עמוקה (Deep Accuracy):</span>
-                                <span id="valDAC" class="font-bold text-sky-400">78</span>
-                            </div>
-                            <input type="range" id="rateDAC" min="50" max="99" value="78" oninput="updateQbCard()" class="w-full accent-sky-400">
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-slate-300 mb-1">
-                                <span>תחישת הכיס ומודעות (Pocket Awareness):</span>
-                                <span id="valAWR" class="font-bold text-sky-400">86</span>
-                            </div>
-                            <input type="range" id="rateAWR" min="50" max="99" value="86" oninput="updateQbCard()" class="w-full accent-sky-400">
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-slate-300 mb-1">
-                                <span>מהירות שחרור (Release Speed):</span>
-                                <span id="valRLS" class="font-bold text-sky-400">84</span>
-                            </div>
-                            <input type="range" id="rateRLS" min="50" max="99" value="84" oninput="updateQbCard()" class="w-full accent-sky-400">
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-slate-300 mb-1">
-                                <span>ניידות וזריקה בתנועה (Throw on Run & Speed):</span>
-                                <span id="valRUN" class="font-bold text-sky-400">80</span>
-                            </div>
-                            <input type="range" id="rateRUN" min="50" max="99" value="80" oninput="updateQbCard()" class="w-full accent-sky-400">
-                        </div>
-                    </div>
+                    <p class="text-[10px] text-slate-500 -mt-1 mb-2">לחץ על קטגוריה כדי לפרק אותה לתתי-מדדים ספציפיים. הציון של כל קטגוריה מחושב אוטומטית מהתתי-מדדים שלה.</p>
+                    <div id="maddenCategoryList" class="space-y-2 text-xs"></div>
                 </div>
-
-                <div class="lg:col-span-6 bg-slate-900/90 border border-purple-500/40 p-5 rounded-2xl shadow-xl text-center">
+<div class="lg:col-span-6 bg-slate-900/90 border border-purple-500/40 p-5 rounded-2xl shadow-xl text-center">
                     <h3 class="text-xs font-bold text-purple-300 uppercase tracking-wider mb-2">פרופיל היכולות הויזואלי שלי</h3>
                     <div class="chart-container">
                         <canvas id="qbRatingChart"></canvas>
@@ -181,15 +124,160 @@
     <script>
         let qbChartInstance = null;
 
+        // ---- Sub-metric configuration ----
+        // Each Madden-style category breaks into specific, coachable sub-metrics.
+        // "weight" lets one or two sub-metrics that are genuinely more decisive for that
+        // category (per QB-mechanics fundamentals) count for more than a purely equal
+        // average would — while staying simple and transparent (a weighted average, not
+        // a hidden formula). Everything defaults to weight 1 unless noted otherwise.
+        const MADDEN_CATEGORIES = [
+            { key: 'THP', label: 'עוצמת זרוע', labelEn: 'Arm Strength', catWeight: 0.20, subs: [
+                { id: 'hipShoulder', label: 'הפרדת אגן-כתפיים', labelEn: 'Hip-Shoulder Separation', weight: 1.5, value: 85 },
+                { id: 'frontFoot', label: 'יציבות רגל קדמית בנחיתה', labelEn: 'Front Foot Plant', weight: 1, value: 85 },
+                { id: 'trunkTransfer', label: 'סיבוב גו והעברת משקל', labelEn: 'Trunk Rotation & Weight Transfer', weight: 1.5, value: 85 },
+                { id: 'elbowLag', label: 'עיכוב מרפק / שוט', labelEn: 'Elbow Lag / Whip', weight: 1, value: 85 },
+                { id: 'followThrough', label: 'סיום תנועה מלא', labelEn: 'Follow-Through', weight: 1, value: 85 }
+            ] },
+            { key: 'SAC', label: 'דיוק קצר (0-10 יארד)', labelEn: 'Short Accuracy', catWeight: 0.15, subs: [
+                { id: 'elbowAngle', label: 'זווית מרפק בשחרור (~90°)', labelEn: 'Release Elbow Angle', weight: 1, value: 88 },
+                { id: 'spiral', label: 'הידוק ספירלה', labelEn: 'Spiral Tightness', weight: 1, value: 88 },
+                { id: 'ballPlacement', label: 'מיקום הכדור ביחס לרסיבר', labelEn: 'Ball Placement to Frame', weight: 1.5, value: 88 },
+                { id: 'quickRhythm', label: 'תזמון במשחק המהיר (1/3-Step)', labelEn: 'Quick-Game Rhythm/Anticipation', weight: 1, value: 88 }
+            ] },
+            { key: 'MAC', label: 'דיוק בינוני (10-20 יארד)', labelEn: 'Medium Accuracy', catWeight: 0.20, subs: [
+                { id: 'fiveStepFootwork', label: 'עבודת רגליים ב-5-Step Drop', labelEn: '5-Step Drop Footwork', weight: 1, value: 82 },
+                { id: 'touch', label: 'שליטה בקשת/גובה הזריקה (Touch)', labelEn: 'Touch / Trajectory Control', weight: 1, value: 82 },
+                { id: 'leverageWindow', label: 'קריאת לברג׳ וזריקה לחלון פתוח', labelEn: 'Leverage Read & Window Throw', weight: 1.5, value: 82 },
+                { id: 'breakAnticipation', label: 'אנטיציפציה על שבירות מסלול', labelEn: 'Route-Break Anticipation', weight: 1, value: 82 }
+            ] },
+            { key: 'DAC', label: 'דיוק עמוק (20+ יארד)', labelEn: 'Deep Accuracy', catWeight: 0.15, subs: [
+                { id: 'hipTorque', label: 'מומנטום ירך לזריקה ארוכה', labelEn: 'Hip Torque for Distance', weight: 1, value: 78 },
+                { id: 'arcJudgment', label: 'שיפוט מרחק/קשת (Touch vs Line Drive)', labelEn: 'Distance & Arc Judgment', weight: 1.5, value: 78 },
+                { id: 'deepPlacement', label: 'מיקום כדור עמוק (Back-Shoulder/Streak)', labelEn: 'Deep Ball Placement', weight: 1.5, value: 78 },
+                { id: 'legDrive', label: 'הנעת רגל תחתונה לתוך הזריקה', labelEn: 'Lower-Body Leg Drive', weight: 1, value: 78 }
+            ] },
+            { key: 'AWR', label: 'תחושת כיס ומודעות', labelEn: 'Pocket Awareness', catWeight: 0.15, subs: [
+                { id: 'preSnapRead', label: 'קריאה לפני ה-Snap', labelEn: 'Pre-Snap Read', weight: 1, value: 86 },
+                { id: 'pocketMovement', label: 'תנועה בכיס (טיפוס/נסיגה)', labelEn: 'Pocket Movement (Climb/Bail)', weight: 1, value: 86 },
+                { id: 'eyesDownfield', label: 'עיניים קדימה בזמן תנועה', labelEn: 'Eyes Downfield While Moving', weight: 1, value: 86 },
+                { id: 'blitzRecognition', label: 'זיהוי בליץ/Hot Route ושחרור מהיר', labelEn: 'Blitz/Hot Recognition & Release', weight: 1.5, value: 86 }
+            ] },
+            { key: 'RLS', label: 'מהירות שחרור', labelEn: 'Release Speed', catWeight: 0.08, subs: [
+                { id: 'compactMotion', label: 'תנועת זריקה קומפקטית', labelEn: 'Compact Throwing Motion', weight: 1, value: 84 },
+                { id: 'handTransition', label: 'מעבר מתפיסה לזריקה', labelEn: 'Catch-to-Throw Hand Transition', weight: 1, value: 84 },
+                { id: 'processingSpeed', label: 'מהירות עיבוד פרה-סנאפ עד שחרור', labelEn: 'Pre-Snap-to-Release Processing', weight: 1, value: 84 }
+            ] },
+            { key: 'RUN', label: 'ניידות וזריקה בתנועה', labelEn: 'Throw on Run & Mobility', catWeight: 0.07, subs: [
+                { id: 'rollAccuracy', label: 'דיוק בזריקה תוך ריצה', labelEn: 'Accuracy While Rolling', weight: 1.5, value: 80 },
+                { id: 'hipAlignment', label: 'יישור ירכיים למטרה תוך תנועה', labelEn: 'Hip Alignment on the Move', weight: 1, value: 80 },
+                { id: 'sprintOutMechanics', label: 'מכניקת Sprint-Out', labelEn: 'Sprint-Out Mechanics', weight: 1, value: 80 },
+                { id: 'scrambleDecision', label: 'החלטת ריצה מול זריקה ב-Scramble', labelEn: 'Scramble Run-vs-Throw Decision', weight: 1, value: 80 }
+            ] }
+        ];
+        let maddenExpanded = null; // key of the currently expanded category, or null
+
+        // ---- Letter grades (A+ to F), Madden-scale (30-99) ----
+        function gradeFor(v) {
+            if (v >= 95) return { l: 'A+', c: '#34d399' };
+            if (v >= 90) return { l: 'A', c: '#34d399' };
+            if (v >= 85) return { l: 'A-', c: '#4ade80' };
+            if (v >= 80) return { l: 'B+', c: '#a3e635' };
+            if (v >= 75) return { l: 'B', c: '#a3e635' };
+            if (v >= 70) return { l: 'B-', c: '#facc15' };
+            if (v >= 65) return { l: 'C+', c: '#facc15' };
+            if (v >= 60) return { l: 'C', c: '#fb923c' };
+            if (v >= 55) return { l: 'C-', c: '#fb923c' };
+            if (v >= 50) return { l: 'D+', c: '#f87171' };
+            if (v >= 45) return { l: 'D', c: '#f87171' };
+            if (v >= 40) return { l: 'D-', c: '#f87171' };
+            return { l: 'F', c: '#ef4444' };
+        }
+        function gradeBadge(v, size) {
+            const g = gradeFor(v);
+            const sz = size === 'sm' ? 'text-[9px] px-1.5 py-0.5' : 'text-xs px-2 py-0.5';
+            return `<span class="${sz} rounded-full font-black border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l}</span>`;
+        }
+
+        function categoryValue(cat) {
+            const totalW = cat.subs.reduce((s, m) => s + m.weight, 0);
+            const sum = cat.subs.reduce((s, m) => s + m.value * m.weight, 0);
+            return sum / totalW;
+        }
+
+        function renderMaddenCategories() {
+            const container = document.getElementById('maddenCategoryList');
+            container.innerHTML = MADDEN_CATEGORIES.map(cat => {
+                const val = categoryValue(cat);
+                const rounded = Math.round(val);
+                const isOpen = maddenExpanded === cat.key;
+                return `<div class="border border-slate-700 rounded-xl overflow-hidden">
+                    <button type="button" onclick="toggleMaddenCategory('${cat.key}')" class="w-full flex justify-between items-center px-3 py-2 bg-slate-800/60 hover:bg-slate-800 transition text-right">
+                        <span class="flex items-center gap-2">
+                            <span class="text-slate-500 text-[10px]">${isOpen ? '▾' : '◂'}</span>
+                            <span class="text-slate-200 font-bold">${cat.label}</span>
+                            <span class="text-slate-500 text-[10px]">(${cat.labelEn})</span>
+                        </span>
+                        <span class="flex items-center gap-2">
+                            <span id="catBadge_${cat.key}">${gradeBadge(val)}</span>
+                            <span id="catVal_${cat.key}" class="font-black text-sky-400 w-7 text-center">${rounded}</span>
+                        </span>
+                    </button>
+                    ${isOpen ? `<div class="p-3 space-y-3 bg-slate-900/60">
+                        ${cat.subs.map(m => `<div>
+                            <div class="flex justify-between items-center text-slate-300 mb-1">
+                                <span class="flex items-center gap-1.5">
+                                    ${m.label}
+                                    ${m.weight > 1 ? `<span class="text-[9px] text-amber-400 font-bold" title="תת-מדד מכריע יותר לקטגוריה זו">★ משקל כפול</span>` : ''}
+                                </span>
+                                <span class="flex items-center gap-1.5">
+                                    <span id="subBadge_${cat.key}_${m.id}">${gradeBadge(m.value, 'sm')}</span>
+                                    <span id="val_${cat.key}_${m.id}" class="font-bold text-sky-300 w-6 text-center">${m.value}</span>
+                                </span>
+                            </div>
+                            <input type="range" id="rate_${cat.key}_${m.id}" min="30" max="99" value="${m.value}" oninput="onSubMetricInput('${cat.key}','${m.id}', this.value)" class="w-full accent-sky-400">
+                            <div class="text-[9px] text-slate-500 mt-0.5">${m.labelEn}</div>
+                        </div>`).join('')}
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function toggleMaddenCategory(key) {
+            maddenExpanded = (maddenExpanded === key) ? null : key;
+            renderMaddenCategories();
+        }
+
+        function onSubMetricInput(catKey, subId, rawValue) {
+            const cat = MADDEN_CATEGORIES.find(c => c.key === catKey);
+            const sub = cat.subs.find(m => m.id === subId);
+            sub.value = parseInt(rawValue, 10);
+
+            // Sub-metric readout + grade, live while dragging.
+            document.getElementById(`val_${catKey}_${subId}`).innerText = sub.value;
+            document.getElementById(`subBadge_${catKey}_${subId}`).innerHTML = gradeBadge(sub.value, 'sm');
+
+            // Category header readout + grade, also live — this is the part that used to
+            // only refresh on the next full render (collapse/reopen).
+            const val = categoryValue(cat);
+            document.getElementById(`catVal_${catKey}`).innerText = Math.round(val);
+            document.getElementById(`catBadge_${catKey}`).innerHTML = gradeBadge(val);
+
+            updateQbCard();   // OVR badge + radar chart
+        }
+
         // ---- Loading real Madden ratings from the metrics.html dataset ----
-        const MADDEN_SLIDER_MAP = {
-            'Madden: עוצמת זרוע (THP)': 'rateTHP',
-            'Madden: דיוק קצר (SAC)': 'rateSAC',
-            'Madden: דיוק בינוני (MAC)': 'rateMAC',
-            'Madden: דיוק עמוק (DAC)': 'rateDAC',
-            'Madden: תחושת כיס (AWR)': 'rateAWR',
-            'Madden: מהירות שחרור (RLS)': 'rateRLS',
-            'Madden: זריקה בתנועה (RUN)': 'rateRUN'
+        // A coach only enters one number per category (no sub-metric granularity on their
+        // side), so applying it here means setting every sub-metric of that category to the
+        // same starting value — the same "spread it evenly" approach used for backward
+        // compatibility with old single-slider data.
+        const MADDEN_CATEGORY_NAME_MAP = {
+            'Madden: עוצמת זרוע (THP)': 'THP',
+            'Madden: דיוק קצר (SAC)': 'SAC',
+            'Madden: דיוק בינוני (MAC)': 'MAC',
+            'Madden: דיוק עמוק (DAC)': 'DAC',
+            'Madden: תחושת כיס (AWR)': 'AWR',
+            'Madden: מהירות שחרור (RLS)': 'RLS',
+            'Madden: זריקה בתנועה (RUN)': 'RUN'
         };
 
         function extractLatestMaddenFromDayMap(dayMap) {
@@ -197,7 +285,7 @@
             const latest = {}; // name -> { date, value }
             Object.entries(dayMap).forEach(([date, entries]) => {
                 (entries || []).forEach(e => {
-                    if (!MADDEN_SLIDER_MAP[e.name] && e.name !== 'Madden: OVR כללי (מהמאמן)') return;
+                    if (!MADDEN_CATEGORY_NAME_MAP[e.name] && e.name !== 'Madden: OVR כללי (מהמאמן)') return;
                     if (!latest[e.name] || date > latest[e.name].date) latest[e.name] = { date, value: e.value };
                 });
             });
@@ -207,14 +295,16 @@
         function applyMaddenValues(latest) {
             let count = 0;
             let mostRecentDate = '';
-            Object.entries(MADDEN_SLIDER_MAP).forEach(([name, sliderId]) => {
+            Object.entries(MADDEN_CATEGORY_NAME_MAP).forEach(([name, catKey]) => {
                 if (latest[name]) {
-                    document.getElementById(sliderId).value = latest[name].value;
+                    const cat = MADDEN_CATEGORIES.find(c => c.key === catKey);
+                    const v = Math.max(30, Math.min(99, Math.round(latest[name].value)));
+                    cat.subs.forEach(m => m.value = v);   // spread the single coach number across all sub-metrics
                     count++;
                     if (latest[name].date > mostRecentDate) mostRecentDate = latest[name].date;
                 }
             });
-            if (count > 0) updateQbCard();
+            if (count > 0) { renderMaddenCategories(); updateQbCard(); }
             return { count, mostRecentDate };
         }
 
@@ -238,7 +328,7 @@
             const { count, mostRecentDate } = applyMaddenValues(latest);
             if (count > 0) {
                 const note = document.getElementById('realMaddenAutoNote');
-                note.innerText = `✅ נטענו אוטומטית ${count}/7 דירוגים אמיתיים מלוח המדדים (עדכון אחרון: ${mostRecentDate}).`;
+                note.innerText = `✅ נטענו אוטומטית ${count}/7 דירוגים אמיתיים מלוח המדדים (עדכון אחרון: ${mostRecentDate}). כל תתי-המדדים של כל קטגוריה אותחלו לאותו ערך — אפשר לכייל כל אחד בנפרד למטה.`;
                 note.classList.remove('hidden');
             } else {
                 document.getElementById('realMaddenManualBox').classList.remove('hidden');
@@ -269,34 +359,27 @@
         }
 
         function updateQbCard() {
-            const thp = parseInt(document.getElementById('rateTHP').value);
-            const sac = parseInt(document.getElementById('rateSAC').value);
-            const mac = parseInt(document.getElementById('rateMAC').value);
-            const dac = parseInt(document.getElementById('rateDAC').value);
-            const awr = parseInt(document.getElementById('rateAWR').value);
-            const rls = parseInt(document.getElementById('rateRLS').value);
-            const run = parseInt(document.getElementById('rateRUN').value);
+            const values = {};
+            MADDEN_CATEGORIES.forEach(cat => { values[cat.key] = categoryValue(cat); });
 
-            document.getElementById('valTHP').innerText = thp;
-            document.getElementById('valSAC').innerText = sac;
-            document.getElementById('valMAC').innerText = mac;
-            document.getElementById('valDAC').innerText = dac;
-            document.getElementById('valAWR').innerText = awr;
-            document.getElementById('valRLS').innerText = rls;
-            document.getElementById('valRUN').innerText = run;
-
-            const ovr = Math.round((thp * 0.2) + (sac * 0.15) + (mac * 0.2) + (dac * 0.15) + (awr * 0.15) + (rls * 0.08) + (run * 0.07));
-            document.getElementById('qbOvrDisplay').innerText = 'OVR: ' + ovr;
+            const ovr = Math.round(
+                (values.THP * 0.20) + (values.SAC * 0.15) + (values.MAC * 0.20) + (values.DAC * 0.15) +
+                (values.AWR * 0.15) + (values.RLS * 0.08) + (values.RUN * 0.07)
+            );
+            const ovrGrade = gradeFor(ovr);
+            document.getElementById('qbOvrDisplay').innerHTML = `OVR: ${ovr} <span class="text-xs align-middle" style="color:${ovrGrade.c}">(${ovrGrade.l})</span>`;
 
             if (qbChartInstance) {
-                qbChartInstance.data.datasets[0].data = [thp, sac, mac, dac, awr, rls, run];
+                qbChartInstance.data.datasets[0].data = ['THP', 'SAC', 'MAC', 'DAC', 'AWR', 'RLS', 'RUN'].map(k => Math.round(values[k]));
                 qbChartInstance.update();
             }
         }
 
 
+
         window.addEventListener('DOMContentLoaded', () => {
 
+            renderMaddenCategories();
 
             const qbRatingCtx = document.getElementById('qbRatingChart').getContext('2d');
 
@@ -314,7 +397,7 @@
                     ],
                     datasets: [{
                         label: 'דירוג שחקן (Madden OVR)',
-                        data: [85, 88, 82, 78, 86, 84, 80],
+                        data: MADDEN_CATEGORIES.map(c => Math.round(categoryValue(c))),
                         borderColor: '#a855f7',
                         backgroundColor: 'rgba(168, 85, 247, 0.25)',
                         pointBackgroundColor: '#a855f7'
@@ -329,7 +412,7 @@
                             grid: { color: '#334155' },
                             pointLabels: { color: '#cbd5e1', font: { size: 10 } },
                             ticks: { display: false, backdropColor: 'transparent' },
-                            min: 50, max: 100
+                            min: 30, max: 100
                         }
                     },
                     plugins: {
@@ -348,6 +431,7 @@
             });
 
             tryAutoLoadMaddenData();
+            updateQbCard();
         });
     </script>
 </body>

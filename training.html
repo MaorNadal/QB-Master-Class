@@ -94,6 +94,15 @@
             </div>
 
             <div class="flex flex-wrap gap-2 justify-center mb-6" id="drillCategoryTabs"></div>
+
+            <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">📋 יומן דרילים אחרונים</div>
+                    <div id="drillWeekCount" class="text-[11px] text-orange-300 font-bold"></div>
+                </div>
+                <div id="recentDrillLog" class="space-y-1 text-xs"></div>
+            </div>
+
             <div id="drillsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </section>
 
@@ -553,7 +562,34 @@
                 card.classList.toggle('opacity-50', checked);
                 card.classList.toggle('line-through', checked);
             }
+            logExerciseCompletion(id, day, card, checked);
             updateDayProgress(day);
+        }
+
+        // ---- Dated exercise log, separate from the qbmc_ex_ checkbox state above ----
+        // qbmc_ex_<id> only ever holds the CURRENT checked/unchecked state of this week's
+        // static checklist — it has no memory of *which date* an exercise was last done,
+        // so the calendar has nothing to show. This adds that date history, the same way
+        // the drill log above works, so calendar.html can display specific exercises (not
+        // just a generic "Day 3" chip) on whichever date they were actually checked off.
+        function loadWorkoutLog() {
+            try { return JSON.parse(localStorage.getItem('qbmc_workout_log')) || {}; } catch (e) { return {}; }
+        }
+        function saveWorkoutLog(log) {
+            try { localStorage.setItem('qbmc_workout_log', JSON.stringify(log)); } catch (e) {}
+        }
+        function logExerciseCompletion(id, day, card, checked) {
+            const log = loadWorkoutLog();
+            const nameEl = card ? card.querySelector('span.font-bold') : null;
+            const name = nameEl ? nameEl.textContent.trim() : id;
+            const entry = log[id] || { name, day, dates: [] };
+            entry.name = name; entry.day = day; // keep the name in sync if the plan text ever changes
+            const t = todayDrillStr();
+            const idx = entry.dates.indexOf(t);
+            if (checked && idx < 0) entry.dates.push(t);
+            else if (!checked && idx >= 0) entry.dates.splice(idx, 1);
+            log[id] = entry;
+            saveWorkoutLog(log);
         }
 
         // ---- QB Drills library ----
@@ -620,6 +656,8 @@
             const container = document.getElementById('drillsGrid');
             container.innerHTML = filtered.map(d => {
                 const meta = DRILL_CATEGORY_META[d.category];
+                const stats = drillStats(d.name);
+                const doneToday = isDrillDoneToday(d.name);
                 return `
                 <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 hover:border-orange-400/50 transition">
                     <div class="flex justify-between items-start gap-2 mb-2">
@@ -631,7 +669,66 @@
                         <span class="bg-slate-800 px-2 py-0.5 rounded">🛠️ ${d.equipment}</span>
                     </div>
                     <p class="text-xs text-slate-300 leading-relaxed mb-2">${d.desc}</p>
-                    <p class="text-[11px] text-amber-300 border-t border-slate-800 pt-2">💡 ${d.cue}</p>
+                    <p class="text-[11px] text-amber-300 border-t border-slate-800 pt-2 mb-2">💡 ${d.cue}</p>
+                    <div class="flex justify-between items-center border-t border-slate-800 pt-2">
+                        <span class="text-[10px] text-slate-500">${stats.count ? `✅ בוצע ${stats.count} פעמים${stats.last ? ' • לאחרונה ' + stats.last : ''}` : 'עדיין לא בוצע'}</span>
+                        <button onclick="toggleDrillDoneToday('${d.name.replace(/'/g, "\\'")}')" class="text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${doneToday ? 'bg-emerald-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'}">${doneToday ? '✅ בוצע היום' : '⬜ סמן כבוצע היום'}</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ---- Drill completion log: { drillName: ["YYYY-MM-DD", ...] } ----
+        // A separate log from the weekly workout checkboxes above (those track a fixed
+        // 6-day plan; this tracks which of the 20 specific drills were actually done, and
+        // when) — this is the "mark/track each specific drill performed" piece of #8.
+        function loadDrillLog() {
+            try { return JSON.parse(localStorage.getItem('qbmc_drill_log')) || {}; } catch (e) { return {}; }
+        }
+        function saveDrillLog(log) {
+            try { localStorage.setItem('qbmc_drill_log', JSON.stringify(log)); } catch (e) {}
+        }
+        function todayDrillStr() { return new Date().toISOString().slice(0, 10); }
+        function drillStats(name) {
+            const arr = loadDrillLog()[name] || [];
+            return { count: arr.length, last: arr.length ? arr.slice().sort().slice(-1)[0] : null };
+        }
+        function isDrillDoneToday(name) {
+            return (loadDrillLog()[name] || []).includes(todayDrillStr());
+        }
+        function toggleDrillDoneToday(name) {
+            const log = loadDrillLog();
+            const arr = log[name] || [];
+            const t = todayDrillStr();
+            const idx = arr.indexOf(t);
+            if (idx >= 0) arr.splice(idx, 1); else arr.push(t);
+            log[name] = arr;
+            saveDrillLog(log);
+            renderDrillsGrid();
+            renderRecentDrillLog();
+        }
+        function renderRecentDrillLog() {
+            const log = loadDrillLog();
+            const entries = [];
+            Object.entries(log).forEach(([name, dates]) => dates.forEach(date => entries.push({ name, date })));
+            entries.sort((a, b) => b.date.localeCompare(a.date));
+
+            const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
+            const weekAgoStr = weekAgo.toISOString().slice(0, 10);
+            const weekCount = entries.filter(e => e.date >= weekAgoStr).length;
+            document.getElementById('drillWeekCount').innerText = weekCount ? `${weekCount === 1 ? 'דריל אחד' : weekCount + ' דרילים'} ב-7 הימים האחרונים` : '';
+
+            const container = document.getElementById('recentDrillLog');
+            if (!entries.length) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-2">עדיין לא סומן אף דריל כבוצע — לחץ "סמן כבוצע היום" על דריל למטה.</p>`;
+                return;
+            }
+            container.innerHTML = entries.slice(0, 8).map(e => {
+                const drill = DRILLS_DATABASE.find(d => d.name === e.name);
+                const meta = drill ? DRILL_CATEGORY_META[drill.category] : null;
+                return `<div class="flex justify-between items-center bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5">
+                    <span class="text-slate-300">${meta ? meta.icon + ' ' : ''}${e.name}</span>
+                    <span class="text-slate-500 text-[10px]">${e.date}</span>
                 </div>`;
             }).join('');
         }
@@ -640,7 +737,7 @@
             const backup = {};
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                if (key && key.startsWith('qbmc_ex_')) backup[key] = localStorage.getItem(key);
+                if (key && (key.startsWith('qbmc_ex_') || key === 'qbmc_drill_log' || key === 'qbmc_workout_log')) backup[key] = localStorage.getItem(key);
             }
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -659,9 +756,11 @@
                 try {
                     const backup = JSON.parse(e.target.result);
                     Object.entries(backup).forEach(([key, value]) => {
-                        if (key.startsWith('qbmc_ex_')) localStorage.setItem(key, value);
+                        if (key.startsWith('qbmc_ex_') || key === 'qbmc_drill_log' || key === 'qbmc_workout_log') localStorage.setItem(key, value);
                     });
                     initExerciseTracking();
+                    renderRecentDrillLog();
+                    renderDrillsGrid();
                     alert('השחזור הושלם בהצלחה!');
                 } catch (err) {
                     alert('קובץ לא תקין. ודא שזה קובץ גיבוי שיוצא מהמערכת.');
@@ -689,6 +788,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             renderDrillCategoryTabs();
             renderDrillsGrid();
+            renderRecentDrillLog();
             initExerciseTracking();
         });
     </script>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>פרטי שחקן - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; }
+        input[type=range] { -webkit-appearance: none; height: 6px; border-radius: 999px; background: #334155; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #38bdf8; cursor: pointer; margin-top: -5px; }
+        @media print {
+            nav, .no-print, button, select, input[type=range] { display: none !important; }
+            body { background: white; color: black; }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+    <script src="nav.js"></script>
+
+    <header class="max-w-7xl mx-auto px-4 pt-8 pb-6 text-center">
+        <div class="inline-block px-4 py-1.5 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-400 text-sm font-semibold mb-3">
+            QB MASTER CLASS • פרטי שחקן
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-3">כרטיס השחקן</h1>
+        <p class="text-slate-300 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
+            כל הפרטים האישיים, הפיזיים והספורטיביים במקום אחד — ותיעוד הקריירה: קבוצות, משחקים, סטטיסטיקה ותארים.
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 space-y-12">
+
+        <section id="player-details">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">🪪 פרטים אישיים ופיזיים</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+
+                <div class="lg:col-span-1 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur flex flex-col items-center text-center">
+                    <div id="playerPhotoPreview" class="w-32 h-32 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center overflow-hidden mb-3">
+                        <span class="text-4xl">🏈</span>
+                    </div>
+                    <label class="no-print text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white cursor-pointer transition">
+                        📷 העלה תמונה
+                        <input type="file" accept="image/*" onchange="handlePhotoUpload(event)" class="hidden">
+                    </label>
+                    <button onclick="removePlayerPhoto()" class="no-print text-[10px] text-rose-400 hover:text-rose-300 mt-2">הסר תמונה</button>
+                    <p class="text-[9px] text-slate-500 mt-2">התמונה נדחסת אוטומטית ונשמרת רק במכשיר הזה.</p>
+                </div>
+
+                <div class="lg:col-span-3 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                        <div><label class="block text-slate-400 mb-1">שם מלא</label><input id="pName" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div><label class="block text-slate-400 mb-1">תאריך לידה</label><input id="pDob" type="date" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div><label class="block text-slate-400 mb-1">עמדה עיקרית</label>
+                            <select id="pPosition" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400">
+                                <option value="QB">Quarterback (QB)</option>
+                                <option value="Other">עמדה נוספת שמשוחקת</option>
+                            </select>
+                        </div>
+                        <div><label class="block text-slate-400 mb-1">עמדות נוספות</label><input id="pSecondaryPositions" placeholder="לדוגמה: Safety, WR" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div><label class="block text-slate-400 mb-1">קבוצה / מועדון נוכחי</label><input id="pClub" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div><label class="block text-slate-400 mb-1">מספר חולצה</label><input id="pJersey" type="number" min="0" max="99" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div><label class="block text-slate-400 mb-1">גובה (ס"מ)</label><input id="pHeight" type="number" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div><label class="block text-slate-400 mb-1">משקל (ק"ג)</label><input id="pWeight" type="number" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div><label class="block text-slate-400 mb-1">יד זורקת</label>
+                            <select id="pThrowingHand" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400">
+                                <option value="right">ימין</option>
+                                <option value="left">שמאל</option>
+                            </select>
+                        </div>
+                        <div><label class="block text-slate-400 mb-1">היקף כף יד (אינץ')</label><input id="pHandSize" type="number" step="0.1" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div><label class="block text-slate-400 mb-1">בית ספר / תיכון</label><input id="pSchool" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                        <div><label class="block text-slate-400 mb-1">שנת סיום / מחזור</label><input id="pGradYear" type="number" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="block text-slate-400 mb-1 text-xs">רקע ספורטיבי</label>
+                        <textarea id="pBackground" rows="3" placeholder="מתי התחלת לשחק, אילו קבוצות/ליגות, הישגים בולטים, מה מייחד אותך כ-QB..." class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-sky-400"></textarea>
+                    </div>
+                    <div class="no-print flex justify-end mt-3">
+                        <button onclick="savePlayerDetails()" class="text-xs font-bold px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white transition">💾 שמור פרטים</button>
+                        <span id="playerDetailsStatus" class="text-[11px] text-emerald-400 mr-3 self-center hidden">✅ נשמר</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="player-status">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">📋 מצב קבוצתי נוכחי</h2>
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div><label class="block text-slate-400 mb-1">קבוצה נוכחית</label><input id="sTeam" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400"></div>
+                <div><label class="block text-slate-400 mb-1">ליגה / חטיבה</label><input id="sLeague" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400"></div>
+                <div><label class="block text-slate-400 mb-1">עונה נוכחית</label><input id="sSeason" placeholder="לדוגמה: 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400"></div>
+                <div class="md:col-span-3"><label class="block text-slate-400 mb-1">סטטוס (פציעה, תפקיד בהרכב וכו')</label><input id="sStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400"></div>
+                <div class="md:col-span-3 no-print flex justify-end">
+                    <button onclick="saveTeamStatus()" class="text-xs font-bold px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition">💾 שמור סטטוס</button>
+                    <span id="teamStatusSaved" class="text-[11px] text-emerald-400 mr-3 self-center hidden">✅ נשמר</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="player-career">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">📈 היסטוריית קריירה</h2>
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
+                <div class="no-print grid grid-cols-2 md:grid-cols-6 gap-2 mb-4 text-xs">
+                    <input id="cYear" placeholder="עונה" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <input id="cTeam" placeholder="קבוצה" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <input id="cPosition" placeholder="עמדה" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <input id="cGames" type="number" min="0" placeholder="מס' משחקים" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <input id="cStats" placeholder="סטטיסטיקה עיקרית" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <button onclick="addCareerRow()" class="text-xs font-bold px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white transition">➕ הוסף שורה</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-right">
+                        <thead><tr class="text-slate-400 border-b border-slate-700">
+                            <th class="p-2">עונה</th><th class="p-2">קבוצה</th><th class="p-2">עמדה</th><th class="p-2">משחקים</th><th class="p-2">סטטיסטיקה</th><th class="p-2 no-print"></th>
+                        </tr></thead>
+                        <tbody id="careerTableBody"></tbody>
+                    </table>
+                    <p id="careerEmptyMsg" class="text-slate-500 text-xs text-center py-4 hidden">עדיין לא נוספו רשומות קריירה.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="player-achievements">
+            <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">🏆 תארים והישגים</h2>
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
+                <div class="no-print flex gap-2 mb-4 text-xs">
+                    <input id="aText" placeholder="לדוגמה: MVP עונה 2025, אליפות מחוזית..." class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-violet-400">
+                    <button onclick="addAchievement()" class="text-xs font-bold px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white transition">➕ הוסף</button>
+                </div>
+                <ul id="achievementsList" class="space-y-2 text-xs"></ul>
+                <p id="achievementsEmptyMsg" class="text-slate-500 text-xs text-center py-4 hidden">עדיין לא נוספו הישגים.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 border-t border-slate-800 pt-6">
+        <p>QB Master Class 2.0 • מערכת ניתוח טקטי, מכניקה ותוכנית אימונים לקוורטרבקים</p>
+    </footer>
+
+    <script>
+        const PROFILE_KEY = 'qbmc_player_profile';
+        const STATUS_KEY = 'qbmc_player_team_status';
+        const CAREER_KEY = 'qbmc_player_career';
+        const ACHIEVEMENTS_KEY = 'qbmc_player_achievements';
+
+        function flashSaved(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('hidden');
+            clearTimeout(el._t);
+            el._t = setTimeout(() => el.classList.add('hidden'), 2000);
+        }
+
+        // ---- Photo: downscaled + re-compressed client-side so it stays small in localStorage ----
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX = 256;
+                    const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(img.width * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                    document.getElementById('playerPhotoPreview').innerHTML = `<img src="${dataUrl}" class="w-full h-full object-cover">`;
+                    const profile = loadProfile();
+                    profile.photo = dataUrl;
+                    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        function removePlayerPhoto() {
+            document.getElementById('playerPhotoPreview').innerHTML = '<span class="text-4xl">🏈</span>';
+            const profile = loadProfile();
+            delete profile.photo;
+            localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+        }
+
+        function loadProfile() {
+            try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || {}; } catch (e) { return {}; }
+        }
+        function savePlayerDetails() {
+            const profile = {
+                ...loadProfile(),
+                name: document.getElementById('pName').value.trim(),
+                dob: document.getElementById('pDob').value,
+                position: document.getElementById('pPosition').value,
+                secondaryPositions: document.getElementById('pSecondaryPositions').value.trim(),
+                club: document.getElementById('pClub').value.trim(),
+                jersey: document.getElementById('pJersey').value,
+                height: document.getElementById('pHeight').value,
+                weight: document.getElementById('pWeight').value,
+                throwingHand: document.getElementById('pThrowingHand').value,
+                handSize: document.getElementById('pHandSize').value,
+                school: document.getElementById('pSchool').value.trim(),
+                gradYear: document.getElementById('pGradYear').value,
+                background: document.getElementById('pBackground').value.trim()
+            };
+            localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+            flashSaved('playerDetailsStatus');
+        }
+        function renderPlayerDetails() {
+            const p = loadProfile();
+            if (p.photo) document.getElementById('playerPhotoPreview').innerHTML = `<img src="${p.photo}" class="w-full h-full object-cover">`;
+            document.getElementById('pName').value = p.name || '';
+            document.getElementById('pDob').value = p.dob || '';
+            document.getElementById('pPosition').value = p.position || 'QB';
+            document.getElementById('pSecondaryPositions').value = p.secondaryPositions || '';
+            document.getElementById('pClub').value = p.club || '';
+            document.getElementById('pJersey').value = p.jersey || '';
+            document.getElementById('pHeight').value = p.height || '';
+            document.getElementById('pWeight').value = p.weight || '';
+            document.getElementById('pThrowingHand').value = p.throwingHand || 'right';
+            document.getElementById('pHandSize').value = p.handSize || '';
+            document.getElementById('pSchool').value = p.school || '';
+            document.getElementById('pGradYear').value = p.gradYear || '';
+            document.getElementById('pBackground').value = p.background || '';
+        }
+
+        function saveTeamStatus() {
+            const status = {
+                team: document.getElementById('sTeam').value.trim(),
+                league: document.getElementById('sLeague').value.trim(),
+                season: document.getElementById('sSeason').value.trim(),
+                status: document.getElementById('sStatus').value.trim()
+            };
+            localStorage.setItem(STATUS_KEY, JSON.stringify(status));
+            flashSaved('teamStatusSaved');
+        }
+        function renderTeamStatus() {
+            let s = {};
+            try { s = JSON.parse(localStorage.getItem(STATUS_KEY)) || {}; } catch (e) {}
+            document.getElementById('sTeam').value = s.team || '';
+            document.getElementById('sLeague').value = s.league || '';
+            document.getElementById('sSeason').value = s.season || '';
+            document.getElementById('sStatus').value = s.status || '';
+        }
+
+        function loadCareer() {
+            try { return JSON.parse(localStorage.getItem(CAREER_KEY)) || []; } catch (e) { return []; }
+        }
+        function escHtml(str) { return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+        function addCareerRow() {
+            const year = document.getElementById('cYear').value.trim();
+            const team = document.getElementById('cTeam').value.trim();
+            if (!year || !team) { alert('נא למלא לפחות עונה וקבוצה.'); return; }
+            const rows = loadCareer();
+            rows.push({
+                year, team,
+                position: document.getElementById('cPosition').value.trim(),
+                games: document.getElementById('cGames').value,
+                stats: document.getElementById('cStats').value.trim()
+            });
+            rows.sort((a, b) => String(b.year).localeCompare(String(a.year)));
+            localStorage.setItem(CAREER_KEY, JSON.stringify(rows));
+            ['cYear', 'cTeam', 'cPosition', 'cGames', 'cStats'].forEach(id => document.getElementById(id).value = '');
+            renderCareer();
+        }
+        function deleteCareerRow(idx) {
+            const rows = loadCareer();
+            rows.splice(idx, 1);
+            localStorage.setItem(CAREER_KEY, JSON.stringify(rows));
+            renderCareer();
+        }
+        function renderCareer() {
+            const rows = loadCareer();
+            document.getElementById('careerEmptyMsg').classList.toggle('hidden', rows.length > 0);
+            document.getElementById('careerTableBody').innerHTML = rows.map((r, i) => `
+                <tr class="border-b border-slate-800/60">
+                    <td class="p-2 text-slate-200">${escHtml(r.year)}</td>
+                    <td class="p-2 text-slate-200">${escHtml(r.team)}</td>
+                    <td class="p-2 text-slate-400">${escHtml(r.position) || '—'}</td>
+                    <td class="p-2 text-slate-400">${escHtml(r.games) || '—'}</td>
+                    <td class="p-2 text-slate-400">${escHtml(r.stats) || '—'}</td>
+                    <td class="p-2 no-print"><button onclick="deleteCareerRow(${i})" class="text-rose-400 hover:text-rose-300">✕</button></td>
+                </tr>`).join('');
+        }
+
+        function loadAchievements() {
+            try { return JSON.parse(localStorage.getItem(ACHIEVEMENTS_KEY)) || []; } catch (e) { return []; }
+        }
+        function addAchievement() {
+            const text = document.getElementById('aText').value.trim();
+            if (!text) return;
+            const list = loadAchievements();
+            list.unshift({ text, date: new Date().toISOString().slice(0, 10) });
+            localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(list));
+            document.getElementById('aText').value = '';
+            renderAchievements();
+        }
+        function deleteAchievement(idx) {
+            const list = loadAchievements();
+            list.splice(idx, 1);
+            localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(list));
+            renderAchievements();
+        }
+        function renderAchievements() {
+            const list = loadAchievements();
+            document.getElementById('achievementsEmptyMsg').classList.toggle('hidden', list.length > 0);
+            document.getElementById('achievementsList').innerHTML = list.map((a, i) => `
+                <li class="flex justify-between items-center bg-slate-900/60 border border-slate-700/60 rounded-lg px-3 py-2">
+                    <span class="text-slate-200">🏆 ${escHtml(a.text)}</span>
+                    <span class="flex items-center gap-2 text-slate-500">
+                        <span class="text-[10px]">${a.date}</span>
+                        <button onclick="deleteAchievement(${i})" class="no-print text-rose-400 hover:text-rose-300">✕</button>
+                    </span>
+                </li>`).join('');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderPlayerDetails();
+            renderTeamStatus();
+            renderCareer();
+            renderAchievements();
+        });
+    </script>
+</body>
+</html>

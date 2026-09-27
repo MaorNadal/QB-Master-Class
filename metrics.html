@@ -63,7 +63,7 @@
         <div class="report-card">
             <h2 style="font-size:15px; font-weight:800; margin-bottom:8px;">📈 מדדים פיזיים — ערך עדכני ומגמה</h2>
             <table>
-                <thead><tr><th>מדד</th><th>ערך עדכני</th><th>תאריך</th><th>מגמה</th></tr></thead>
+                <thead><tr><th>מדד</th><th>ערך עדכני</th><th>תאריך</th><th>מגמה</th><th>דירוג</th></tr></thead>
                 <tbody id="printMetricsTable"></tbody>
             </table>
         </div>
@@ -191,6 +191,7 @@
                             <th class="py-2 px-2">מדד</th>
                             <th class="py-2 px-2">ערך</th>
                             <th class="py-2 px-2">יחידה</th>
+                            <th class="py-2 px-2">דירוג</th>
                             <th class="py-2 px-2"></th>
                         </tr>
                     </thead>
@@ -240,6 +241,67 @@
             { name: 'משקל גוף', unit: 'ק"ג' },
             { name: 'אחוז שומן', unit: '%' }
         ];
+
+        // ---- Letter grades (A+ to F) for physical performance metrics ----
+        // Deliberately excludes body weight and body-fat %: unlike a 40-yard dash time,
+        // they have no single "better" direction that's safe to grade — turning a
+        // teenage athlete's body weight into a pass/fail letter risks encouraging an
+        // unhealthy relationship with either number. Every metric below is a pure
+        // athletic-performance test instead.
+        //
+        // Anchor points are reasonable competitive high-school/youth-QB reference values,
+        // not an official or sport-science-sourced combine table — edit the numbers below
+        // freely to match your own benchmarks or your coach's standards.
+        const METRIC_GRADE_SCALES = {
+            '40-Yard Dash':            { direction: 'lower',  anchors: [[4.5, 99], [4.7, 90], [4.9, 80], [5.1, 70], [5.3, 60], [5.5, 50], [5.8, 40], [6.2, 30]] },
+            'Vertical Jump':           { direction: 'higher', anchors: [[35, 30], [42, 40], [50, 50], [58, 60], [65, 70], [75, 80], [85, 90], [95, 99]] },
+            'Broad Jump':              { direction: 'higher', anchors: [[170, 30], [190, 40], [210, 50], [230, 60], [250, 70], [270, 80], [290, 90], [310, 99]] },
+            '3-Cone Drill':            { direction: 'lower',  anchors: [[6.5, 99], [6.8, 90], [7.1, 80], [7.4, 70], [7.7, 60], [8.0, 50], [8.4, 40], [9.0, 30]] },
+            'Shuttle Run (5-10-5)':    { direction: 'lower',  anchors: [[4.0, 99], [4.2, 90], [4.4, 80], [4.6, 70], [4.8, 60], [5.0, 50], [5.3, 40], [5.7, 30]] },
+            'Bench Press Max':         { direction: 'higher', anchors: [[35, 30], [45, 40], [55, 50], [65, 60], [75, 70], [90, 80], [105, 90], [120, 99]] },
+            'Squat Max':               { direction: 'higher', anchors: [[60, 30], [75, 40], [90, 50], [105, 60], [120, 70], [140, 80], [160, 90], [180, 99]] },
+            'עוצמת זריקה (Radar Gun)': { direction: 'higher', anchors: [[60, 30], [68, 40], [75, 50], [80, 60], [85, 70], [92, 80], [98, 90], [105, 99]] }
+        };
+
+        function gradeFor(v) {
+            if (v >= 95) return { l: 'A+', c: '#34d399' };
+            if (v >= 90) return { l: 'A', c: '#34d399' };
+            if (v >= 85) return { l: 'A-', c: '#4ade80' };
+            if (v >= 80) return { l: 'B+', c: '#a3e635' };
+            if (v >= 75) return { l: 'B', c: '#a3e635' };
+            if (v >= 70) return { l: 'B-', c: '#facc15' };
+            if (v >= 65) return { l: 'C+', c: '#facc15' };
+            if (v >= 60) return { l: 'C', c: '#fb923c' };
+            if (v >= 55) return { l: 'C-', c: '#fb923c' };
+            if (v >= 50) return { l: 'D+', c: '#f87171' };
+            if (v >= 45) return { l: 'D', c: '#f87171' };
+            if (v >= 40) return { l: 'D-', c: '#f87171' };
+            return { l: 'F', c: '#ef4444' };
+        }
+        function gradeBadgeHtml(v, size) {
+            const g = gradeFor(v);
+            const sz = size === 'sm' ? 'text-[9px] px-1.5 py-0.5' : 'text-xs px-2 py-0.5';
+            return `<span class="${sz} rounded-full font-black border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l}</span>`;
+        }
+        // Piecewise-linear interpolation between the anchor points above; clamps to the
+        // best/worst defined anchor rather than extrapolating past it.
+        function interpolateScore(value, scale) {
+            const pts = [...scale.anchors].sort((a, b) => a[0] - b[0]); // ascending by raw value
+            if (value <= pts[0][0]) return pts[0][1];
+            if (value >= pts[pts.length - 1][0]) return pts[pts.length - 1][1];
+            for (let i = 0; i < pts.length - 1; i++) {
+                const [v0, s0] = pts[i], [v1, s1] = pts[i + 1];
+                if (value >= v0 && value <= v1) return s0 + (s1 - s0) * ((value - v0) / (v1 - v0));
+            }
+            return pts[pts.length - 1][1];
+        }
+        // Returns a ready badge for a metric name + raw value, or '' if that metric isn't graded.
+        function metricGradeBadge(name, value, size) {
+            const scale = METRIC_GRADE_SCALES[name];
+            if (!scale || isNaN(value)) return '';
+            const score = interpolateScore(parseFloat(value), scale);
+            return gradeBadgeHtml(score, size);
+        }
 
         const MADDEN_METRICS = [
             { name: 'Madden: עוצמת זרוע (THP)', unit: 'דירוג 0-99', short: 'THP' },
@@ -747,6 +809,7 @@
                     <td class="py-1.5 px-2 text-white font-medium">${e.name}</td>
                     <td class="py-1.5 px-2 text-cyan-300 font-bold">${e.value}</td>
                     <td class="py-1.5 px-2 text-slate-400">${e.unit || ''}</td>
+                    <td class="py-1.5 px-2">${metricGradeBadge(e.name, e.value) || '<span class="text-slate-600">—</span>'}</td>
                     <td class="py-1.5 px-2 text-left">
                         <button onclick="deleteEntry('${e.date}', ${e._idx})" class="text-rose-400 hover:text-rose-300 text-[11px]">מחק</button>
                     </td>
@@ -801,9 +864,10 @@
             }
             container.innerHTML = entries.map((e, idx) => `
                 <div class="flex justify-between items-center bg-slate-800/80 border border-slate-700 rounded-lg p-2.5">
-                    <div>
+                    <div class="flex items-center gap-2">
                         <span class="text-sm font-bold text-white">${e.name}</span>
-                        <span class="text-cyan-300 font-bold text-sm mr-2">${e.value} ${e.unit || ''}</span>
+                        <span class="text-cyan-300 font-bold text-sm">${e.value} ${e.unit || ''}</span>
+                        ${metricGradeBadge(e.name, e.value, 'sm')}
                     </div>
                     <button onclick="deleteEntry('${selectedDateStr}', ${idx})" class="text-rose-400 hover:text-rose-300 text-xs">מחק</button>
                 </div>
@@ -919,9 +983,9 @@
                 const entries = allEntries.filter(e => e.name === name).sort((a, b) => a.date.localeCompare(b.date));
                 const last = entries[entries.length - 1];
                 const first = entries[0];
-                return `<tr><td>${name}</td><td><strong>${last.value} ${last.unit || ''}</strong></td><td>${last.date}</td><td>${entries.length > 1 ? trendArrow(first.value, last.value) : '—'}</td></tr>`;
+                return `<tr><td>${name}</td><td><strong>${last.value} ${last.unit || ''}</strong></td><td>${last.date}</td><td>${entries.length > 1 ? trendArrow(first.value, last.value) : '—'}</td><td>${metricGradeBadge(name, last.value) || '—'}</td></tr>`;
             }).join('');
-            document.getElementById('printMetricsTable').innerHTML = rows || `<tr><td colspan="4" style="text-align:center; color:#94a3b8;">אין עדיין רישומים.</td></tr>`;
+            document.getElementById('printMetricsTable').innerHTML = rows || `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">אין עדיין רישומים.</td></tr>`;
 
             // Workout section (uses calendarDataCache if available)
             const calData = calendarDataCache;
