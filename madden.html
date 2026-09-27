@@ -247,6 +247,22 @@
             renderMaddenCategories();
         }
 
+
+        const SELFASSESS_KEY = 'qbmc_madden_selfassessment';
+        function saveSelfAssessment() {
+            const data = {};
+            MADDEN_CATEGORIES.forEach(cat => { data[cat.key] = {}; cat.subs.forEach(m => data[cat.key][m.id] = m.value); });
+            try { localStorage.setItem(SELFASSESS_KEY, JSON.stringify(data)); } catch (e) {}
+        }
+        function loadSelfAssessment() {
+            let data = {};
+            try { data = JSON.parse(localStorage.getItem(SELFASSESS_KEY)) || {}; } catch (e) {}
+            MADDEN_CATEGORIES.forEach(cat => {
+                if (!data[cat.key]) return;
+                cat.subs.forEach(m => { if (data[cat.key][m.id] != null) m.value = data[cat.key][m.id]; });
+            });
+        }
+
         function onSubMetricInput(catKey, subId, rawValue) {
             const cat = MADDEN_CATEGORIES.find(c => c.key === catKey);
             const sub = cat.subs.find(m => m.id === subId);
@@ -263,6 +279,7 @@
             document.getElementById(`catBadge_${catKey}`).innerHTML = gradeBadge(val);
 
             updateQbCard();   // OVR badge + radar chart
+            saveSelfAssessment();
         }
 
         // ---- Loading real Madden ratings from the metrics.html dataset ----
@@ -304,7 +321,7 @@
                     if (latest[name].date > mostRecentDate) mostRecentDate = latest[name].date;
                 }
             });
-            if (count > 0) { renderMaddenCategories(); updateQbCard(); }
+            if (count > 0) { renderMaddenCategories(); updateQbCard(); saveSelfAssessment(); }
             return { count, mostRecentDate };
         }
 
@@ -373,12 +390,22 @@
                 qbChartInstance.data.datasets[0].data = ['THP', 'SAC', 'MAC', 'DAC', 'AWR', 'RLS', 'RUN'].map(k => Math.round(values[k]));
                 qbChartInstance.update();
             }
+
+            // Persist the already-computed numbers (not just the raw sliders) so other
+            // pages — the player card on player.html — can show the exact same OVR and
+            // category scores without duplicating this weighting formula themselves.
+            try {
+                const rounded = {};
+                Object.keys(values).forEach(k => rounded[k] = Math.round(values[k]));
+                localStorage.setItem('qbmc_madden_computed', JSON.stringify({ categories: rounded, ovr, updatedAt: new Date().toISOString().slice(0, 10) }));
+            } catch (e) {}
         }
 
 
 
         window.addEventListener('DOMContentLoaded', () => {
 
+            loadSelfAssessment();
             renderMaddenCategories();
 
             const qbRatingCtx = document.getElementById('qbRatingChart').getContext('2d');

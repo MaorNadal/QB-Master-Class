@@ -162,6 +162,17 @@
                         </h4>
                         <div id="covConceptsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"></div>
                     </div>
+
+                    <div class="bg-slate-800/90 border border-orange-500/40 p-4 rounded-xl">
+                        <h4 class="font-bold text-orange-400 text-sm mb-2 flex items-center gap-1">
+                            <span>🛡️</span> Protection — קריאת לחץ ותגובה
+                        </h4>
+                        <div class="space-y-2 text-xs text-slate-300 leading-relaxed">
+                            <div><span class="font-bold text-orange-300">איפה הסכנה: </span><span id="covProtThreat"></span></div>
+                            <div><span class="font-bold text-orange-300">Protection מומלץ: </span><span id="covProtScheme"></span></div>
+                            <div><span class="font-bold text-orange-300">Hot Route: </span><span id="covProtHot"></span></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -490,6 +501,11 @@
                     { title: 'Quick Slants (Route 2)', desc: 'מסירה מהירה של 3 יארד לרסיבר שחותך בפנים.' },
                     { title: 'RB / WR Screen', desc: 'תן ל-Blitz לעבור מעליך ומסור מאחורי הפורצים.' }
                 ],
+                protection: {
+                    threat: 'בליץ מוחלט — לרוב 6 או יותר פורצים, ובלי שום Safety עמוק לעזרה.',
+                    scheme: 'Max Protect (7-8 חוסמים) — כמעט תמיד נשאר רק 1-2 רסיברים בקריאה.',
+                    hot: 'RB/TE חייבים לבדוק בליץ לפני שהם יוצאים למסלול (Check Release) — אין זמן להמתין.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -523,6 +539,11 @@
                     { title: 'Mesh Concept', desc: 'שני רסיברים חוצים מקרוב ויוצרים Pick/Rub.' },
                     { title: 'Out Routes & Comebacks', desc: 'חיתוך חצי לקו השדרה.' }
                 ],
+                protection: {
+                    threat: 'ה-LB שלא בשמירה אישית פנוי לבליץ, ולפעמים גם Safety נוסף.',
+                    scheme: 'BOB (Big-On-Big) עם ה-RB בודק את הפורץ הפנוי.',
+                    hot: 'מול בליץ נוסף, Hot Route לצד שממנו מגיע השחקן הפנוי.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -555,6 +576,11 @@
                     { title: 'Smash Concept (5+1)', desc: 'Hitch קצר + Corner route ל-Honey Hole.' },
                     { title: 'Four Verticals', desc: '4 רסיברים עמוקים; תוקף את התפרים והאמצע.' }
                 ],
+                protection: {
+                    threat: 'לרוב 4 פורצים בלבד — לחץ נמוך יחסית, שמרנית.',
+                    scheme: 'Standard 5-Man Slide מספיק כמעט תמיד.',
+                    hot: 'אין צורך בהתאמה קבועה, אך שים לב ל-Corner Blitz מהיציאה.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -586,6 +612,11 @@
                     { title: 'Texas Concept / Shallow Cross', desc: 'חיתוך קצר של RB או WR לשטח שה-MLB נטש.' },
                     { title: 'Levels Concept', desc: 'שני נתיבי In בעומקים שונים המעמיסים על ה-Linebackers.' }
                 ],
+                protection: {
+                    threat: 'ה-MIKE נסוג עמוק למרכז, ולכן לרוב רק 4 פורצים.',
+                    scheme: 'Standard Slide — שים לב ל-Edge Rusher מהצד.',
+                    hot: 'לא נדרש Hot Route קבוע מול המבנה הבסיסי.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -614,6 +645,11 @@
                     { title: 'Crossing Routes / Mesh', desc: 'חיתוכים אופקיים רחבים שמוציאים את ה-DB מאיזון.' },
                     { title: 'QB Scramble / Draw', desc: 'בריחה מה-Pocket כשגב ה-DBs מופנה אליך.' }
                 ],
+                protection: {
+                    threat: '4 פורצים ברוב המקרים, לפעמים 5 עם Slot Blitz.',
+                    scheme: 'BOB Standard.',
+                    hot: 'בדוק תמיד Slot Corner Blitz — נפוץ מול המבנה הזה.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -640,6 +676,11 @@
                     { title: 'Flood Concept', desc: '3 רסיברים באותו צד: Deep Fade, Medium Out, Short Flat.' },
                     { title: 'Curl-Flat Concept', desc: 'Curl ב-10 יארד + Flat קצר.' }
                 ],
+                protection: {
+                    threat: '4 פורצים בדרך כלל — הגנה שמרנית מאחור.',
+                    scheme: 'Standard 5-Man Slide.',
+                    hot: 'אין התאמה קבועה נדרשת.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -666,6 +707,11 @@
                     { title: 'Out-and-Up / Pump Fake', desc: 'הטעיית Out וחיתוך אנכי עמוק.' },
                     { title: 'Switch Routes', desc: 'החלפת מסלולים בין WR ל-TE להורסת ה-Match.' }
                 ],
+                protection: {
+                    threat: '4 פורצים, דומה ל-Cover 3 רגיל מבחינת הרשע.',
+                    scheme: 'Standard 5-Man Slide.',
+                    hot: 'אין התאמה קבועה נדרשת.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -692,6 +738,11 @@
                     { title: 'Dagger Concept (6+8)', desc: 'Clear-out Fade + Dig route עמוק לרווח.' },
                     { title: 'Drive Concept', desc: 'Shallow Drag מתחת + In route בינוני.' }
                 ],
+                protection: {
+                    threat: 'רוב הזמן 4 פורצים בלבד — מבנה שמרני שמעדיף כיסוי על לחץ.',
+                    scheme: 'Standard BOB.',
+                    hot: 'אין התאמה קבועה נדרשת.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -717,6 +768,11 @@
                     { title: 'Slot Seam / Wheel', desc: 'מסירה עמוקה בתפר ל-Slot Receiver.' },
                     { title: 'Post-Corner Combo', desc: 'סיבוב ה-Safety במרכז המגרש.' }
                 ],
+                protection: {
+                    threat: '4 פורצים, עם דגש הגנתי על הקריאה החיצונית ולא על הלחץ.',
+                    scheme: 'Standard BOB.',
+                    hot: 'אין התאמה קבועה נדרשת.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -743,6 +799,11 @@
                     { title: 'Boundary Smash', desc: 'תקיפת צד ה-Cover 2 הצר.' },
                     { title: 'Field Flood', desc: 'עומס אופקי בצד ה-Cover 4.' }
                 ],
+                protection: {
+                    threat: 'תלוי בצד השדה — הצד עם ה-Cover 2 עלול להוסיף בליץ פינתי.',
+                    scheme: 'קרא קודם Field/Boundary, ואז Slide לכיוון הצד החלש.',
+                    hot: 'שים לב לצד ה-Cover 2 (בדרך כלל הצד הקצר).'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -769,6 +830,11 @@
                     { title: 'Hot Slant to Blitz Side', desc: 'מסירה מהירה ישירות לחלל ה-Blitz.' },
                     { title: 'Quick Out / Flat', desc: 'ניצול חוסר במגינים נמוכים.' }
                 ],
+                protection: {
+                    threat: 'בליץ מתוזמן של 5 — LB/DB נוסף פורץ בעוד לינמן אחד נסוג לכיסוי, מה שמקשה לזהות מראש מי בדיוק פורץ.',
+                    scheme: 'Man Protection עם RB Check — קשה לתכנן Slide כי הזהות של הפורצים מוסתרת.',
+                    hot: 'Hot Route מהיר חובה. כל המבנה הזה נועד לבלבל ולגרום ל-Sack.'
+                },
                 draw: function(ctx, w, h) {
                     drawFieldBase(ctx, w, h);
                     drawOffenseSet(ctx, w, h);
@@ -1999,6 +2065,10 @@
                     <div class="text-slate-300 text-[11px] mt-0.5">${c.desc}</div>
                 </div>
             `).join('');
+
+            document.getElementById('covProtThreat').innerText = data.protection.threat;
+            document.getElementById('covProtScheme').innerText = data.protection.scheme;
+            document.getElementById('covProtHot').innerText = data.protection.hot;
 
             const canvas = document.getElementById('fieldBoardCanvas');
             const ctx = canvas.getContext('2d');

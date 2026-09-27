@@ -45,6 +45,8 @@
                     </label>
                     <button onclick="removePlayerPhoto()" class="no-print text-[10px] text-rose-400 hover:text-rose-300 mt-2">הסר תמונה</button>
                     <p class="text-[9px] text-slate-500 mt-2">התמונה נדחסת אוטומטית ונשמרת רק במכשיר הזה.</p>
+
+                    <div id="playerCard" class="w-full mt-4 rounded-2xl overflow-hidden border border-sky-500/40 shadow-lg shadow-sky-950/40"></div>
                 </div>
 
                 <div class="lg:col-span-3 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
@@ -98,13 +100,26 @@
         <section id="player-status">
             <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">📋 מצב קבוצתי נוכחי</h2>
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                <div><label class="block text-slate-400 mb-1">קבוצה נוכחית</label><input id="sTeam" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400"></div>
+                <div>
+                    <label class="block text-slate-400 mb-1">קבוצה נוכחית</label>
+                    <div class="flex items-center gap-2">
+                        <input id="sTeam" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+                        <div id="currentTeamLogoPreview" class="w-9 h-9 shrink-0 rounded-lg bg-slate-900 border border-slate-600 flex items-center justify-center overflow-hidden text-sm">🏳️</div>
+                        <label class="no-print text-[10px] px-2 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white cursor-pointer shrink-0">📷
+                            <input type="file" accept="image/*" onchange="handleTeamLogoUpload(event, document.getElementById('sTeam').value)" class="hidden">
+                        </label>
+                    </div>
+                </div>
                 <div><label class="block text-slate-400 mb-1">ליגה / חטיבה</label><input id="sLeague" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400"></div>
                 <div><label class="block text-slate-400 mb-1">עונה נוכחית</label><input id="sSeason" placeholder="לדוגמה: 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400"></div>
                 <div class="md:col-span-3"><label class="block text-slate-400 mb-1">סטטוס (פציעה, תפקיד בהרכב וכו')</label><input id="sStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400"></div>
                 <div class="md:col-span-3 no-print flex justify-end">
                     <button onclick="saveTeamStatus()" class="text-xs font-bold px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition">💾 שמור סטטוס</button>
                     <span id="teamStatusSaved" class="text-[11px] text-emerald-400 mr-3 self-center hidden">✅ נשמר</span>
+                </div>
+                <div class="md:col-span-3 border-t border-slate-800 pt-3 mt-1">
+                    <div class="text-[10px] text-slate-500 mb-2">לוגואים לפי שם קבוצה — נטען אוטומטית לכל מקום שבו אותו שם קבוצה מופיע (סטטיסטיקות קריירה, סטטיסטיקות משחק).</div>
+                    <div id="teamLogoManager" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
         </section>
@@ -132,9 +147,16 @@
         <section id="player-game-stats">
             <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">📊 סטטיסטיקות משחק</h2>
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
-                <div class="no-print grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-xs">
+                <div class="no-print grid grid-cols-2 md:grid-cols-6 gap-2 mb-3 text-xs">
                     <input id="gsGame" placeholder="משחק / יריבה" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <input id="gsTeam" placeholder="הקבוצה שלנו" list="teamNamesList" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <datalist id="teamNamesList"></datalist>
                     <input id="gsDate" type="date" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <select id="gsOutcome" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                        <option value="">תוצאה — ?</option><option value="W">ניצחון (W)</option><option value="L">הפסד (L)</option><option value="T">תיקו (T)</option>
+                    </select>
+                    <input id="gsScoreUs" type="number" min="0" placeholder="הקבוצה שלנו" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                    <input id="gsScoreThem" type="number" min="0" placeholder="היריבה" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
                 </div>
                 <div class="no-print grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                     <div class="bg-slate-900/70 border border-slate-700 rounded-lg p-3">
@@ -174,15 +196,8 @@
                 </div>
                 <button onclick="addGameStat()" class="no-print w-full px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition text-xs mb-4">➕ הוסף שורת סטטיסטיקה</button>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-[11px] text-right">
-                        <thead><tr class="text-slate-400 border-b border-slate-700">
-                            <th class="p-2">תאריך</th><th class="p-2">משחק</th><th class="p-2">מסירות</th><th class="p-2">ריצה</th><th class="p-2">תפיסה</th><th class="p-2">הגנה</th><th class="p-2 no-print"></th>
-                        </tr></thead>
-                        <tbody id="gameStatsTableBody"></tbody>
-                    </table>
-                    <p id="gameStatsEmptyMsg" class="text-slate-500 text-xs text-center py-4 hidden">עדיין לא נוספה סטטיסטיקת משחק.</p>
-                </div>
+                <div id="gameStatsList" class="space-y-2"></div>
+                <p id="gameStatsEmptyMsg" class="text-slate-500 text-xs text-center py-4 hidden">עדיין לא נוספה סטטיסטיקת משחק.</p>
             </div>
         </section>
 
@@ -197,10 +212,11 @@
                     <input id="cStats" placeholder="סטטיסטיקה עיקרית" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
                     <button onclick="addCareerRow()" class="text-xs font-bold px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white transition">➕ הוסף שורה</button>
                 </div>
+                <button onclick="syncCareerFromGameStats()" class="no-print w-full px-4 py-2 mb-4 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white font-bold rounded-lg transition text-xs">🔄 עדכן שורות אוטומטיות מתוך סטטיסטיקות משחק</button>
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs text-right">
                         <thead><tr class="text-slate-400 border-b border-slate-700">
-                            <th class="p-2">עונה</th><th class="p-2">קבוצה</th><th class="p-2">עמדה</th><th class="p-2">משחקים</th><th class="p-2">סטטיסטיקה</th><th class="p-2 no-print"></th>
+                            <th class="p-2">עונה</th><th class="p-2">קבוצה</th><th class="p-2">עמדה</th><th class="p-2">משחקים</th><th class="p-2">סטטיסטיקה</th><th class="p-2">דירוג</th><th class="p-2 no-print"></th>
                         </tr></thead>
                         <tbody id="careerTableBody"></tbody>
                     </table>
@@ -301,6 +317,7 @@
                     const profile = loadProfile();
                     profile.photo = dataUrl;
                     localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+                    renderPlayerCard();
                 };
                 img.src = e.target.result;
             };
@@ -311,6 +328,7 @@
             const profile = loadProfile();
             delete profile.photo;
             localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+            renderPlayerCard();
         }
 
 
@@ -342,6 +360,55 @@
             document.getElementById('pWeight').value = value;
         }
 
+
+        // ---- Designed player card, below the photo — pulls the player's own saved
+        // details plus the exact OVR/category numbers already computed and persisted by
+        // madden.html (qbmc_madden_computed), so this never shows a number that could
+        // drift from what the Madden page itself displays. ----
+        const CAT_LABELS = { THP: 'ARM', SAC: 'S-ACC', MAC: 'M-ACC', DAC: 'D-ACC', AWR: 'AWR', RLS: 'RLS', RUN: 'RUN' };
+        function renderPlayerCard() {
+            const p = loadProfile();
+            let status = {};
+            try { status = JSON.parse(localStorage.getItem(STATUS_KEY)) || {}; } catch (e) {}
+            let madden = null;
+            try { madden = JSON.parse(localStorage.getItem('qbmc_madden_computed')); } catch (e) {}
+
+            const photoTag = p.photo ? `<img src="${p.photo}" class="w-full h-full object-cover">` : `<span class="text-3xl">🏈</span>`;
+            const logoTag = teamLogoTag(status.team, 'w-6 h-6');
+            const ovrGrade = madden ? gradeFor(madden.ovr) : null;
+
+            document.getElementById('playerCard').innerHTML = `
+                <div class="bg-gradient-to-br from-sky-950 via-slate-900 to-slate-950 p-4 text-center relative">
+                    ${madden ? `<div class="absolute top-2 left-2 flex flex-col items-center">
+                        <div class="text-2xl font-black text-amber-300 leading-none">${madden.ovr}</div>
+                        <div class="text-[8px] font-bold text-amber-400/80">OVR</div>
+                    </div>` : ''}
+                    <div class="w-16 h-16 mx-auto rounded-xl bg-slate-800 border-2 border-sky-400/60 overflow-hidden flex items-center justify-center mb-2">${photoTag}</div>
+                    <div class="text-sm font-black text-white leading-tight">${escHtml(p.name) || 'שם השחקן'}</div>
+                    <div class="text-[10px] text-sky-300 font-bold">${escHtml(p.position || 'QB')}${p.jersey ? ` • #${escHtml(p.jersey)}` : ''}</div>
+                    <div class="flex items-center justify-center gap-1.5 mt-1 text-[10px] text-slate-400">
+                        ${logoTag}<span>${escHtml(status.team) || 'ללא קבוצה'}</span>
+                    </div>
+                    <div class="flex justify-center gap-3 mt-2 text-[9px] text-slate-500">
+                        ${p.height ? `<span>${escHtml(p.height)} ס"מ</span>` : ''}
+                        ${p.weight ? `<span>${escHtml(p.weight)} ק"ג</span>` : ''}
+                    </div>
+                </div>
+                ${madden ? `<div class="bg-slate-900 px-3 py-2 grid grid-cols-4 gap-1.5">
+                    ${Object.entries(CAT_LABELS).map(([key, label]) => {
+                        const val = madden.categories[key];
+                        const g = gradeFor(val);
+                        return `<div class="text-center">
+                            <div class="text-[10px] font-black" style="color:${g.c}">${val}</div>
+                            <div class="text-[7px] text-slate-500 font-bold">${label}</div>
+                        </div>`;
+                    }).join('')}
+                </div>
+                <div class="bg-slate-950 text-center py-1 text-[8px] text-slate-500 border-t border-slate-800">מבוסס על ${madden.updatedAt} • הערכה עצמית / דירוג מאמן</div>` :
+                `<div class="bg-slate-900 text-center py-2 text-[9px] text-slate-500">אין עדיין נתוני Madden — מלא ב"דירוג QB"</div>`}
+            `;
+        }
+
         function loadProfile() {
             try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || {}; } catch (e) { return {}; }
         }
@@ -368,6 +435,7 @@
             };
             localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
             flashSaved('playerDetailsStatus');
+            renderPlayerCard();
         }
         function renderPlayerDetails() {
             const p = loadProfile();
@@ -398,6 +466,8 @@
             };
             localStorage.setItem(STATUS_KEY, JSON.stringify(status));
             flashSaved('teamStatusSaved');
+            renderTeamLogoManager();
+            renderPlayerCard();
         }
         function renderTeamStatus() {
             let s = {};
@@ -406,6 +476,8 @@
             document.getElementById('sLeague').value = s.league || '';
             document.getElementById('sSeason').value = s.season || '';
             document.getElementById('sStatus').value = s.status || '';
+            const logoTag = teamLogoTag(s.team, 'w-full h-full');
+            document.getElementById('currentTeamLogoPreview').innerHTML = logoTag || '🏳️';
         }
 
 
@@ -449,6 +521,135 @@
         }
 
 
+        // ---- Letter grades (A+ to F) — same thresholds as everywhere else in the app ----
+        function gradeFor(v) {
+            if (v >= 95) return { l: 'A+', c: '#34d399' };
+            if (v >= 90) return { l: 'A', c: '#34d399' };
+            if (v >= 85) return { l: 'A-', c: '#4ade80' };
+            if (v >= 80) return { l: 'B+', c: '#a3e635' };
+            if (v >= 75) return { l: 'B', c: '#a3e635' };
+            if (v >= 70) return { l: 'B-', c: '#facc15' };
+            if (v >= 65) return { l: 'C+', c: '#facc15' };
+            if (v >= 60) return { l: 'C', c: '#fb923c' };
+            if (v >= 55) return { l: 'C-', c: '#fb923c' };
+            if (v >= 50) return { l: 'D+', c: '#f87171' };
+            if (v >= 45) return { l: 'D', c: '#f87171' };
+            if (v >= 40) return { l: 'D-', c: '#f87171' };
+            return { l: 'F', c: '#ef4444' };
+        }
+        function gradeBadgeHtml(v, size) {
+            const g = gradeFor(v);
+            const sz = size === 'sm' ? 'text-[9px] px-1.5 py-0.5' : 'text-xs px-2 py-0.5';
+            return `<span class="${sz} rounded-full font-black border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l}</span>`;
+        }
+        // A game/season grade is only as good as the stat categories it has data for — this
+        // is my own composite formula (not an official NFL/college passer rating), weighted
+        // toward whichever category actually has attempts, so a defense-only or rush-only
+        // game isn't unfairly judged by an empty passing line. Returns null when there is
+        // truly nothing to grade (matches the same neutral-state philosophy used for
+        // nutrition and physical metrics elsewhere in the app).
+        function statLineGrade(totals) {
+            const p = totals.pass, ru = totals.rush, re = totals.rec, d = totals.def;
+            if (p.att > 0) {
+                const compPct = (p.comp / p.att) * 100;
+                const ypa = p.yds / p.att;
+                let score = 70 + (compPct - 60) * 0.6 + (ypa - 7) * 3 + p.td * 4 - p.int * 6 - (p.sacked || 0) * 1.5;
+                return Math.max(0, Math.min(100, score));
+            }
+            if (ru.att > 0 || re.rec > 0) {
+                const ypc = ru.att ? ru.yds / ru.att : 0;
+                let score = 70 + (ypc - 4) * 4 + ru.td * 5 + re.rec * 1.5 + (re.rec ? (re.yds / re.rec - 8) * 2 : 0) + re.td * 5;
+                return Math.max(0, Math.min(100, score));
+            }
+            if (d.tackles > 0 || d.sacks > 0 || d.int > 0 || d.pbu > 0) {
+                let score = 70 + d.tackles * 2 + d.sacks * 6 + d.int * 10 + d.pbu * 4;
+                return Math.max(0, Math.min(100, score));
+            }
+            return null;
+        }
+        function sumTotals(rows) {
+            const t = { pass: { comp: 0, att: 0, yds: 0, td: 0, int: 0, sacked: 0 }, rush: { att: 0, yds: 0, td: 0 }, rec: { rec: 0, yds: 0, td: 0 }, def: { tackles: 0, sacks: 0, int: 0, pbu: 0 } };
+            rows.forEach(r => {
+                ['pass', 'rush', 'rec', 'def'].forEach(cat => {
+                    Object.keys(t[cat]).forEach(k => { t[cat][k] += (r[cat] && r[cat][k]) || 0; });
+                });
+            });
+            return t;
+        }
+
+        // ---- Team logos: shared by name across the whole page (status, career, game stats) ----
+        const TEAM_LOGOS_KEY = 'qbmc_team_logos';
+        function loadTeamLogos() { try { return JSON.parse(localStorage.getItem(TEAM_LOGOS_KEY)) || {}; } catch (e) { return {}; } }
+        function saveTeamLogos(logos) { try { localStorage.setItem(TEAM_LOGOS_KEY, JSON.stringify(logos)); } catch (e) {} }
+        function teamLogoTag(name, sizeClass) {
+            if (!name) return '';
+            const logos = loadTeamLogos();
+            return logos[name] ? `<img src="${logos[name]}" class="${sizeClass} rounded object-cover inline-block align-middle">` : '';
+        }
+        function compressTeamLogo(file, callback) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX = 96;
+                    const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(img.width * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    callback(canvas.toDataURL('image/png'));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        function handleTeamLogoUpload(event, teamName) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!teamName || !teamName.trim()) { alert('נא למלא קודם את שם הקבוצה.'); event.target.value = ''; return; }
+            compressTeamLogo(file, dataUrl => {
+                const logos = loadTeamLogos();
+                logos[teamName.trim()] = dataUrl;
+                saveTeamLogos(logos);
+                renderTeamLogoManager();
+                document.getElementById('currentTeamLogoPreview').innerHTML = `<img src="${dataUrl}" class="w-full h-full object-cover">`;
+                renderCareer(); renderGameStats();
+            });
+        }
+        function handleLogoManagerUpload(event, teamName) {
+            handleTeamLogoUpload(event, teamName);
+        }
+        function removeTeamLogo(teamName) {
+            const logos = loadTeamLogos();
+            delete logos[teamName];
+            saveTeamLogos(logos);
+            renderTeamLogoManager();
+            renderTeamStatus(); renderCareer(); renderGameStats();
+        }
+        function allKnownTeamNames() {
+            const names = new Set();
+            let status = {};
+            try { status = JSON.parse(localStorage.getItem(STATUS_KEY)) || {}; } catch (e) {}
+            if (status.team) names.add(status.team);
+            loadCareer().forEach(r => { if (r.team) names.add(r.team); });
+            loadGameStats().forEach(r => { if (r.team) names.add(r.team); });
+            return [...names];
+        }
+        function renderTeamLogoManager() {
+            const names = allKnownTeamNames();
+            const logos = loadTeamLogos();
+            const container = document.getElementById('teamLogoManager');
+            if (!names.length) { container.innerHTML = `<span class="text-[10px] text-slate-500">אין עדיין שמות קבוצות שמורים.</span>`; return; }
+            container.innerHTML = names.map(name => `
+                <div class="flex items-center gap-1.5 bg-slate-900/70 border border-slate-700 rounded-lg px-2 py-1.5">
+                    <div class="w-6 h-6 rounded bg-slate-800 flex items-center justify-center overflow-hidden text-[10px]">${teamLogoTag(name, 'w-6 h-6') || '🏳️'}</div>
+                    <span class="text-[10px] text-slate-300">${escHtml(name)}</span>
+                    <label class="no-print text-[9px] text-sky-400 hover:underline cursor-pointer">שנה<input type="file" accept="image/*" onchange="handleLogoManagerUpload(event, '${name.replace(/'/g, "\\\\'")}')" class="hidden"></label>
+                    ${logos[name] ? `<button onclick="removeTeamLogo('${name.replace(/'/g, "\\\\'")}')" class="no-print text-[9px] text-rose-400 hover:underline">הסר</button>` : ''}
+                </div>`).join('');
+            document.getElementById('teamNamesList').innerHTML = names.map(n => `<option value="${n}"></option>`).join('');
+        }
+
         // ---- Per-game stat lines ----
         const GAME_STATS_KEY = 'qbmc_player_game_stats';
         function loadGameStats() {
@@ -461,6 +662,10 @@
             const row = {
                 date: document.getElementById('gsDate').value || todayStrPlayer(),
                 game,
+                team: document.getElementById('gsTeam').value.trim(),
+                outcome: document.getElementById('gsOutcome').value,
+                scoreUs: numOrNull('gsScoreUs'),
+                scoreThem: numOrNull('gsScoreThem'),
                 pass: { comp: numOrNull('gsPassComp'), att: numOrNull('gsPassAtt'), yds: numOrNull('gsPassYds'), td: numOrNull('gsPassTD'), int: numOrNull('gsPassInt'), sacked: numOrNull('gsSacked') },
                 rush: { att: numOrNull('gsRushAtt'), yds: numOrNull('gsRushYds'), td: numOrNull('gsRushTD') },
                 rec: { rec: numOrNull('gsRecRec'), yds: numOrNull('gsRecYds'), td: numOrNull('gsRecTD') },
@@ -470,9 +675,11 @@
             rows.push(row);
             rows.sort((a, b) => String(b.date).localeCompare(String(a.date)));
             localStorage.setItem(GAME_STATS_KEY, JSON.stringify(rows));
-            ['gsGame','gsPassComp','gsPassAtt','gsPassYds','gsPassTD','gsPassInt','gsSacked','gsRushAtt','gsRushYds','gsRushTD','gsRecRec','gsRecYds','gsRecTD','gsTackles','gsSacksMade','gsIntMade','gsPBU']
+            ['gsGame','gsTeam','gsScoreUs','gsScoreThem','gsPassComp','gsPassAtt','gsPassYds','gsPassTD','gsPassInt','gsSacked','gsRushAtt','gsRushYds','gsRushTD','gsRecRec','gsRecYds','gsRecTD','gsTackles','gsSacksMade','gsIntMade','gsPBU']
                 .forEach(id => document.getElementById(id).value = '');
+            document.getElementById('gsOutcome').value = '';
             renderGameStats();
+            renderTeamLogoManager();
         }
         function deleteGameStat(idx) {
             const rows = loadGameStats();
@@ -480,25 +687,85 @@
             localStorage.setItem(GAME_STATS_KEY, JSON.stringify(rows));
             renderGameStats();
         }
-        function fmtLine(parts) {
+        function statRow(icon, color, parts) {
             const shown = parts.filter(p => p.v !== null && p.v !== undefined && p.v !== '');
-            return shown.length ? shown.map(p => `${p.v}${p.u}`).join(' ') : '—';
+            if (!shown.length) return '';
+            return `<div class="flex items-baseline gap-1.5 text-[11px]"><span class="w-16 shrink-0" style="color:${color}">${icon}</span><span class="text-slate-300">${shown.map(p => p.label ? `<span class="text-slate-500">${p.label}</span> ${p.v}` : p.v).join('&nbsp;&nbsp;·&nbsp;&nbsp;')}</span></div>`;
         }
         function renderGameStats() {
             const rows = loadGameStats();
             document.getElementById('gameStatsEmptyMsg').classList.toggle('hidden', rows.length > 0);
-            document.getElementById('gameStatsTableBody').innerHTML = rows.map((r, i) => `
-                <tr class="border-b border-slate-800/60">
-                    <td class="p-2 text-slate-400">${r.date}</td>
-                    <td class="p-2 text-white font-medium">${escHtml(r.game)}</td>
-                    <td class="p-2 text-amber-300">${fmtLine([{v:(r.pass.comp!=null||r.pass.att!=null)?(r.pass.comp ?? '?')+'/'+(r.pass.att ?? '?'):null,u:''},{v:r.pass.yds,u:' yds'},{v:r.pass.td!=null?r.pass.td+' TD':null,u:''},{v:r.pass.int!=null?r.pass.int+' INT':null,u:''}])}</td>
-                    <td class="p-2 text-emerald-300">${fmtLine([{v:r.rush.att!=null?r.rush.att+' att':null,u:''},{v:r.rush.yds,u:' yds'},{v:r.rush.td!=null?r.rush.td+' TD':null,u:''}])}</td>
-                    <td class="p-2 text-sky-300">${fmtLine([{v:r.rec.rec!=null?r.rec.rec+' rec':null,u:''},{v:r.rec.yds,u:' yds'},{v:r.rec.td!=null?r.rec.td+' TD':null,u:''}])}</td>
-                    <td class="p-2 text-rose-300">${fmtLine([{v:r.def.tackles!=null?r.def.tackles+' TKL':null,u:''},{v:r.def.sacks!=null?r.def.sacks+' SK':null,u:''},{v:r.def.int!=null?r.def.int+' INT':null,u:''},{v:r.def.pbu!=null?r.def.pbu+' PBU':null,u:''}])}</td>
-                    <td class="p-2 no-print"><button onclick="deleteGameStat(${i})" class="text-rose-400 hover:text-rose-300">✕</button></td>
-                </tr>`).join('');
+            document.getElementById('gameStatsList').innerHTML = rows.map((r, i) => {
+                const compPct = (r.pass.comp != null && r.pass.att) ? Math.round((r.pass.comp / r.pass.att) * 1000) / 10 : null;
+                const outcomeMeta = { W: { l: 'ניצחון', c: '#34d399' }, L: { l: 'הפסד', c: '#f87171' }, T: { l: 'תיקו', c: '#facc15' } }[r.outcome];
+                const grade = statLineGrade(r);
+                const passLine = statRow('🎯 מסירות', '#fbbf24', [
+                    { v: (r.pass.comp != null || r.pass.att != null) ? `${r.pass.comp ?? '?'}/${r.pass.att ?? '?'}${compPct != null ? ` (${compPct}%)` : ''}` : null },
+                    { v: r.pass.yds != null ? `${r.pass.yds} yds` : null },
+                    { v: r.pass.td != null ? `${r.pass.td} TD` : null },
+                    { v: r.pass.int != null ? `${r.pass.int} INT` : null },
+                    { v: r.pass.sacked != null ? `${r.pass.sacked} sacked` : null }
+                ]);
+                const rushLine = statRow('🏃 ריצה', '#34d399', [
+                    { v: r.rush.att != null ? `${r.rush.att} att` : null }, { v: r.rush.yds != null ? `${r.rush.yds} yds` : null }, { v: r.rush.td != null ? `${r.rush.td} TD` : null }
+                ]);
+                const recLine = statRow('🙌 תפיסה', '#38bdf8', [
+                    { v: r.rec.rec != null ? `${r.rec.rec} rec` : null }, { v: r.rec.yds != null ? `${r.rec.yds} yds` : null }, { v: r.rec.td != null ? `${r.rec.td} TD` : null }
+                ]);
+                const defLine = statRow('🛡️ הגנה', '#fb7185', [
+                    { v: r.def.tackles != null ? `${r.def.tackles} TKL` : null }, { v: r.def.sacks != null ? `${r.def.sacks} SK` : null }, { v: r.def.int != null ? `${r.def.int} INT` : null }, { v: r.def.pbu != null ? `${r.def.pbu} PBU` : null }
+                ]);
+                return `<div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            ${teamLogoTag(r.team, 'w-5 h-5')}
+                            <span class="text-xs font-bold text-white">${escHtml(r.game)}</span>
+                            <span class="text-slate-500 text-[10px]">${r.date}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            ${outcomeMeta ? `<span class="text-[10px] px-2 py-0.5 rounded-full font-bold border" style="color:${outcomeMeta.c};border-color:${outcomeMeta.c}55;background:${outcomeMeta.c}1a">${outcomeMeta.l}${r.scoreUs != null && r.scoreThem != null ? ` ${r.scoreUs}-${r.scoreThem}` : ''}</span>` : ''}
+                            ${grade != null ? gradeBadgeHtml(grade) : ''}
+                            <button onclick="deleteGameStat(${i})" class="no-print text-rose-400 hover:text-rose-300 text-[11px]">✕</button>
+                        </div>
+                    </div>
+                    <div class="space-y-1">${passLine}${rushLine}${recLine}${defLine}${!passLine && !rushLine && !recLine && !defLine ? '<p class="text-slate-500 text-[11px]">לא הוזנו נתונים סטטיסטיים.</p>' : ''}</div>
+                </div>`;
+            }).join('');
         }
         function todayStrPlayer() { return new Date().toISOString().slice(0, 10); }
+
+        // ---- Career auto-sync from game stats ----
+        // Groups logged games by (year, team) and upserts an auto-generated career row for
+        // each group. Rows this generates are marked auto:true so a re-run always replaces
+        // them cleanly; manually-typed career rows (no auto flag) are never touched.
+        function syncCareerFromGameStats() {
+            const games = loadGameStats();
+            if (!games.length) { alert('אין עדיין סטטיסטיקות משחק לחשב מהן.'); return; }
+            const groups = {};
+            games.forEach(r => {
+                const year = (r.date || '').slice(0, 4) || '—';
+                const team = r.team || '(קבוצה לא צוינה)';
+                const key = year + '|' + team;
+                if (!groups[key]) groups[key] = { year, team, rows: [] };
+                groups[key].rows.push(r);
+            });
+            let career = loadCareer().filter(row => !row.auto);
+            Object.values(groups).forEach(g => {
+                const t = sumTotals(g.rows);
+                const parts = [];
+                if (t.pass.att) parts.push(`${t.pass.comp}/${t.pass.att} (${Math.round(t.pass.comp / t.pass.att * 1000) / 10}%) · ${t.pass.yds} pass yds · ${t.pass.td} TD · ${t.pass.int} INT`);
+                if (t.rush.att) parts.push(`${t.rush.yds} rush yds · ${t.rush.td} rush TD`);
+                if (t.rec.rec) parts.push(`${t.rec.rec} rec · ${t.rec.yds} rec yds · ${t.rec.td} rec TD`);
+                if (t.def.tackles || t.def.sacks || t.def.int || t.def.pbu) parts.push(`${t.def.tackles} TKL · ${t.def.sacks} SK · ${t.def.int} INT · ${t.def.pbu} PBU`);
+                const wins = g.rows.filter(r => r.outcome === 'W').length;
+                const losses = g.rows.filter(r => r.outcome === 'L').length;
+                const record = (wins || losses) ? ` · שיא ${wins}-${losses}` : '';
+                career.push({ year: g.year, team: g.team, position: '', games: String(g.rows.length), stats: (parts.join(' · ') || 'אין נתונים') + record, auto: true });
+            });
+            career.sort((a, b) => String(b.year).localeCompare(String(a.year)));
+            localStorage.setItem(CAREER_KEY, JSON.stringify(career));
+            renderCareer();
+        }
 
         // ---- Highlight links ----
         const HIGHLIGHTS_KEY = 'qbmc_player_highlights';
@@ -619,18 +886,27 @@
             localStorage.setItem(CAREER_KEY, JSON.stringify(rows));
             renderCareer();
         }
+        function seasonGradeForRow(row) {
+            const matching = loadGameStats().filter(g => (g.date || '').slice(0, 4) === String(row.year) && g.team === row.team);
+            if (!matching.length) return null;
+            return statLineGrade(sumTotals(matching));
+        }
         function renderCareer() {
             const rows = loadCareer();
             document.getElementById('careerEmptyMsg').classList.toggle('hidden', rows.length > 0);
-            document.getElementById('careerTableBody').innerHTML = rows.map((r, i) => `
-                <tr class="border-b border-slate-800/60">
+            document.getElementById('careerTableBody').innerHTML = rows.map((r, i) => {
+                const grade = seasonGradeForRow(r);
+                return `
+                <tr class="border-b border-slate-800/60 ${r.auto ? 'bg-slate-800/20' : ''}">
                     <td class="p-2 text-slate-200">${escHtml(r.year)}</td>
-                    <td class="p-2 text-slate-200">${escHtml(r.team)}</td>
+                    <td class="p-2 text-slate-200"><span class="inline-flex items-center gap-1.5">${teamLogoTag(r.team, 'w-4 h-4')}${escHtml(r.team)}${r.auto ? '<span class="text-[8px] text-slate-500" title="חושב אוטומטית מסטטיסטיקות משחק">🔄</span>' : ''}</span></td>
                     <td class="p-2 text-slate-400">${escHtml(r.position) || '—'}</td>
                     <td class="p-2 text-slate-400">${escHtml(r.games) || '—'}</td>
                     <td class="p-2 text-slate-400">${escHtml(r.stats) || '—'}</td>
+                    <td class="p-2">${grade != null ? gradeBadgeHtml(grade, 'sm') : '<span class="text-slate-600">—</span>'}</td>
                     <td class="p-2 no-print"><button onclick="deleteCareerRow(${i})" class="text-rose-400 hover:text-rose-300">✕</button></td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
         }
 
         function loadAchievements() {
@@ -668,6 +944,7 @@
             renderPlayerDetails();
             renderWeightHint();
             renderTeamStatus();
+            renderTeamLogoManager();
             renderStaff();
             renderCareer();
             renderGameStats();
@@ -675,6 +952,7 @@
             renderGoals();
             renderEquipment();
             renderAchievements();
+            renderPlayerCard();
         });
     </script>
 </body>
