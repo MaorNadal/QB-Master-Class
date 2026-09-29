@@ -313,6 +313,43 @@
             { name: 'Madden: זריקה בתנועה (RUN)', unit: 'דירוג 0-99', short: 'RUN' }
         ];
         const MADDEN_OVR_NAME = 'Madden: OVR כללי (מהמאמן)';
+
+        // ---- Madden sub-metrics — loggable individually, same catKey/subId as madden.html's
+        // MADDEN_CATEGORIES, so a "Madden [CATKEY.subId]:" entry here can be matched back to
+        // the exact slider it belongs to (see madden.html's coach-data loader). The bracket
+        // tag is the stable machine key; the Hebrew after it is just for display in the list.
+        const MADDEN_SUBMETRICS = [
+            { cat: 'THP', catLabel: 'עוצמת זרוע', id: 'hipShoulder', label: 'הפרדת אגן-כתפיים' },
+            { cat: 'THP', catLabel: 'עוצמת זרוע', id: 'frontFoot', label: 'יציבות רגל קדמית בנחיתה' },
+            { cat: 'THP', catLabel: 'עוצמת זרוע', id: 'trunkTransfer', label: 'סיבוב גו והעברת משקל' },
+            { cat: 'THP', catLabel: 'עוצמת זרוע', id: 'elbowLag', label: 'עיכוב מרפק / שוט' },
+            { cat: 'THP', catLabel: 'עוצמת זרוע', id: 'followThrough', label: 'סיום תנועה מלא' },
+            { cat: 'SAC', catLabel: 'דיוק קצר', id: 'elbowAngle', label: 'זווית מרפק בשחרור (~90°)' },
+            { cat: 'SAC', catLabel: 'דיוק קצר', id: 'spiral', label: 'הידוק ספירלה' },
+            { cat: 'SAC', catLabel: 'דיוק קצר', id: 'ballPlacement', label: 'מיקום הכדור ביחס לרסיבר' },
+            { cat: 'SAC', catLabel: 'דיוק קצר', id: 'quickRhythm', label: 'תזמון במשחק המהיר (1/3-Step)' },
+            { cat: 'MAC', catLabel: 'דיוק בינוני', id: 'fiveStepFootwork', label: 'עבודת רגליים ב-5-Step Drop' },
+            { cat: 'MAC', catLabel: 'דיוק בינוני', id: 'touch', label: 'שליטה בקשת/גובה הזריקה (Touch)' },
+            { cat: 'MAC', catLabel: 'דיוק בינוני', id: 'leverageWindow', label: 'קריאת לברג׳ וזריקה לחלון פתוח' },
+            { cat: 'MAC', catLabel: 'דיוק בינוני', id: 'breakAnticipation', label: 'אנטיציפציה על שבירות מסלול' },
+            { cat: 'DAC', catLabel: 'דיוק עמוק', id: 'hipTorque', label: 'מומנטום ירך לזריקה ארוכה' },
+            { cat: 'DAC', catLabel: 'דיוק עמוק', id: 'arcJudgment', label: 'שיפוט מרחק/קשת (Touch vs Line Drive)' },
+            { cat: 'DAC', catLabel: 'דיוק עמוק', id: 'deepPlacement', label: 'מיקום כדור עמוק (Back-Shoulder/Streak)' },
+            { cat: 'DAC', catLabel: 'דיוק עמוק', id: 'legDrive', label: 'הנעת רגל תחתונה לתוך הזריקה' },
+            { cat: 'AWR', catLabel: 'תחושת כיס', id: 'preSnapRead', label: 'קריאה לפני ה-Snap' },
+            { cat: 'AWR', catLabel: 'תחושת כיס', id: 'pocketMovement', label: 'תנועה בכיס (טיפוס/נסיגה)' },
+            { cat: 'AWR', catLabel: 'תחושת כיס', id: 'eyesDownfield', label: 'עיניים קדימה בזמן תנועה' },
+            { cat: 'AWR', catLabel: 'תחושת כיס', id: 'blitzRecognition', label: 'זיהוי בליץ/Hot Route ושחרור מהיר' },
+            { cat: 'RLS', catLabel: 'מהירות שחרור', id: 'compactMotion', label: 'תנועת זריקה קומפקטית' },
+            { cat: 'RLS', catLabel: 'מהירות שחרור', id: 'handTransition', label: 'מעבר מתפיסה לזריקה' },
+            { cat: 'RLS', catLabel: 'מהירות שחרור', id: 'processingSpeed', label: 'מהירות עיבוד פרה-סנאפ עד שחרור' },
+            { cat: 'RUN', catLabel: 'ניידות וזריקה בתנועה', id: 'rollAccuracy', label: 'דיוק בזריקה תוך ריצה' },
+            { cat: 'RUN', catLabel: 'ניידות וזריקה בתנועה', id: 'hipAlignment', label: 'יישור ירכיים למטרה תוך תנועה' },
+            { cat: 'RUN', catLabel: 'ניידות וזריקה בתנועה', id: 'sprintOutMechanics', label: 'מכניקת Sprint-Out' },
+            { cat: 'RUN', catLabel: 'ניידות וזריקה בתנועה', id: 'scrambleDecision', label: 'החלטת ריצה מול זריקה ב-Scramble' }
+        ];
+        function madSubName(s) { return `Madden [${s.cat}.${s.id}]: ${s.label}`; }
+
         let maddenRadarInstance = null;
 
         let viewYear, viewMonth;
@@ -836,6 +873,8 @@
                 `<optgroup label="🎮 דירוג Madden (מהמאמן)">` +
                 MADDEN_METRICS.map(m => `<option value="${m.name}" data-unit="${m.unit}">${m.name}</option>`).join('') +
                 `<option value="${MADDEN_OVR_NAME}" data-unit="דירוג 0-99">${MADDEN_OVR_NAME}</option>` +
+                `</optgroup><optgroup label="🎮 Madden — תתי-מדדים (30-99)">` +
+                MADDEN_SUBMETRICS.map(s => `<option value="${madSubName(s)}" data-unit="דירוג 30-99">${s.catLabel} — ${s.label}</option>`).join('') +
                 `</optgroup>` +
                 `<optgroup label="🏋️ מדדים פיזיים נפוצים">` +
                 COMMON_METRICS.map(m => `<option value="${m.name}" data-unit="${m.unit}">${m.name}</option>`).join('') +

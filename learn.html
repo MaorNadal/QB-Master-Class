@@ -798,10 +798,11 @@
 
         function renderGlossaryTabs() {
             const container = document.getElementById('glossaryCategoryTabs');
-            let html = `<button onclick="filterGlossary('all')" id="glocat-all" class="glocat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-600 bg-slate-700 text-white transition">הכל</button>`;
+            let html = `<button onclick="filterGlossary('all')" id="glocat-all" class="glocat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-600 bg-slate-700 text-white transition">הכל (${GLOSSARY_DATABASE.length})</button>`;
             Object.keys(GLOSSARY_CATEGORY_META).forEach(c => {
                 const m = GLOSSARY_CATEGORY_META[c];
-                html += `<button onclick="filterGlossary('${c}')" id="glocat-${c}" class="glocat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition">${m.icon} ${m.label}</button>`;
+                const count = GLOSSARY_DATABASE.filter(g => g.category === c).length;
+                html += `<button onclick="filterGlossary('${c}')" id="glocat-${c}" class="glocat-btn px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition">${m.icon} ${m.label} (${count})</button>`;
             });
             container.innerHTML = html;
         }

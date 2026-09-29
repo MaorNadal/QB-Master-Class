@@ -147,16 +147,19 @@
         <section id="player-game-stats">
             <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-800 pb-2">📊 סטטיסטיקות משחק</h2>
             <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
-                <div class="no-print grid grid-cols-2 md:grid-cols-6 gap-2 mb-3 text-xs">
-                    <input id="gsGame" placeholder="משחק / יריבה" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
-                    <input id="gsTeam" placeholder="הקבוצה שלנו" list="teamNamesList" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
-                    <datalist id="teamNamesList"></datalist>
-                    <input id="gsDate" type="date" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
-                    <select id="gsOutcome" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
-                        <option value="">תוצאה — ?</option><option value="W">ניצחון (W)</option><option value="L">הפסד (L)</option><option value="T">תיקו (T)</option>
-                    </select>
-                    <input id="gsScoreUs" type="number" min="0" placeholder="הקבוצה שלנו" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
-                    <input id="gsScoreThem" type="number" min="0" placeholder="היריבה" class="bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                <div class="no-print grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-xs">
+                    <div><label class="block text-slate-500 mb-1">ליגה / מפעל</label><input id="gsLeague" placeholder="לדוגמה: ליגת העל" list="leagueNamesList" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400"><datalist id="leagueNamesList"></datalist></div>
+                    <div><label class="block text-slate-500 mb-1">קבוצה יריבה</label><input id="gsOpponent" placeholder="לדוגמה: מכבי תל אביב" list="opponentNamesList" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400"><datalist id="opponentNamesList"></datalist></div>
+                    <div><label class="block text-slate-500 mb-1">הקבוצה שלנו</label><input id="gsTeam" list="teamNamesList" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400"><datalist id="teamNamesList"></datalist></div>
+                    <div><label class="block text-slate-500 mb-1">מחזור</label><input id="gsRound" type="number" min="1" placeholder="לדוגמה: 5" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400"></div>
+                    <div><label class="block text-slate-500 mb-1">תאריך</label><input id="gsDate" type="date" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400"></div>
+                    <div><label class="block text-slate-500 mb-1">תוצאה</label>
+                        <select id="gsOutcome" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400">
+                            <option value="">— ?</option><option value="W">ניצחון (W)</option><option value="L">הפסד (L)</option><option value="T">תיקו (T)</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-slate-500 mb-1">תוצאת הקבוצה שלנו</label><input id="gsScoreUs" type="number" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400"></div>
+                    <div><label class="block text-slate-500 mb-1">תוצאת יריבה</label><input id="gsScoreThem" type="number" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-amber-400"></div>
                 </div>
                 <div class="no-print grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                     <div class="bg-slate-900/70 border border-slate-700 rounded-lg p-3">
@@ -657,11 +660,13 @@
         }
         function numOrNull(id) { const v = document.getElementById(id).value; return v === '' ? null : Number(v); }
         function addGameStat() {
-            const game = document.getElementById('gsGame').value.trim();
-            if (!game) { alert('נא למלא שם משחק/יריבה.'); return; }
+            const opponent = document.getElementById('gsOpponent').value.trim();
+            if (!opponent) { alert('נא למלא את שם הקבוצה היריבה.'); return; }
             const row = {
                 date: document.getElementById('gsDate').value || todayStrPlayer(),
-                game,
+                league: document.getElementById('gsLeague').value.trim(),
+                opponent,
+                round: document.getElementById('gsRound').value.trim(),
                 team: document.getElementById('gsTeam').value.trim(),
                 outcome: document.getElementById('gsOutcome').value,
                 scoreUs: numOrNull('gsScoreUs'),
@@ -675,11 +680,19 @@
             rows.push(row);
             rows.sort((a, b) => String(b.date).localeCompare(String(a.date)));
             localStorage.setItem(GAME_STATS_KEY, JSON.stringify(rows));
-            ['gsGame','gsTeam','gsScoreUs','gsScoreThem','gsPassComp','gsPassAtt','gsPassYds','gsPassTD','gsPassInt','gsSacked','gsRushAtt','gsRushYds','gsRushTD','gsRecRec','gsRecYds','gsRecTD','gsTackles','gsSacksMade','gsIntMade','gsPBU']
+            ['gsLeague','gsOpponent','gsRound','gsTeam','gsScoreUs','gsScoreThem','gsPassComp','gsPassAtt','gsPassYds','gsPassTD','gsPassInt','gsSacked','gsRushAtt','gsRushYds','gsRushTD','gsRecRec','gsRecYds','gsRecTD','gsTackles','gsSacksMade','gsIntMade','gsPBU']
                 .forEach(id => document.getElementById(id).value = '');
             document.getElementById('gsOutcome').value = '';
             renderGameStats();
             renderTeamLogoManager();
+            renderGameStatsDatalists();
+        }
+        function renderGameStatsDatalists() {
+            const rows = loadGameStats();
+            const leagues = [...new Set(rows.map(r => r.league).filter(Boolean))];
+            const opponents = [...new Set(rows.map(r => r.opponent).filter(Boolean))];
+            document.getElementById('leagueNamesList').innerHTML = leagues.map(l => `<option value="${l}"></option>`).join('');
+            document.getElementById('opponentNamesList').innerHTML = opponents.map(o => `<option value="${o}"></option>`).join('');
         }
         function deleteGameStat(idx) {
             const rows = loadGameStats();
@@ -687,10 +700,18 @@
             localStorage.setItem(GAME_STATS_KEY, JSON.stringify(rows));
             renderGameStats();
         }
-        function statRow(icon, color, parts) {
-            const shown = parts.filter(p => p.v !== null && p.v !== undefined && p.v !== '');
+        // Each stat becomes its own isolated chip (dir="ltr", nowrap) instead of one long
+        // joined string — mixing Hebrew labels/separators with English abbreviations and
+        // numbers in a single RTL-flowed string is what caused the garbled "yds" ordering
+        // and mid-token line wraps. Isolating each value's direction, and labeling every
+        // stat in Hebrew instead of "yds", fixes both problems at once.
+        function statChip(value, label) {
+            return `<span dir="ltr" class="inline-block whitespace-nowrap bg-slate-800/70 border border-slate-700/60 rounded px-1.5 py-0.5 text-[10px] text-slate-200">${value}${label ? ` <span class="text-slate-500">${label}</span>` : ''}</span>`;
+        }
+        function statRow(icon, color, chips) {
+            const shown = chips.filter(Boolean);
             if (!shown.length) return '';
-            return `<div class="flex items-baseline gap-1.5 text-[11px]"><span class="w-16 shrink-0" style="color:${color}">${icon}</span><span class="text-slate-300">${shown.map(p => p.label ? `<span class="text-slate-500">${p.label}</span> ${p.v}` : p.v).join('&nbsp;&nbsp;·&nbsp;&nbsp;')}</span></div>`;
+            return `<div class="flex flex-wrap items-center gap-1.5 text-[11px]"><span class="w-16 shrink-0 font-bold" style="color:${color}">${icon}</span>${shown.join('')}</div>`;
         }
         function renderGameStats() {
             const rows = loadGameStats();
@@ -700,35 +721,48 @@
                 const outcomeMeta = { W: { l: 'ניצחון', c: '#34d399' }, L: { l: 'הפסד', c: '#f87171' }, T: { l: 'תיקו', c: '#facc15' } }[r.outcome];
                 const grade = statLineGrade(r);
                 const passLine = statRow('🎯 מסירות', '#fbbf24', [
-                    { v: (r.pass.comp != null || r.pass.att != null) ? `${r.pass.comp ?? '?'}/${r.pass.att ?? '?'}${compPct != null ? ` (${compPct}%)` : ''}` : null },
-                    { v: r.pass.yds != null ? `${r.pass.yds} yds` : null },
-                    { v: r.pass.td != null ? `${r.pass.td} TD` : null },
-                    { v: r.pass.int != null ? `${r.pass.int} INT` : null },
-                    { v: r.pass.sacked != null ? `${r.pass.sacked} sacked` : null }
+                    (r.pass.comp != null || r.pass.att != null) ? statChip(`${r.pass.comp ?? '?'}/${r.pass.att ?? '?'}${compPct != null ? ` (${compPct}%)` : ''}`, 'השלמות') : '',
+                    r.pass.yds != null ? statChip(r.pass.yds, 'יארד') : '',
+                    r.pass.td != null ? statChip(r.pass.td, 'TD') : '',
+                    r.pass.int != null ? statChip(r.pass.int, 'INT') : '',
+                    r.pass.sacked != null ? statChip(r.pass.sacked, 'נספג') : ''
                 ]);
                 const rushLine = statRow('🏃 ריצה', '#34d399', [
-                    { v: r.rush.att != null ? `${r.rush.att} att` : null }, { v: r.rush.yds != null ? `${r.rush.yds} yds` : null }, { v: r.rush.td != null ? `${r.rush.td} TD` : null }
+                    r.rush.att != null ? statChip(r.rush.att, 'ניסיונות') : '',
+                    r.rush.yds != null ? statChip(r.rush.yds, 'יארד') : '',
+                    r.rush.td != null ? statChip(r.rush.td, 'TD') : ''
                 ]);
                 const recLine = statRow('🙌 תפיסה', '#38bdf8', [
-                    { v: r.rec.rec != null ? `${r.rec.rec} rec` : null }, { v: r.rec.yds != null ? `${r.rec.yds} yds` : null }, { v: r.rec.td != null ? `${r.rec.td} TD` : null }
+                    r.rec.rec != null ? statChip(r.rec.rec, 'תפיסות') : '',
+                    r.rec.yds != null ? statChip(r.rec.yds, 'יארד') : '',
+                    r.rec.td != null ? statChip(r.rec.td, 'TD') : ''
                 ]);
                 const defLine = statRow('🛡️ הגנה', '#fb7185', [
-                    { v: r.def.tackles != null ? `${r.def.tackles} TKL` : null }, { v: r.def.sacks != null ? `${r.def.sacks} SK` : null }, { v: r.def.int != null ? `${r.def.int} INT` : null }, { v: r.def.pbu != null ? `${r.def.pbu} PBU` : null }
+                    r.def.tackles != null ? statChip(r.def.tackles, 'טאקלים') : '',
+                    r.def.sacks != null ? statChip(r.def.sacks, 'SK') : '',
+                    r.def.int != null ? statChip(r.def.int, 'INT') : '',
+                    r.def.pbu != null ? statChip(r.def.pbu, 'PBU') : ''
                 ]);
+                const matchupParts = [];
+                if (r.league) matchupParts.push(r.league);
+                if (r.round) matchupParts.push(`מחזור ${r.round}`);
+                const subtitle = matchupParts.join(' • ');
                 return `<div class="bg-slate-900/80 border border-slate-700 rounded-xl p-3">
-                    <div class="flex justify-between items-center mb-2">
+                    <div class="flex justify-between items-start mb-2">
                         <div class="flex items-center gap-2">
                             ${teamLogoTag(r.team, 'w-5 h-5')}
-                            <span class="text-xs font-bold text-white">${escHtml(r.game)}</span>
-                            <span class="text-slate-500 text-[10px]">${r.date}</span>
+                            <div>
+                                <div class="text-xs font-bold text-white">${escHtml(r.team) || 'הקבוצה שלנו'} <span class="text-slate-500 font-normal">נגד</span> ${escHtml(r.opponent)}</div>
+                                <div class="text-slate-500 text-[10px]">${r.date}${subtitle ? ' • ' + escHtml(subtitle) : ''}</div>
+                            </div>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            ${outcomeMeta ? `<span class="text-[10px] px-2 py-0.5 rounded-full font-bold border" style="color:${outcomeMeta.c};border-color:${outcomeMeta.c}55;background:${outcomeMeta.c}1a">${outcomeMeta.l}${r.scoreUs != null && r.scoreThem != null ? ` ${r.scoreUs}-${r.scoreThem}` : ''}</span>` : ''}
+                            ${outcomeMeta ? `<span dir="ltr" class="text-[10px] px-2 py-0.5 rounded-full font-bold border" style="color:${outcomeMeta.c};border-color:${outcomeMeta.c}55;background:${outcomeMeta.c}1a">${outcomeMeta.l}${r.scoreUs != null && r.scoreThem != null ? ` ${r.scoreUs}-${r.scoreThem}` : ''}</span>` : ''}
                             ${grade != null ? gradeBadgeHtml(grade) : ''}
                             <button onclick="deleteGameStat(${i})" class="no-print text-rose-400 hover:text-rose-300 text-[11px]">✕</button>
                         </div>
                     </div>
-                    <div class="space-y-1">${passLine}${rushLine}${recLine}${defLine}${!passLine && !rushLine && !recLine && !defLine ? '<p class="text-slate-500 text-[11px]">לא הוזנו נתונים סטטיסטיים.</p>' : ''}</div>
+                    <div class="space-y-1.5">${passLine}${rushLine}${recLine}${defLine}${!passLine && !rushLine && !recLine && !defLine ? '<p class="text-slate-500 text-[11px]">לא הוזנו נתונים סטטיסטיים.</p>' : ''}</div>
                 </div>`;
             }).join('');
         }
@@ -753,14 +787,14 @@
             Object.values(groups).forEach(g => {
                 const t = sumTotals(g.rows);
                 const parts = [];
-                if (t.pass.att) parts.push(`${t.pass.comp}/${t.pass.att} (${Math.round(t.pass.comp / t.pass.att * 1000) / 10}%) · ${t.pass.yds} pass yds · ${t.pass.td} TD · ${t.pass.int} INT`);
-                if (t.rush.att) parts.push(`${t.rush.yds} rush yds · ${t.rush.td} rush TD`);
-                if (t.rec.rec) parts.push(`${t.rec.rec} rec · ${t.rec.yds} rec yds · ${t.rec.td} rec TD`);
-                if (t.def.tackles || t.def.sacks || t.def.int || t.def.pbu) parts.push(`${t.def.tackles} TKL · ${t.def.sacks} SK · ${t.def.int} INT · ${t.def.pbu} PBU`);
+                if (t.pass.att) parts.push(`מסירות: ${t.pass.comp}/${t.pass.att} (${Math.round(t.pass.comp / t.pass.att * 1000) / 10}%), ${t.pass.yds} יארד, ${t.pass.td} TD, ${t.pass.int} INT`);
+                if (t.rush.att) parts.push(`ריצה: ${t.rush.yds} יארד, ${t.rush.td} TD`);
+                if (t.rec.rec) parts.push(`תפיסה: ${t.rec.rec} תפיסות, ${t.rec.yds} יארד, ${t.rec.td} TD`);
+                if (t.def.tackles || t.def.sacks || t.def.int || t.def.pbu) parts.push(`הגנה: ${t.def.tackles} טאקלים, ${t.def.sacks} SK, ${t.def.int} INT, ${t.def.pbu} PBU`);
                 const wins = g.rows.filter(r => r.outcome === 'W').length;
                 const losses = g.rows.filter(r => r.outcome === 'L').length;
-                const record = (wins || losses) ? ` · שיא ${wins}-${losses}` : '';
-                career.push({ year: g.year, team: g.team, position: '', games: String(g.rows.length), stats: (parts.join(' · ') || 'אין נתונים') + record, auto: true });
+                const record = (wins || losses) ? ` • שיא: ${wins}-${losses}` : '';
+                career.push({ year: g.year, team: g.team, position: '', games: String(g.rows.length), stats: (parts.join(' • ') || 'אין נתונים') + record, auto: true });
             });
             career.sort((a, b) => String(b.year).localeCompare(String(a.year)));
             localStorage.setItem(CAREER_KEY, JSON.stringify(career));
@@ -948,6 +982,7 @@
             renderStaff();
             renderCareer();
             renderGameStats();
+            renderGameStatsDatalists();
             renderHighlights();
             renderGoals();
             renderEquipment();

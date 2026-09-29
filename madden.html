@@ -297,32 +297,62 @@
             'Madden: זריקה בתנועה (RUN)': 'RUN'
         };
 
+        // Matches metrics.html's "Madden [CATKEY.subId]: <label>" entries — the bracket
+        // tag is the stable machine key metrics.html was given for exactly this purpose.
+        const MADDEN_SUB_NAME_RE = /^Madden \[([A-Z]+)\.([a-zA-Z]+)\]:/;
+
         function extractLatestMaddenFromDayMap(dayMap) {
             // dayMap: { "YYYY-MM-DD": [ {name, value, unit}, ... ], ... }
-            const latest = {}; // name -> { date, value }
+            const latestCategory = {}; // name -> { date, value }
+            const latestSub = {};      // "CATKEY.subId" -> { date, value }
             Object.entries(dayMap).forEach(([date, entries]) => {
                 (entries || []).forEach(e => {
+                    const subMatch = e.name.match(MADDEN_SUB_NAME_RE);
+                    if (subMatch) {
+                        const key = subMatch[1] + '.' + subMatch[2];
+                        if (!latestSub[key] || date > latestSub[key].date) latestSub[key] = { date, value: e.value };
+                        return;
+                    }
                     if (!MADDEN_CATEGORY_NAME_MAP[e.name] && e.name !== 'Madden: OVR כללי (מהמאמן)') return;
-                    if (!latest[e.name] || date > latest[e.name].date) latest[e.name] = { date, value: e.value };
+                    if (!latestCategory[e.name] || date > latestCategory[e.name].date) latestCategory[e.name] = { date, value: e.value };
                 });
             });
-            return latest;
+            return { category: latestCategory, sub: latestSub };
         }
 
         function applyMaddenValues(latest) {
-            let count = 0;
+            let categoryCount = 0, subCount = 0;
             let mostRecentDate = '';
+            const clamp = v => Math.max(30, Math.min(99, Math.round(v)));
+
+            // Category-level coach entries spread across all of that category's sub-metrics —
+            // applied first, so more specific per-sub-metric data (below) can override it.
             Object.entries(MADDEN_CATEGORY_NAME_MAP).forEach(([name, catKey]) => {
-                if (latest[name]) {
+                if (latest.category[name]) {
                     const cat = MADDEN_CATEGORIES.find(c => c.key === catKey);
-                    const v = Math.max(30, Math.min(99, Math.round(latest[name].value)));
-                    cat.subs.forEach(m => m.value = v);   // spread the single coach number across all sub-metrics
-                    count++;
-                    if (latest[name].date > mostRecentDate) mostRecentDate = latest[name].date;
+                    const v = clamp(latest.category[name].value);
+                    cat.subs.forEach(m => m.value = v);
+                    categoryCount++;
+                    if (latest.category[name].date > mostRecentDate) mostRecentDate = latest.category[name].date;
                 }
             });
+
+            // Per-sub-metric coach entries — always take priority over the category spread
+            // above, since they're strictly more specific data about the same slider.
+            MADDEN_CATEGORIES.forEach(cat => {
+                cat.subs.forEach(sub => {
+                    const key = cat.key + '.' + sub.id;
+                    if (latest.sub[key]) {
+                        sub.value = clamp(latest.sub[key].value);
+                        subCount++;
+                        if (latest.sub[key].date > mostRecentDate) mostRecentDate = latest.sub[key].date;
+                    }
+                });
+            });
+
+            const count = categoryCount + subCount;
             if (count > 0) { renderMaddenCategories(); updateQbCard(); saveSelfAssessment(); }
-            return { count, mostRecentDate };
+            return { categoryCount, subCount, mostRecentDate };
         }
 
         function tryAutoLoadMaddenData() {
@@ -342,10 +372,13 @@
                 return;
             }
             const latest = extractLatestMaddenFromDayMap(dayMap);
-            const { count, mostRecentDate } = applyMaddenValues(latest);
-            if (count > 0) {
+            const { categoryCount, subCount, mostRecentDate } = applyMaddenValues(latest);
+            if (categoryCount > 0 || subCount > 0) {
                 const note = document.getElementById('realMaddenAutoNote');
-                note.innerText = `✅ נטענו אוטומטית ${count}/7 דירוגים אמיתיים מלוח המדדים (עדכון אחרון: ${mostRecentDate}). כל תתי-המדדים של כל קטגוריה אותחלו לאותו ערך — אפשר לכייל כל אחד בנפרד למטה.`;
+                const parts = [];
+                if (categoryCount > 0) parts.push(`${categoryCount}/7 קטגוריות נטענו מציון כללי (כל תתי-המדדים שלהן אותחלו לאותו ערך)`);
+                if (subCount > 0) parts.push(`${subCount}/30 תתי-מדדים נטענו בנפרד מציון ספציפי`);
+                note.innerText = `✅ עודכן אוטומטית מלוח המדדים (עדכון אחרון: ${mostRecentDate}): ${parts.join(', ')}. אפשר לכייל כל תת-מדד בנפרד למטה.`;
                 note.classList.remove('hidden');
             } else {
                 document.getElementById('realMaddenManualBox').classList.remove('hidden');
@@ -364,9 +397,9 @@
                         if (key.startsWith('qbmc_metrics_')) dayMap[key.replace('qbmc_metrics_', '')] = JSON.parse(value);
                     });
                     const latest = extractLatestMaddenFromDayMap(dayMap);
-                    const { count, mostRecentDate } = applyMaddenValues(latest);
-                    document.getElementById('realMaddenStatus').innerText = count > 0
-                        ? `✅ נטענו ${count}/7 דירוגים (עדכון אחרון: ${mostRecentDate}).`
+                    const { categoryCount, subCount, mostRecentDate } = applyMaddenValues(latest);
+                    document.getElementById('realMaddenStatus').innerText = (categoryCount + subCount) > 0
+                        ? `✅ נטענו ${categoryCount}/7 קטגוריות ו-${subCount}/30 תתי-מדדים (עדכון אחרון: ${mostRecentDate}).`
                         : '⚠️ לא נמצאו רישומי Madden בקובץ הזה.';
                 } catch (err) {
                     document.getElementById('realMaddenStatus').innerText = '❌ קובץ לא תקין.';
