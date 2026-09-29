@@ -117,6 +117,14 @@
                 </p>
             </div>
 
+            <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">📋 יומן אימונים אחרונים</div>
+                    <div id="workoutWeekCount" class="text-[11px] text-rose-300 font-bold"></div>
+                </div>
+                <div id="recentWorkoutLog" class="space-y-1 text-xs"></div>
+            </div>
+
             <div class="space-y-6">
                 <div class="bg-slate-900/90 border border-slate-700 rounded-2xl p-5 shadow-lg">
                     <div class="flex flex-wrap justify-between items-center gap-2 mb-3 border-b border-slate-800 pb-2">
@@ -563,6 +571,7 @@
                 card.classList.toggle('line-through', checked);
             }
             logExerciseCompletion(id, day, card, checked);
+            renderRecentWorkoutLog();
             updateDayProgress(day);
         }
 
@@ -590,6 +599,45 @@
             else if (!checked && idx >= 0) entry.dates.splice(idx, 1);
             log[id] = entry;
             saveWorkoutLog(log);
+        }
+
+        // ---- Recent workouts log (mirrors the recent drills log below) ----
+        // Reads the dated qbmc_workout_log written by logExerciseCompletion(); adds no new storage.
+        function escHtml(str) {
+            return String(str).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        }
+        function renderRecentWorkoutLog() {
+            const container = document.getElementById('recentWorkoutLog');
+            if (!container) return;
+            const log = loadWorkoutLog();
+            const entries = [];
+            Object.entries(log).forEach(([id, e]) => {
+                if (!e || !Array.isArray(e.dates)) return;
+                e.dates.forEach(date => entries.push({ id, name: e.name || id, day: e.day || '', date }));
+            });
+            entries.sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id));
+
+            const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
+            const weekAgoStr = localDateStr(weekAgo);
+            const weekEntries = entries.filter(e => e.date >= weekAgoStr);
+            const weekDays = new Set(weekEntries.map(e => e.date)).size;
+            const countEl = document.getElementById('workoutWeekCount');
+            if (countEl) {
+                countEl.innerText = weekEntries.length
+                    ? `${weekEntries.length === 1 ? 'תרגיל אחד' : weekEntries.length + ' תרגילים'} ${weekDays === 1 ? 'ביום אימון אחד' : 'ב-' + weekDays + ' ימי אימון'} • 7 הימים האחרונים`
+                    : '';
+            }
+            if (!entries.length) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-2">עדיין לא סומן אף תרגיל בתוכנית השבועית — סמן ✓ ליד תרגיל למטה והוא יופיע כאן.</p>`;
+                return;
+            }
+            container.innerHTML = entries.slice(0, 8).map(e => {
+                const dayNum = /^d(\d)$/.test(e.day) ? e.day.slice(1) : '';
+                return `<div class="flex justify-between items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5">
+                    <span class="text-slate-300 min-w-0">🏋️ ${escHtml(e.name)}${dayNum ? ` <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-700 whitespace-nowrap">יום ${dayNum}</span>` : ''}</span>
+                    <span class="text-slate-500 text-[10px] shrink-0" dir="ltr">${escHtml(e.date)}</span>
+                </div>`;
+            }).join('');
         }
 
         // ---- QB Drills library ----
@@ -688,7 +736,14 @@
         function saveDrillLog(log) {
             try { localStorage.setItem('qbmc_drill_log', JSON.stringify(log)); } catch (e) {}
         }
-        function todayDrillStr() { return new Date().toISOString().slice(0, 10); }
+        // Local calendar date (not UTC): toISOString() would stamp the previous day for anything
+        // logged between local midnight and the UTC offset (00:00-03:00 in Israel), and
+        // calendar.html keys its days by local date, so the two would disagree.
+        function localDateStr(d) {
+            d = d || new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+        function todayDrillStr() { return localDateStr(); }
         function drillStats(name) {
             const arr = loadDrillLog()[name] || [];
             return { count: arr.length, last: arr.length ? arr.slice().sort().slice(-1)[0] : null };
@@ -714,7 +769,7 @@
             entries.sort((a, b) => b.date.localeCompare(a.date));
 
             const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
-            const weekAgoStr = weekAgo.toISOString().slice(0, 10);
+            const weekAgoStr = localDateStr(weekAgo);
             const weekCount = entries.filter(e => e.date >= weekAgoStr).length;
             document.getElementById('drillWeekCount').innerText = weekCount ? `${weekCount === 1 ? 'דריל אחד' : weekCount + ' דרילים'} ב-7 הימים האחרונים` : '';
 
@@ -759,6 +814,7 @@
                         if (key.startsWith('qbmc_ex_') || key === 'qbmc_drill_log' || key === 'qbmc_workout_log') localStorage.setItem(key, value);
                     });
                     initExerciseTracking();
+                    renderRecentWorkoutLog();
                     renderRecentDrillLog();
                     renderDrillsGrid();
                     alert('השחזור הושלם בהצלחה!');
@@ -789,6 +845,7 @@
             renderDrillCategoryTabs();
             renderDrillsGrid();
             renderRecentDrillLog();
+            renderRecentWorkoutLog();
             initExerciseTracking();
         });
     </script>

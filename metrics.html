@@ -198,6 +198,7 @@
                     <tbody id="allEntriesTable"></tbody>
                 </table>
             </div>
+            <p class="text-[10px] text-slate-500 mt-3 leading-relaxed">ℹ️ דירוג משקל ואחוז שומן מחושב לפי הגובה, הגיל והמין שהוזנו בדף "עזרי AI ותזונה": משקל נבדק ביחס לגובה (BMI), ושניהם מקבלים ציון גבוה בטווח בריא וציון נמוך יותר גם מעל וגם מתחת לו. הדירוג מיועד למבוגרים (גיל 20+) ואינו תחליף להערכה של איש מקצוע — BMI לא מבחין בין שריר לשומן, ומדידות אחוז שומן ביתיות יכולות לסטות בכמה אחוזים. ריחוף על התג מציג את הפירוט.</p>
         </div>
     </main>
 
@@ -242,12 +243,12 @@
             { name: 'אחוז שומן', unit: '%' }
         ];
 
-        // ---- Letter grades (A+ to F) for physical performance metrics ----
-        // Deliberately excludes body weight and body-fat %: unlike a 40-yard dash time,
-        // they have no single "better" direction that's safe to grade — turning a
-        // teenage athlete's body weight into a pass/fail letter risks encouraging an
-        // unhealthy relationship with either number. Every metric below is a pure
-        // athletic-performance test instead.
+        // ---- Letter grades (A+ to F) for physical metrics ----
+        // Performance tests (40-yard dash, jumps, lifts, throw velocity...) are graded on the
+        // anchor tables below. Body weight and body-fat % are graded separately further down
+        // (bodyMetricGrade) because, unlike a 40-yard dash, "better" is not a straight line:
+        // both too high AND too low score badly, and the right range depends on the person's
+        // height, age and sex — which are read from the profile entered in ai-tools.html.
         //
         // Anchor points are reasonable competitive high-school/youth-QB reference values,
         // not an official or sport-science-sourced combine table — edit the numbers below
@@ -278,10 +279,11 @@
             if (v >= 40) return { l: 'D-', c: '#f87171' };
             return { l: 'F', c: '#ef4444' };
         }
-        function gradeBadgeHtml(v, size) {
+        function gradeBadgeHtml(v, size, title) {
             const g = gradeFor(v);
             const sz = size === 'sm' ? 'text-[9px] px-1.5 py-0.5' : 'text-xs px-2 py-0.5';
-            return `<span class="${sz} rounded-full font-black border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l}</span>`;
+            const tt = title ? ` title="${String(title).replace(/"/g, '&quot;')}"` : '';
+            return `<span${tt} class="${sz} rounded-full font-black border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l}</span>`;
         }
         // Piecewise-linear interpolation between the anchor points above; clamps to the
         // best/worst defined anchor rather than extrapolating past it.
@@ -296,7 +298,58 @@
             return pts[pts.length - 1][1];
         }
         // Returns a ready badge for a metric name + raw value, or '' if that metric isn't graded.
+        // ---- Body weight & body-fat grading (profile-aware, with a neutral "not graded" state) ----
+        // Uses height / age / sex from the profile saved by ai-tools.html (qbmc_nutrition_targets).
+        // Both metrics peak inside a healthy band and fall off on BOTH sides. Both are adult
+        // reference tables, so under age 20 (or with no profile yet) the result is a neutral
+        // "no grade" badge with the reason in its tooltip — never a made-up letter.
+        // Disclosed limits: BMI cannot tell muscle from fat (so the upper side is deliberately
+        // lenient and body-fat % is the more meaningful of the two), and body-fat readings from
+        // scales/calipers are commonly off by several percentage points depending on the method.
+        // Reference bands are approximations of common adult fitness/athlete ranges (not an
+        // official football table) — edit the anchors freely.
+        const BODY_WEIGHT_NAME = 'משקל גוף';
+        const BODY_FAT_NAME = 'אחוז שומן';
+        const BMI_ANCHORS = [[16, 30], [17, 45], [18, 60], [19, 80], [20, 92], [21, 99], [24.5, 99], [26, 92], [27.5, 85], [29, 75], [30.5, 65], [32.5, 55], [35, 45], [40, 30]];
+        const BODY_FAT_ANCHORS = {
+            male:   [[3, 40], [5, 60], [7, 85], [8, 95], [12, 99], [17, 95], [20, 85], [24, 70], [28, 55], [32, 40], [38, 30]],
+            female: [[10, 40], [14, 60], [16, 85], [18, 95], [23, 99], [26, 95], [29, 85], [33, 70], [37, 55], [41, 40], [46, 30]]
+        };
+        const MIN_ADULT_AGE_FOR_BODY_GRADE = 20;
+        function loadBodyProfile() {
+            let t = {};
+            try { t = JSON.parse(localStorage.getItem('qbmc_nutrition_targets') || '{}') || {}; } catch (e) {}
+            return { height: parseFloat(t.height), age: parseFloat(t.age), sex: t.sex === 'female' ? 'female' : (t.sex === 'male' ? 'male' : null) };
+        }
+        function neutralGradeBadge(reason, size) {
+            const sz = size === 'sm' ? 'text-[9px] px-1.5 py-0.5' : 'text-xs px-2 py-0.5';
+            return `<span title="${reason.replace(/"/g, '&quot;')}" class="${sz} rounded-full font-bold border border-slate-600 text-slate-400 bg-slate-800 cursor-help whitespace-nowrap">ללא דירוג</span>`;
+        }
+        function bodyMetricGrade(name, rawValue, size) {
+            const value = parseFloat(rawValue);
+            if (isNaN(value)) return '';
+            const p = loadBodyProfile();
+            if (!(p.age > 0)) return neutralGradeBadge('אין עדיין גיל בפרופיל — הזן גיל, גובה ומין בדף "עזרי AI ותזונה" כדי לקבל דירוג.', size);
+            if (p.age < MIN_ADULT_AGE_FOR_BODY_GRADE) return neutralGradeBadge('טבלאות הייחוס כאן הן למבוגרים. מתחת לגיל ' + MIN_ADULT_AGE_FOR_BODY_GRADE + ' הערכה נכונה דורשת אחוזונים לפי גיל ומין, ולכן אין דירוג.', size);
+            if (name === BODY_WEIGHT_NAME) {
+                if (!(p.height >= 100 && p.height <= 230)) return neutralGradeBadge('אין גובה תקין בפרופיל — הזן גובה (ס"מ) בדף "עזרי AI ותזונה" כדי לדרג משקל ביחס לגובה.', size);
+                if (!(value >= 25 && value <= 300)) return neutralGradeBadge('ערך המשקל נראה לא סביר — בדוק את הרישום.', size);
+                const m = p.height / 100;
+                const bmi = value / (m * m);
+                const score = interpolateScore(bmi, { anchors: BMI_ANCHORS });
+                return gradeBadgeHtml(score, size, `משקל ביחס לגובה (BMI ${bmi.toFixed(1)}). BMI לא מבחין בין שריר לשומן — אחוז השומן מדויק יותר לספורטאי.`);
+            }
+            if (name === BODY_FAT_NAME) {
+                if (!p.sex) return neutralGradeBadge('אין מין בפרופיל — בחר מין בדף "עזרי AI ותזונה" כדי לדרג אחוז שומן.', size);
+                if (!(value >= 2 && value <= 60)) return neutralGradeBadge('ערך אחוז השומן נראה לא סביר — בדוק את הרישום.', size);
+                const score = interpolateScore(value, { anchors: BODY_FAT_ANCHORS[p.sex] });
+                return gradeBadgeHtml(score, size, 'הדירוג לפי טווח בריא לספורטאי מבוגר — גם אחוז שומן נמוך מדי מקבל ציון נמוך. שיטות מדידה ביתיות יכולות לסטות בכמה אחוזים.');
+            }
+            return '';
+        }
+
         function metricGradeBadge(name, value, size) {
+            if (name === BODY_WEIGHT_NAME || name === BODY_FAT_NAME) return bodyMetricGrade(name, value, size);
             const scale = METRIC_GRADE_SCALES[name];
             if (!scale || isNaN(value)) return '';
             const score = interpolateScore(parseFloat(value), scale);
