@@ -24,7 +24,7 @@
 
     <header class="max-w-6xl mx-auto px-4 pt-6 pb-4">
         <h1 class="text-2xl md:text-3xl font-black text-white mb-1">מעקב אימונים אישי לקוורטרבק</h1>
-        <p class="text-slate-400 text-sm">לחץ על כל יום כדי לסמן אילו אימונים/פעילויות בוצעו בו. ניתן לסמן מספר סוגי אימון לאותו היום. הנתונים נשמרים אוטומטית בדפדפן שלך.</p>
+        <p class="text-slate-400 text-sm">לחץ על כל יום כדי לסמן אילו אימונים/פעילויות בוצעו בו. ניתן לסמן מספר סוגי אימון לאותו היום, וגם להוסיף תרגילים ודרילים ספציפיים שביצעת בימים קודמים. הנתונים נשמרים אוטומטית בדפדפן שלך.</p>
     </header>
 
     <main class="max-w-6xl mx-auto px-4 space-y-6">
@@ -94,10 +94,17 @@
                 <div id="modalExtraChecks" class="space-y-2"></div>
             </div>
 
-            <div id="modalSpecificWrap" class="mb-5 hidden">
+            <div id="modalSpecificWrap" class="mb-5">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">🎯 תרגילים ודרילים ספציפיים שבוצעו ביום זה</div>
                 <div id="modalSpecificItems" class="space-y-1.5 text-xs"></div>
-                <p class="text-[10px] text-slate-500 mt-2">מסומן אוטומטית מ"תוכנית אימונים" ו"דרילים" — לשינוי, סמן/בטל שם.</p>
+                <div id="modalAddSpecific" class="mt-3 bg-slate-800/60 border border-slate-700 rounded-xl p-3">
+                    <div class="text-[11px] font-bold text-slate-300 mb-2">➕ הוסף תרגיל או דריל שבוצעו ביום זה</div>
+                    <div class="flex gap-2">
+                        <select id="modalAddSelect" class="flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-orange-400"></select>
+                        <button type="button" onclick="addSpecificItem()" class="shrink-0 px-3 py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg transition text-xs">הוסף</button>
+                    </div>
+                </div>
+                <p id="modalSpecificNote" class="text-[10px] text-slate-500 mt-2">תרגילים ודרילים נשמרים מיד (לא צריך ללחוץ "שמור") ומופיעים גם ביומנים בדף "אימון". סוגי האימון למעלה נשמרים בלחיצה על "שמור".</p>
             </div>
 
             <div class="flex gap-2">
@@ -107,6 +114,7 @@
         </div>
     </div>
 
+    <script src="training-data.js"></script>
     <script>
         const CATEGORIES = [
             { id: 'd1', label: 'יום 1: Upper Body (נפח)', color: '#38bdf8', group: 'system' },
@@ -309,18 +317,104 @@
         //      is what lets the calendar show which specific items were done, not just the
         //      generic "Day 3" category chip. Read-only here; marking happens on the
         //      training page itself so there is exactly one place that can mark an item done. ----
+        // Both this page and training.html go through window.QB_TRAINING (training-data.js), so a
+        // mark made here is stored exactly like one made on the training page. If that file failed
+        // to load, the calendar still displays what is in the logs (read-only) instead of breaking.
+        const QT = window.QB_TRAINING || null;
+
+        function escHtml(str) {
+            return String(str).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        }
+        function readLogObj(key) {
+            try { const v = JSON.parse(localStorage.getItem(key)); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch (e) { return {}; }
+        }
         function getSpecificItemsForDate(ds) {
             const items = [];
-            try {
-                const workoutLog = JSON.parse(localStorage.getItem('qbmc_workout_log') || '{}');
-                Object.values(workoutLog).forEach(e => { if ((e.dates || []).includes(ds)) items.push({ name: e.name, icon: '🏋️' }); });
-            } catch (e) {}
-            try {
-                const drillLog = JSON.parse(localStorage.getItem('qbmc_drill_log') || '{}');
-                Object.entries(drillLog).forEach(([name, dates]) => { if ((dates || []).includes(ds)) items.push({ name, icon: '🎯' }); });
-            } catch (e) {}
+            const workoutLog = readLogObj('qbmc_workout_log');
+            Object.entries(workoutLog).forEach(([id, e]) => {
+                if (e && Array.isArray(e.dates) && e.dates.includes(ds)) {
+                    const known = QT && QT.EX_BY_ID[id];
+                    items.push({ kind: 'w', key: id, name: known ? known.name : (e.name || id), icon: '🏋️' });
+                }
+            });
+            const drillLog = readLogObj('qbmc_drill_log');
+            Object.entries(drillLog).forEach(([name, dates]) => {
+                if (Array.isArray(dates) && dates.includes(ds)) items.push({ kind: 'd', key: name, name, icon: '🎯' });
+            });
             return items;
         }
+
+        function todayLocalStr() { const t = new Date(); return dateStr(t.getFullYear(), t.getMonth(), t.getDate()); }
+
+        function renderSpecificSection(ds) {
+            const items = getSpecificItemsForDate(ds);
+            const list = document.getElementById('modalSpecificItems');
+            list.innerHTML = items.length
+                ? items.map(it => `
+                <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-lg px-2.5 py-1.5">
+                    <span>${it.icon}</span><span class="text-slate-200 flex-1 min-w-0">${escHtml(it.name)}</span>
+                    ${QT ? `<button type="button" data-kind="${it.kind}" data-key="${escHtml(it.key)}" class="spec-remove shrink-0 text-rose-400 hover:text-rose-300 text-[11px] font-bold" title="הסר מיום זה">הסר</button>` : ''}
+                </div>`).join('')
+                : `<p class="text-slate-500 py-1">לא נרשמו תרגילים או דרילים ספציפיים ליום זה.</p>`;
+
+            const addBox = document.getElementById('modalAddSpecific');
+            const note = document.getElementById('modalSpecificNote');
+            if (!QT) {
+                addBox.classList.add('hidden');
+                note.innerText = 'לא ניתן להוסיף כאן תרגילים: הקובץ training-data.js לא נטען. ודא שהוא מועלה לאותה תיקייה עם שאר הקבצים.';
+                return;
+            }
+            if (ds > todayLocalStr()) {
+                addBox.classList.add('hidden');
+                note.innerText = 'אי אפשר לסמן ביצוע של תרגילים ודרילים בתאריך עתידי — אפשר להוסיף אותם ביום עצמו או אחריו.';
+                return;
+            }
+            addBox.classList.remove('hidden');
+
+            const doneW = new Set(items.filter(i => i.kind === 'w').map(i => i.key));
+            const doneD = new Set(items.filter(i => i.kind === 'd').map(i => i.key));
+            let opts = '<option value="">בחר תרגיל או דריל…</option>';
+            ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].forEach(day => {
+                const exs = QT.WORKOUT_EXERCISES.filter(e => e.day === day && !doneW.has(e.id));
+                if (!exs.length) return;
+                opts += `<optgroup label="🏋️ יום ${day.slice(1)}: ${escHtml(QT.WORKOUT_DAY_TITLES[day.slice(1)] || '')}">` +
+                    exs.map(e => `<option value="w:${e.id}">${escHtml(e.name)}</option>`).join('') + '</optgroup>';
+            });
+            Object.keys(QT.DRILL_CATEGORY_META).forEach(cat => {
+                const meta = QT.DRILL_CATEGORY_META[cat];
+                const ds2 = QT.DRILLS_DATABASE.map((d, i) => ({ d, i })).filter(x => x.d.category === cat && !doneD.has(x.d.name));
+                if (!ds2.length) return;
+                opts += `<optgroup label="🎯 דרילים — ${escHtml(meta.label)}">` +
+                    ds2.map(x => `<option value="d:${x.i}">${escHtml(x.d.name)}</option>`).join('') + '</optgroup>';
+            });
+            document.getElementById('modalAddSelect').innerHTML = opts;
+            note.innerText = 'תרגילים ודרילים נשמרים מיד (לא צריך ללחוץ "שמור") ומופיעים גם ביומנים בדף "אימון". סוגי האימון למעלה נשמרים בלחיצה על "שמור".';
+        }
+
+        function addSpecificItem() {
+            if (!QT || !selectedDateStr || selectedDateStr > todayLocalStr()) return;
+            const sel = document.getElementById('modalAddSelect');
+            const v = sel.value;
+            if (!v) return;
+            const [kind, ref] = [v.slice(0, 1), v.slice(2)];
+            if (kind === 'w' && QT.EX_BY_ID[ref]) QT.setExerciseDone(ref, selectedDateStr, true);
+            else if (kind === 'd' && QT.DRILLS_DATABASE[parseInt(ref, 10)]) QT.setDrillDone(QT.DRILLS_DATABASE[parseInt(ref, 10)].name, selectedDateStr, true);
+            else return;
+            renderSpecificSection(selectedDateStr);
+            renderCalendar();
+        }
+
+        function removeSpecificItem(kind, key) {
+            if (!QT || !selectedDateStr) return;
+            if (kind === 'w') QT.setExerciseDone(key, selectedDateStr, false);
+            else if (kind === 'd') QT.setDrillDone(key, selectedDateStr, false);
+            renderSpecificSection(selectedDateStr);
+            renderCalendar();
+        }
+        document.addEventListener('click', e => {
+            const btn = e.target.closest('.spec-remove');
+            if (btn) removeSpecificItem(btn.getAttribute('data-kind'), btn.getAttribute('data-key'));
+        });
 
         async function openDayModal(ds) {
             selectedDateStr = ds;
@@ -348,12 +442,7 @@
             document.getElementById('modalSystemChecks').innerHTML = buildChecks('system');
             document.getElementById('modalExtraChecks').innerHTML = buildChecks('extra');
 
-            const specific = getSpecificItemsForDate(ds);
-            document.getElementById('modalSpecificWrap').classList.toggle('hidden', specific.length === 0);
-            document.getElementById('modalSpecificItems').innerHTML = specific.map(it => `
-                <div class="flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-lg px-2.5 py-1.5">
-                    <span>${it.icon}</span><span class="text-slate-200">${it.name}</span>
-                </div>`).join('');
+            renderSpecificSection(ds);
 
             document.getElementById('dayModal').classList.remove('hidden');
         }
@@ -365,7 +454,7 @@
 
         function saveDayModal() {
             if (!selectedDateStr) return;
-            const checks = document.querySelectorAll('#dayModal input[type=checkbox]:checked');
+            const checks = document.querySelectorAll('#modalSystemChecks input[type=checkbox]:checked, #modalExtraChecks input[type=checkbox]:checked');
             const selected = Array.from(checks).map(c => c.value);
             setDayData(selectedDateStr, selected);
             closeDayModal();
@@ -406,6 +495,13 @@
             reader.readAsText(file);
             event.target.value = '';
         }
+
+        window.addEventListener('storage', e => {
+            if (e.key === null || e.key === 'qbmc_drill_log' || e.key === 'qbmc_workout_log') {
+                renderCalendar();
+                if (selectedDateStr) renderSpecificSection(selectedDateStr);
+            }
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
             const t = new Date();

@@ -125,7 +125,10 @@
         const OTHER = '__other__';   // catch-all: any future feature that stores qbmc_* data is backed up automatically
         CATEGORY_INFO[OTHER] = { label: '🧩 נתונים נוספים (פיצ\'רים חדשים)', color: '#a78bfa', filename: 'qb_master_class_other_backup.json' };
         const EXACT_KEY_CATEGORY = {
-            'qbmc_nutrition_targets': 'qbmc_meals_'
+            'qbmc_nutrition_targets': 'qbmc_meals_',
+            // The training page's dated logs (mark-done-today) live under fixed keys, not the old qbmc_ex_* prefix
+            'qbmc_drill_log': 'qbmc_ex_',
+            'qbmc_workout_log': 'qbmc_ex_'
         };
 
         let mergedData = {};
