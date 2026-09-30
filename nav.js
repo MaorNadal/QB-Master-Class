@@ -15,6 +15,8 @@
           sections: [['calendar-stats', 'סטטיסטיקות'], ['calendar-grid', 'לוח חודשי'], ['calendar-legend', 'מקרא'], ['calendar-breakdown', 'התפלגות']] },
         { file: 'ai-tools.html', group: 'ai', icon: '🤖', title: 'עזרי AI ותזונה', desc: 'ניתוח וידאו, מחשבון ויומן תזונה וניתוח כולל.',
           sections: [['ai-key', 'מפתח API'], ['ai-video', 'ניתוח וידאו'], ['ai-nutrition', 'תזונה'], ['ai-holistic', 'ניתוח כוללני']] },
+        { file: 'coach.html', group: 'ai', icon: '🧑‍🏫', title: 'מאמן AI אישי', desc: 'צ\'אט עם מאמן AI כן ואובייקטיבי, עם שם ותמונה לבחירתך ושיתוף נתונים רק באישורך.',
+          sections: [['coach-chat', 'צ\'אט'], ['coach-data', 'שיתוף נתונים'], ['coach-profile', 'זהות המאמן']] },
         { file: 'film-study.html', group: 'ai', icon: '🎬', title: 'צפייה וניתוח NFL', desc: 'יומן צפייה בפוטבול ותיעוד מהלכים.',
           sections: [['film-howto', 'איך לצפות'], ['film-checklist', 'מה לבדוק'], ['film-archetypes', 'ארכיטיפים'], ['film-log', 'יומן צפייה'], ['film-plays', 'יומן מהלכים'], ['film-links', 'איפה לצפות']] },
         { file: 'player.html', group: 'player', icon: '🪪', title: 'פרטי שחקן', desc: 'פרטים אישיים ופיזיים, מצב קבוצתי, היסטוריית קריירה ותארים.',

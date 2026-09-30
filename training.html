@@ -244,7 +244,8 @@
         const {
             DRILL_CATEGORY_META, DRILLS_DATABASE, WORKOUT_DAY_TITLES, WORKOUT_EXERCISES, EX_BY_ID,
             localDateStr, loadDrillLog, loadWorkoutLog,
-            isDrillDone, setDrillDone, drillStats, isExerciseDone, setExerciseDone, exerciseStats
+            isDrillDone, setDrillDone, drillStats, isExerciseDone, setExerciseDone, exerciseStats,
+            latestDrillAnalysis, getDrillLink, setDrillLink, drillYoutubeSearchUrl, gradeFor
         } = window.QB_TRAINING;
 
         function escHtml(str) {
@@ -372,6 +373,7 @@
                     </div>
                     <p class="text-xs text-slate-300 leading-relaxed mb-2">${d.desc}</p>
                     <p class="text-[11px] text-amber-300 border-t border-slate-800 pt-2 mb-2">💡 ${d.cue}</p>
+                    ${drillVideoSectionHtml(d)}
                     <div class="flex justify-between items-center border-t border-slate-800 pt-2">
                         <span class="text-[10px] text-slate-500">${stats.count ? `✅ בוצע ${stats.count} פעמים${stats.last ? ' • לאחרונה ' + stats.last : ''}` : 'עדיין לא בוצע'}</span>
                         <button onclick="toggleDrillDoneToday('${d.name.replace(/'/g, "\\'")}')" class="text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${doneToday ? 'bg-emerald-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'}">${doneToday ? '✅ בוצע היום' : '⬜ סמן כבוצע היום'}</button>
@@ -379,6 +381,51 @@
                 </div>`;
             }).join('');
         }
+
+        // ---- Drill video: AI analysis result (from ai-tools.html) + "best example" link ----
+        function drillVideoSectionHtml(d) {
+            const idx = DRILLS_DATABASE.indexOf(d);
+            const last = latestDrillAnalysis(d.name);
+            const link = getDrillLink(d.name);
+            let analysis = '<div class="text-[10px] text-slate-500">🎥 עדיין לא נותח בוידאו</div>';
+            if (last && typeof last.score === 'number') {
+                const g = gradeFor(last.score);
+                const corr = Array.isArray(last.corrections) ? last.corrections.filter(c => c && c.cue) : [];
+                analysis = `<div class="text-[11px] text-slate-300 flex flex-wrap items-center gap-1.5">🎥 ניתוח אחרון:
+                        <span class="text-xs font-black px-2 py-0.5 rounded-full border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l} • ${Math.round(last.score)}</span>
+                        <span class="text-slate-500" dir="ltr">${escHtml(last.date || '')}</span>
+                    </div>
+                    ${corr.length ? `<details class="mt-1"><summary class="cursor-pointer text-[10px] text-sky-300">תיקונים מהניתוח (${corr.length})</summary>
+                        <ul class="list-disc pr-4 mt-1 text-[11px] text-slate-300 space-y-0.5">${corr.slice(0, 3).map(c => `<li>${escHtml(c.issue || '')}${c.cue ? ` — <span class="text-amber-300">${escHtml(c.cue)}</span>` : ''}</li>`).join('')}</ul></details>` : ''}`;
+            }
+            const exampleHtml = link
+                ? `<a href="${escHtml(link)}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-bold px-2 py-1 rounded-lg bg-red-600/80 hover:bg-red-500 text-white transition">▶️ סרטון דוגמה</a>
+                   <button type="button" data-drill-idx="${idx}" data-drill-act="edit-link" class="text-[11px] px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="שנה או הסר קישור">✏️</button>`
+                : `<a href="${escHtml(drillYoutubeSearchUrl(d.name))}" target="_blank" rel="noopener noreferrer" class="text-[11px] px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">🔍 חפש דוגמה ביוטיוב</a>
+                   <button type="button" data-drill-idx="${idx}" data-drill-act="edit-link" class="text-[11px] px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">➕ שמור קישור לדוגמה</button>`;
+            return `<div class="border-t border-slate-800 pt-2 mb-2 space-y-1.5">
+                ${analysis}
+                <div class="flex flex-wrap gap-1.5">
+                    <a href="ai-tools.html?drill=${encodeURIComponent(d.name)}#ai-video" class="text-[11px] font-bold px-2 py-1 rounded-lg bg-sky-700 hover:bg-sky-600 text-white transition">🎥 נתח ביצוע בוידאו</a>
+                    ${exampleHtml}
+                </div>
+            </div>`;
+        }
+        function editDrillLink(idx) {
+            const d = DRILLS_DATABASE[idx];
+            if (!d) return;
+            const current = getDrillLink(d.name);
+            const input = window.prompt('הדבק קישור (http/https) לסרטון הדוגמה הטוב ביותר עבור "' + d.name + '".\nכדי להסיר קישור קיים השאר ריק ולחץ אישור.', current);
+            if (input === null) return;
+            const val = input.trim();
+            if (val && !setDrillLink(d.name, val)) { alert('הקישור לא תקין. יש להדביק כתובת שמתחילה ב-http:// או https://'); return; }
+            if (!val) setDrillLink(d.name, '');
+            renderDrillsGrid();
+        }
+        document.addEventListener('click', e => {
+            const b = e.target.closest('[data-drill-act="edit-link"]');
+            if (b) editDrillLink(parseInt(b.getAttribute('data-drill-idx'), 10));
+        });
 
         // ---- Drill completion (same shared log as calendar.html) ----
         function isDrillDoneToday(name) { return isDrillDone(name, localDateStr()); }
@@ -414,7 +461,7 @@
             }).join('');
         }
 
-        const OWN_KEYS = ['qbmc_drill_log', 'qbmc_workout_log'];
+        const OWN_KEYS = ['qbmc_drill_log', 'qbmc_workout_log', 'qbmc_drill_analysis', 'qbmc_drill_links'];
 
         function exportWorkoutData() {
             const backup = {};
@@ -435,7 +482,7 @@
             reader.onload = (e) => {
                 try {
                     const backup = JSON.parse(e.target.result);
-                    // Only the two dated logs are restored. Old backups may also contain qbmc_ex_* keys
+                    // Only this page's own keys (the two dated logs, drill analyses, example links) are restored. Old backups may also contain qbmc_ex_* keys
                     // (the previous checkbox state, which had no dates and is no longer used) — ignored.
                     Object.entries(backup).forEach(([key, value]) => {
                         if (OWN_KEYS.includes(key)) localStorage.setItem(key, value);

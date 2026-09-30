@@ -50,15 +50,114 @@
 
         <div class="bg-slate-800/50 border border-sky-500/30 rounded-2xl p-5 md:p-6 backdrop-blur" id="ai-video">
             <h2 class="font-bold text-lg text-sky-300 mb-1 flex items-center gap-2"><span>🎥</span> מנתח ביצועים בוידאו</h2>
-            <p class="text-xs text-slate-400 mb-4">
-                העלה תמונה או סרטון קצר (עד כ-20MB, מומלץ עד 15 שניות) של זריקה/תרגיל, ותקבל ניתוח מכני מבוסס על קטגוריות
-                דירוג ה-Madden שבנינו (THP, SAC, MAC, DAC, AWR, RLS, RUN) — כולל הצעות לתיקון ודירוג משוער.
+            <p class="text-xs text-slate-400 mb-3">
+                העלה סרטון אחד או כמה (עד 6) של זריקה או תרגיל, וקבל ניתוח מכני לפי שרשרת התנועה (רגליים ← אגן ← פלג גוף עליון ← זרוע ← שחרור ← סיום), עם הפניה לרגעים בסרטון.
+                קבצים עד כ-14MB נשלחים ישירות; קבצים גדולים יותר (למשל Slow Motion או 4K) מועלים אוטומטית דרך Files API של Google.
             </p>
-            <input type="file" id="videoFileInput" accept="image/*,video/*" class="w-full text-xs text-slate-300 mb-3 file:ml-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white file:font-bold file:cursor-pointer">
-            <textarea id="videoContext" placeholder="הקשר נוסף (אופציונלי): איזו זווית זריקה, מה ביקשת מהשחקן לתרגל, וכו׳" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-sky-400 mb-3" rows="2"></textarea>
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-4 text-[11px] text-amber-100 leading-relaxed">
+                <strong>⚠️ מה הכלי הזה כן ולא יכול לעשות:</strong> זו הערכה ויזואלית של מודל AI, לא מדידה. הוא יכול לזהות דפוסים גסים שנראים בבירור (כיוון הרגליים, גובה המרפק, סיום התנועה, עקביות בין זריקות),
+                אבל לא מודד מהירות כדור, זוויות מדויקות או דיוק בפועל. ציונים מספריים הם הערכת קירוב בלבד, וייתכן שאותו סרטון יקבל תשובה מעט שונה בכל הרצה. מומלץ להצליב עם מאמן.
+            </div>
+            <details class="mb-4 bg-slate-900/60 border border-slate-700 rounded-xl p-3">
+                <summary class="cursor-pointer text-xs font-bold text-sky-300">📐 איך לצלם כדי לקבל ניתוח מדויק ככל האפשר</summary>
+                <ul class="mt-2 text-[11px] text-slate-300 space-y-1.5 leading-relaxed list-disc pr-4">
+                    <li><strong>זווית עיקרית — מהצד:</strong> מצלמה בגובה חזה-מותן, מצד יד הזריקה, בניצב לכיוון הזריקה, במרחק 5-8 מטר. כך רואים מרפק, סיבוב אגן וכתפיים וסיום התנועה.</li>
+                    <li><strong>זווית שנייה — מאחור:</strong> מאחורי ה-QB לכיוון המטרה. מראה יישור רגליים וכתפיים למטרה וכיוון הצעד.</li>
+                    <li>כל הגוף בפריים, מכפות הרגליים ועד הידיים אחרי השחרור, והכדור נראה כמה מטרים אחרי היציאה מהיד.</li>
+                    <li>חצובה או מצלמה יציבה, מצב לרוחב, בלי זום דיגיטלי, אור טוב, ובגדים שמנוגדים לרקע. סמן יעד ברור.</li>
+                    <li><strong>מהירות:</strong> 60fps רגיל מספיק לרוב. <strong>Slow Motion (120/240fps)</strong> מוסיף פרטים לרגע השחרור, אבל הקבצים גדולים (יעלו דרך Files API).</li>
+                    <li>קליפים קצרים: זריקה אחת עד 3-5 זריקות רצופות באותה זווית. ציין בהקשר איזו זריקה טובה ואיזו לא, ואיזה קליפ ישן יותר.</li>
+                </ul>
+            </details>
+            <input type="file" id="videoFileInput" accept="image/*,video/*" multiple class="w-full text-xs text-slate-300 mb-2 file:ml-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-sky-600 file:text-white file:font-bold file:cursor-pointer">
+            <div id="videoFileSummary" class="text-[11px] text-slate-400 mb-3 leading-relaxed"></div>
+            <label class="block text-[11px] text-slate-400 mb-3">סוג הניתוח
+                <select id="videoMode" class="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-400">
+                    <option value="mechanics">ניתוח מכני מפורט לפי שרשרת התנועה (ברירת מחדל)</option>
+                    <option value="madden">דירוג Madden לפי 28 תתי-מדדים (לשמירה בדירוג QB)</option>
+                    <option value="drill">ניתוח דריל — ציון ותיקון לביצוע</option>
+                </select>
+                <span id="videoModeHint" class="block mt-1 text-[10px] text-slate-500 leading-relaxed"></span>
+            </label>
+            <label id="videoDrillWrap" class="hidden block text-[11px] text-slate-400 mb-3">איזה דריל מוצג בסרטון?
+                <select id="videoDrill" class="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-400"></select>
+                <span id="videoDrillInfo" class="block mt-1 text-[10px] text-slate-500 leading-relaxed"></span>
+            </label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-[11px]">
+                <label class="block text-slate-400">זווית צילום
+                    <select id="videoAngle" class="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-400">
+                        <option value="side">מהצד (מצד יד הזריקה)</option>
+                        <option value="behind">מאחור (לכיוון המטרה)</option>
+                        <option value="front">מלפנים / באלכסון</option>
+                        <option value="mixed">מעורבת / כמה זוויות</option>
+                        <option value="unknown">לא ידוע</option>
+                    </select>
+                </label>
+                <label class="block text-slate-400">מהירות הסרטון
+                    <select id="videoSpeed" class="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-400">
+                        <option value="normal">רגילה</option>
+                        <option value="slowmo">Slow Motion</option>
+                    </select>
+                </label>
+                <label class="block text-slate-400">יד זריקה
+                    <select id="videoHand" class="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-400">
+                        <option value="right">ימין</option>
+                        <option value="left">שמאל</option>
+                        <option value="unknown">לא ידוע</option>
+                    </select>
+                </label>
+                <label class="block text-slate-400">סוג הביצוע
+                    <select id="videoThrowType" class="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-400">
+                        <option value="general">כללי / לא ידוע</option>
+                        <option value="short">מסירה קצרה</option>
+                        <option value="medium">מסירה בינונית</option>
+                        <option value="deep">מסירה עמוקה</option>
+                        <option value="onrun">זריקה בתנועה</option>
+                        <option value="dropback">דרופבק ועבודת רגליים</option>
+                        <option value="drill">דריל</option>
+                    </select>
+                </label>
+            </div>
+            <label class="block text-[11px] text-slate-400 mb-3">דגימת פריימים (כמה תמונות בשנייה המודל רואה)
+                <select id="videoFps" class="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-sky-400">
+                    <option value="auto">אוטומטי — מומלץ (10 לשנייה, 5 ב-Slow Motion)</option>
+                    <option value="1">1 לשנייה — ברירת מחדל של גוגל (לא מומלץ לזריקה)</option>
+                    <option value="5">5 לשנייה</option>
+                    <option value="10">10 לשנייה</option>
+                    <option value="15">15 לשנייה (מפורט מאוד, יקר יותר)</option>
+                </select>
+            </label>
+            <textarea id="videoContext" placeholder="הקשר נוסף (אופציונלי): מה ביקשת מהשחקן לתרגל, איזו זריקה טובה ואיזו לא, איזה קליפ ישן יותר, מה מטריד אותך, וכו׳" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-sky-400 mb-3" rows="2"></textarea>
             <button onclick="analyzeVideo()" id="analyzeVideoBtn" class="w-full px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl transition text-sm">🔍 נתח ביצוע</button>
-            <div id="videoAnalysisLoading" class="hidden text-center text-sky-300 text-xs mt-3">מנתח... (יכול לקחת עד 30 שניות)</div>
+            <div id="videoAnalysisLoading" class="hidden text-center text-sky-300 text-xs mt-3"></div>
             <div id="videoAnalysisResult" class="hidden mt-4 bg-slate-900/80 border border-slate-700 rounded-xl p-4 text-xs text-slate-200 leading-relaxed whitespace-pre-wrap"></div>
+            <div id="drillAnalysisPanel" class="hidden mt-4 bg-slate-900/80 border border-orange-500/30 rounded-xl p-4 text-xs text-slate-200">
+                <h3 class="font-bold text-orange-300 mb-1">🎯 ניתוח ביצוע דריל — טיוטה לבדיקה</h3>
+                <div id="drillAnalysisBody" class="space-y-3"></div>
+                <div id="drillSaveRow" class="flex flex-wrap items-end gap-2 mt-4">
+                    <label class="text-[11px] text-slate-400">ציון הביצוע (30-99, ניתן לעריכה)
+                        <input type="number" id="drillScoreInput" min="30" max="99" step="1" dir="ltr" class="block mt-1 w-24 bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white text-center focus:outline-none focus:border-orange-400">
+                    </label>
+                    <label class="text-[11px] text-slate-400">תאריך
+                        <input type="date" id="drillSaveDate" class="block mt-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-orange-400">
+                    </label>
+                    <label class="flex items-center gap-1.5 text-[11px] text-slate-300 pb-2"><input type="checkbox" id="drillMarkDone" checked class="w-4 h-4 accent-orange-400"> סמן את הדריל כבוצע בתאריך זה</label>
+                    <button type="button" onclick="saveDrillAnalysisResult()" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg transition text-xs">💾 שמור את הניתוח בדריל</button>
+                </div>
+                <div id="drillSaveStatus" class="mt-2 text-[11px] leading-relaxed"></div>
+            </div>
+            <div id="maddenSubPanel" class="hidden mt-4 bg-slate-900/80 border border-purple-500/30 rounded-xl p-4 text-xs text-slate-200">
+                <h3 class="font-bold text-purple-300 mb-1">🏈 תתי-מדדי Madden — טיוטה לבדיקה</h3>
+                <p class="text-[11px] text-slate-400 mb-3 leading-relaxed">אלה הערכות AI מהסרטון, לא מדידות. עבור על כל שורה, תקן את הציון לפי שיפוטך (או של המאמן), וסמן רק את מה שאתה רוצה לשמור. כשורה מסומנת "לא ניתן להעריך", אין לה בסיס בסרטון ולכן לא תישמר. שורות עם ודאות נמוכה אינן מסומנות מראש.</p>
+                <div id="maddenSubTable" class="space-y-3"></div>
+                <div class="flex flex-wrap items-end gap-2 mt-4">
+                    <label class="text-[11px] text-slate-400">תאריך השמירה
+                        <input type="date" id="maddenSaveDate" class="block mt-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-400">
+                    </label>
+                    <button type="button" onclick="saveMaddenSubMetrics()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition text-xs">💾 שמור את המסומנים למעקב מדדים</button>
+                </div>
+                <div id="maddenSaveStatus" class="mt-2 text-[11px] leading-relaxed"></div>
+            </div>
         </div>
 
         <div class="bg-slate-800/50 border border-emerald-500/30 rounded-2xl p-5 md:p-6 backdrop-blur" id="ai-nutrition">
@@ -311,6 +410,7 @@
         </div>
     </div>
 
+    <script src="training-data.js"></script>
     <script>
         function getApiKey() {
             try { return localStorage.getItem('qbmc_gemini_key') || ''; } catch (e) { return ''; }
@@ -409,7 +509,11 @@
                         const res = await fetch(url, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ contents: [{ parts }] }),
+                            body: JSON.stringify(Object.assign(
+                                { contents: [{ parts }] },
+                                options.systemInstruction ? { systemInstruction: { parts: [{ text: options.systemInstruction }] } } : {},
+                                options.generationConfig ? { generationConfig: options.generationConfig } : {}
+                            )),
                             signal: ctrl.signal
                         });
                         clearTimeout(timer);
@@ -456,48 +560,605 @@
             throw finalErr;
         }
 
-        const MADDEN_ANALYSIS_PROMPT = `אתה מאמן קוורטרבקים מקצועי בפוטבול אמריקאי. נתח את הביצוע המוצג (זריקה/תרגיל) והתייחס במפורש לכל אחת מ-7 קטגוריות הדירוג הבאות (בסולם 0-99, בסגנון Madden), עם נימוק קצר לכל אחת:
-1. THP - עוצמת זרוע
-2. SAC - דיוק במסירה קצרה
-3. MAC - דיוק במסירה בינונית
-4. DAC - דיוק במסירה עמוקה
-5. AWR - תחושת כיס ומודעות
-6. RLS - מהירות שחרור
-7. RUN - זריקה בתנועה/ניידות
-בנוסף, ציין 2-3 נקודות טכניות ספציפיות לשיפור (למשל: מנח רגליים, סיבוב אגן, גובה מרפק). תשובה בעברית, מסודרת וברורה. הדגש: זו הערכה ויזואלית כללית, לא תחליף להערכת מאמן מוסמך בשטח.`;
+        // ================= Video analyzer =================
+        // Facts this design rests on (Google's Gemini video docs, checked 2026-09-30):
+        //  - Default sampling is 1 frame per second, which the docs themselves say can miss fast motion.
+        //    A throw's release lasts a fraction of a second, so the default would show it in 0-1 frames;
+        //    we therefore request a higher `fps` (video_metadata) for videos.
+        //  - Inline data is limited by the TOTAL REQUEST size (20MB). Base64 inflates files by ~33%,
+        //    so the raw limit for inline files is about 14MB, not 20MB.
+        //  - Anything larger goes through the Files API (resumable upload, then reference by URI).
+        //  - Gemini 2.5 and later accept up to 10 videos in one request; this UI caps it at 6.
+        const GEMINI_HOST = 'https://generativelanguage.googleapis.com';
+        const VIDEO_INLINE_TOTAL_LIMIT = 14 * 1024 * 1024;
+        const VIDEO_MAX_FILES = 6;
+        const VIDEO_MAX_FILE_BYTES = 500 * 1024 * 1024;
+        const VIDEO_MAX_TOTAL_FRAMES = 600;      // keeps a request to roughly 150k tokens
+        const VIDEO_UPLOAD_POLL_MS = 3000;
+        const VIDEO_UPLOAD_TIMEOUT_MS = 4 * 60 * 1000;
+
+        // Rules shared by every video-analysis mode.
+        const VIDEO_RULES_COMMON = `אתה מאמן קוורטרבקים ומנתח וידאו מקצועי בפוטבול אמריקאי, בעל הבנה בביומכניקה של זריקה. תפקידך לתת הערכה כנה, אובייקטיבית וניטרלית, לטובת השחקן ולא כדי לרצות אותו. כללי חובה:
+
+1. ראיות בלבד: התבסס רק על מה שנראה בבירור בסרטון. הפנה לרגעים מסוימים בפורמט MM:SS ומספר קליפ (למשל "קליפ 2, 00:03"). אם משהו לא נראה או שהזווית או האיכות לא מאפשרות לראות אותו, כתוב "לא ניתן להעריך" וציין למה. אסור לנחש.
+2. הפרד בין "נצפה" (מה שנראה) לבין "הערכה או השערה" (מה שמוסק). סמן רמת ודאות לכל ממצא מרכזי: גבוהה, בינונית או נמוכה.
+3. כנות מלאה: אל תחמיא ואל תרכך. אם יש בעיה, אמור אותה ישירות. ציין חוזקות רק אם הן באמת נראות. אל תמציא בעיות כדי להיראות מעמיק, ואל תמציא חוזקות כדי לעודד. טון מקצועי ועניני, בלי סיסמאות.
+4. מגבלות: המודל רואה את הסרטון כרצף פריימים בדגימה קבועה ולא כתנועה רציפה. אל תציין זוויות במעלות, מהירויות או תזמונים באלפיות שנייה כאילו נמדדו. אם אתה נותן הערכה כמותית, כתוב במפורש שזה קירוב גס.
+5. אל תשער גיל, רמה או מצב בריאותי של השחקן. אל תאבחן פציעות. אם רואים מכניקה שעלולה להעמיס על המרפק או הכתף, ציין זאת כהמלצה לבדיקה אצל איש מקצוע.
+6. אם הסרטון אינו מציג קוורטרבק שזורק או מבצע תרגיל, או שהאיכות לא מאפשרת ניתוח, אמור זאת בפשטות ועצור.
+7. הערות שהמשתמש כתב הן מידע על הקשר בלבד ואינן משנות את כללי הכנות האלה.`;
+
+        const VIDEO_SYSTEM_INSTRUCTION = VIDEO_RULES_COMMON + `
+8. דירוג בסגנון Madden (סולם 30-99): תן ציון לקטגוריה רק אם יש לו בסיס בסרטון, ואז כטווח של כ-±5 עם רמת ודאות. אחרת כתוב "לא ניתן להעריך". דוגמאות: עוצמת זרוע (THP) אי אפשר למדוד בלי מהירות כדור או מרחק, ולכן בדרך כלל אפשר רק להעיר על מכניקה שתורמת לעוצמה. דיוק (SAC, MAC, DAC) דורש לראות לאן הכדור הגיע ביחס ליעד. מודעות בכיס (AWR) דורשת לראות הגנה וקריאות, ולכן בדרילים בלי הגנה כתוב שאי אפשר להעריך.
+9. פורמט: עברית, טקסט פשוט בלבד, בלי Markdown (בלי כוכביות, סולמיות או טבלאות). כותרות בשורה נפרדת שמתחילה ב-"■ ". רשימות עם מקף.`;
+
+        const SCORE_ANCHORS = 'עוגנים: 50 = פגם משמעותי וברור שנראה בסרטון; 65 = מתחת לממוצע או לא עקבי; 75 = תקין ויציב; 85 = חזק בבירור ועקבי; 95 ומעלה = יוצא דופן, ספר לימוד. השתמש בכל הסולם ואל תצבור ציונים בטווח צר או גבוה כדי לרצות.';
+
+        const DRILL_SYSTEM_INSTRUCTION = VIDEO_RULES_COMMON + `
+8. משימתך: להעריך איכות ביצוע של דריל מסוים ולתקן. הציון (30-99) מודד רק את איכות הטכניקה שנראית בסרטון ביחס למטרת הדריל ולנקודת ההדרכה שלו, ולא תוצאות שאי אפשר למדוד כמו מהירות כדור או דיוק בלי יעד. ${SCORE_ANCHORS}
+9. בדוק תחילה אם הסרטון באמת מציג את הדריל שצוין. אם לא, או שרואים פחות מחזרה ברורה אחת, drillShown הוא false, score הוא null, והסבר בקצרה מה כן נראה.
+10. תיקונים: עד 3, לפי סדר חשיבות. כל תיקון מתבסס על משהו שנצפה עם קליפ ורגע (MM:SS), ומכיל רמז קצר וקל לזכור (cue) והתאמה או תרגיל מתקן אחד. אל תמציא תיקון אם הביצוע תקין: במקרה כזה מערך התיקונים יכול להיות ריק.
+11. חוזקות: רק מה שנצפה בפועל, ובלי מילות עידוד ריקות.
+12. confidence הוא "high" רק אם נראו כמה חזרות ברורות. "low" אם נראתה חזרה אחת או שהזווית חלקית.
+13. פורמט: החזר אובייקט JSON תקין בלבד, בלי טקסט לפניו או אחריו ובלי גדרות קוד. הטקסט בתוכו בעברית.`;
+
+        const MADDEN_SYSTEM_INSTRUCTION = VIDEO_RULES_COMMON + `
+8. משימתך: לדרג תתי-מדדים של קוורטרבק בסולם 30-99. ${SCORE_ANCHORS}
+9. ציון מספרי (score) ייתן רק לתת-מדד שיש לו בסיס ישיר בסרטון, בהתאם לזווית ולסוג הביצוע. אחרת score חייב להיות null והסיבה נכתבת ב-evidence. תת-מדד שמחייב הגנה, רסיבר, יעד או בליץ שלא מופיעים בסרטון הוא null. עדיף הרבה null מציון שהומצא.
+10. confidence הוא "high" רק אם הדבר נראה בבירור ובמספר חזרות או ברצף פריימים ברור. "low" אם הוא מבוסס על פריים אחד או על ראות חלקית.
+11. פורמט: החזר אובייקט JSON תקין בלבד, בלי טקסט לפניו או אחריו ובלי גדרות קוד. הטקסט בתוכו בעברית.`;
+
+        function buildVideoContextLines(ctx) {
+            const angleMap = { side: 'מהצד (מצד יד הזריקה)', behind: 'מאחור, לכיוון המטרה', front: 'מלפנים או באלכסון', mixed: 'מעורבת או כמה זוויות', unknown: 'לא ידועה' };
+            const speedMap = { normal: 'מהירות רגילה', slowmo: 'Slow Motion (התנועה נראית איטית יותר מבמציאות)' };
+            const handMap = { right: 'ימין', left: 'שמאל', unknown: 'לא ידועה' };
+            const typeMap = { general: 'כללי / לא צוין', short: 'מסירה קצרה', medium: 'מסירה בינונית', deep: 'מסירה עמוקה', onrun: 'זריקה בתנועה', dropback: 'דרופבק ועבודת רגליים', drill: 'דריל' };
+            const lines = [
+                `מספר קבצים: ${ctx.count}${ctx.count > 1 ? ' (הקליפים ממוספרים לפי הסדר שנשלחו)' : ''}`,
+                `זווית צילום (לפי המשתמש): ${angleMap[ctx.angle]}`,
+                `מהירות: ${speedMap[ctx.speed]}`,
+                `דגימת פריימים: ${ctx.fps} לשנייה של סרטון`,
+                `יד זריקה: ${handMap[ctx.hand]}`,
+                `סוג הביצוע: ${typeMap[ctx.throwType]}`
+            ];
+            if (ctx.note) lines.push(`הערות המשתמש: ${ctx.note}`);
+            return lines;
+        }
+
+        function buildVideoUserPrompt(ctx) {
+            const lines = buildVideoContextLines(ctx);
+            return `נתח את הביצוע לפי הכללים.\n\nנתוני הצילום:\n- ${lines.join('\n- ')}\n\nמבנה התשובה הנדרש:\n` +
+`■ מה נבדק ומגבלות — 2-3 שורות: מה נראה בסרטון, ואילו גורמים (זווית, איכות, מספר זריקות, דגימה) מגבילים את הביטחון.\n` +
+`■ סיכום בשורה אחת — מה התמונה הכללית, בכנות.\n` +
+`■ ניתוח לפי שרשרת התנועה — לכל שלב: מה נצפה (עם קליפ ורגע), רמת ודאות, ומה ההשפעה על הזריקה. השלבים: עבודת רגליים ויציבות; אגן וסיבוב פלג גוף עליון; זרוע (גובה מרפק, מסלול, נקודת שחרור); שחרור וסיום התנועה.\n` +
+`■ חוזקות שנצפו בפועל — רק אם יש.\n` +
+`■ הבעיות העיקריות לפי סדר חשיבות — עד 3. לכל בעיה: מה נראה, למה זה פוגע בזריקה, ורמז תיקון אחד (Cue) ותרגיל מתאים אחד.\n` +
+`■ הערכת קטגוריות Madden — לכל אחת מ-7 הקטגוריות (THP, SAC, MAC, DAC, AWR, RLS, RUN): טווח ציון עם רמת ודאות, או "לא ניתן להעריך" עם סיבה.\n` +
+(ctx.count > 1 ? `■ עקביות והשוואה בין הקליפים — מה חוזר על עצמו, מה משתנה, ואם הקליפים לפי סדר כרונולוגי (רק אם המשתמש ציין זאת) האם יש שיפור או הרעה.\n` : `■ עקביות — אם יש כמה זריקות בקליפ, האם המכניקה חוזרת על עצמה.\n`) +
+`■ מה לצלם בפעם הבאה כדי לשפר את הדיוק — הצעה קונקרטית אחת או שתיים.\n` +
+`■ הסתייגות — שורה אחת: זו הערכה ויזואלית של AI ולא תחליף למאמן בשטח.`;
+        }
+
+        // ---- Madden sub-metric catalog (ids and Hebrew labels mirror madden.html / metrics.html exactly) ----
+        // `observe` tells the model what the sub-metric means and, importantly, what the video must
+        // contain for it to be judgeable; the model is told to answer null when that is missing.
+        const MADDEN_SUB_CATALOG = [
+            { key: 'THP', label: 'עוצמת זרוע', en: 'Arm Strength', subs: [
+                { id: 'hipShoulder', label: 'הפרדת אגן-כתפיים', observe: 'האגן מסתובב לכיוון המטרה לפני הכתפיים, והכתפיים "נשארות מאחור" לרגע. נראה בעיקר מהצד או באלכסון.' },
+                { id: 'frontFoot', label: 'יציבות רגל קדמית בנחיתה', observe: 'הרגל הקדמית נוחתת יציבה, פונה לכיוון המטרה, בלי החלקה או קריסה. מהצד או מאחור.' },
+                { id: 'trunkTransfer', label: 'סיבוב גו והעברת משקל', observe: 'המשקל עובר ברצף מהרגל האחורית לקדמית תוך סיבוב הגו. מהצד.' },
+                { id: 'elbowLag', label: 'עיכוב מרפק / שוט', observe: 'המרפק מוביל והאמה נשארת מאחור לפני שחרור כמו שוט. דורש דגימה צפופה; מהצד.' },
+                { id: 'followThrough', label: 'סיום תנועה מלא', observe: 'הזרוע ממשיכה במלואה אחרי השחרור והגוף מסיים מאוזן. מהצד או מלפנים.' } ] },
+            { key: 'SAC', label: 'דיוק קצר (0-10 יארד)', en: 'Short Accuracy', subs: [
+                { id: 'elbowAngle', label: 'זווית מרפק בשחרור (~90°)', observe: 'זווית המרפק ברגע השחרור. הערכה גסה בלבד; מהצד.' },
+                { id: 'spiral', label: 'הידוק ספירלה', observe: 'דורש שהכדור נראה בבירור בטיסה ודגימה צפופה מאוד. בדרך כלל null.' },
+                { id: 'ballPlacement', label: 'מיקום הכדור ביחס לרסיבר', observe: 'דורש רסיבר ויעד בפריים. בדרילים בלי רסיבר: null.' },
+                { id: 'quickRhythm', label: 'תזמון במשחק המהיר (1/3-Step)', observe: 'דורש דרופ קצר ושחרור מהיר ברצף שרואים. מהצד.' } ] },
+            { key: 'MAC', label: 'דיוק בינוני (10-20 יארד)', en: 'Medium Accuracy', subs: [
+                { id: 'fiveStepFootwork', label: 'עבודת רגליים ב-5-Step Drop', observe: 'רק אם מבוצע דרופ של 5 צעדים בסרטון. מהצד או מאחור.' },
+                { id: 'touch', label: 'שליטה בקשת/גובה הזריקה (Touch)', observe: 'דורש מעקב אחרי מסלול הכדור בטיסה ובנחיתה.' },
+                { id: 'leverageWindow', label: 'קריאת לברג׳ וזריקה לחלון פתוח', observe: 'דורש הגנה ורסיבר בפריים. בדרילים: null.' },
+                { id: 'breakAnticipation', label: 'אנטיציפציה על שבירות מסלול', observe: 'דורש מסלול של רסיבר בסרטון. בלעדיו: null.' } ] },
+            { key: 'DAC', label: 'דיוק עמוק (20+ יארד)', en: 'Deep Accuracy', subs: [
+                { id: 'hipTorque', label: 'מומנטום ירך לזריקה ארוכה', observe: 'דורש זריקה ארוכה. סיבוב ומומנטום של הירך; מהצד.' },
+                { id: 'arcJudgment', label: 'שיפוט מרחק/קשת (Touch vs Line Drive)', observe: 'דורש לראות את הנחיתה והיעד. בלעדיהם: null.' },
+                { id: 'deepPlacement', label: 'מיקום כדור עמוק (Back-Shoulder/Streak)', observe: 'דורש נחיתה ביחס לרסיבר. בלעדיה: null.' },
+                { id: 'legDrive', label: 'הנעת רגל תחתונה לתוך הזריקה', observe: 'דחיפה מהרגל האחורית לתוך הזריקה. מהצד, עדיף בזריקה ארוכה.' } ] },
+            { key: 'AWR', label: 'תחושת כיס ומודעות', en: 'Pocket Awareness', subs: [
+                { id: 'preSnapRead', label: 'קריאה לפני ה-Snap', observe: 'דורש הגנה וקריאות לפני הסנאפ. בדרילים רגילים: null.' },
+                { id: 'pocketMovement', label: 'תנועה בכיס (טיפוס/נסיגה)', observe: 'רק אם יש תנועה בכיס בסרטון (טיפוס, נסיגה, הזזת רגליים תחת לחץ).' },
+                { id: 'eyesDownfield', label: 'עיניים קדימה בזמן תנועה', observe: 'כיוון המבט בזמן תנועה. דורש שהראש נראה, מלפנים או באלכסון.' },
+                { id: 'blitzRecognition', label: 'זיהוי בליץ/Hot Route ושחרור מהיר', observe: 'דורש בליץ בסרטון. בלעדיו: null.' } ] },
+            { key: 'RLS', label: 'מהירות שחרור', en: 'Release Speed', subs: [
+                { id: 'compactMotion', label: 'תנועת זריקה קומפקטית', observe: 'קשת קצרה של הכדור מהחזקה לשחרור, בלי הורדה מיותרת. מהצד.' },
+                { id: 'handTransition', label: 'מעבר מתפיסה לזריקה', observe: 'דורש רצף של תפיסת הכדור (או סנאפ) ואז זריקה.' },
+                { id: 'processingSpeed', label: 'מהירות עיבוד פרה-סנאפ עד שחרור', observe: 'דורש סיטואציית קריאה. בדרילים רגילים: null.' } ] },
+            { key: 'RUN', label: 'ניידות וזריקה בתנועה', en: 'Throw on Run & Mobility', subs: [
+                { id: 'rollAccuracy', label: 'דיוק בזריקה תוך ריצה', observe: 'דורש זריקה בתנועה ולראות את הנחיתה ביחס ליעד.' },
+                { id: 'hipAlignment', label: 'יישור ירכיים למטרה תוך תנועה', observe: 'האם הירכיים מיושרות למטרה בשחרור בזמן תנועה. מאחור או מהצד.' },
+                { id: 'sprintOutMechanics', label: 'מכניקת Sprint-Out', observe: 'רק אם מבוצע Sprint-Out בסרטון.' },
+                { id: 'scrambleDecision', label: 'החלטת ריצה מול זריקה ב-Scramble', observe: 'דורש הגנה וסיטואציה. בדרילים: null.' } ] }
+        ];
+        const MADDEN_SUB_INDEX = {};
+        MADDEN_SUB_CATALOG.forEach(c => c.subs.forEach(m => { MADDEN_SUB_INDEX[c.key + '.' + m.id] = { cat: c.key, catLabel: c.label, id: m.id, label: m.label }; }));
+        const MADDEN_UNIT = 'דירוג 0-99';
+        let lastMaddenDraft = null;
+
+        function madden_subEntryName(key) { const m = MADDEN_SUB_INDEX[key]; return `Madden [${m.cat}.${m.id}]: ${m.label}`; }   // must match metrics.html madSubName()
+
+        function buildMaddenUserPrompt(ctx) {
+            const base = buildVideoContextLines(ctx);
+            const catalog = MADDEN_SUB_CATALOG.map(c => `${c.key} — ${c.label} (${c.en})\n` + c.subs.map(m => `  - id: ${m.id} | ${m.label} | מה נדרש כדי לשפוט: ${m.observe}`).join('\n')).join('\n');
+            return `דרג את תתי-המדדים הבאים של הקוורטרבק לפי הכללים.\n\nנתוני הצילום:\n- ${base.join('\n- ')}\n\nתתי-המדדים (28). לכל אחד החזר בדיוק פריט אחד:\n${catalog}\n\n` +
+`מבנה ה-JSON הנדרש (בדיוק המפתחות האלה):\n` +
+`{\n  "overview": "2-4 משפטים: מה נראה בסרטון ובאיזו זווית, בכנות",\n  "limitations": "מה הגביל את הביטחון (זווית, איכות, מספר זריקות, דגימה)",\n  "subMetrics": [\n    { "cat": "THP", "id": "hipShoulder", "score": 72, "confidence": "medium", "evidence": "קליפ 1, 00:03: מה נצפה ולמה הציון הזה" }\n  ],\n  "nextFilming": "מה לצלם בפעם הבאה כדי שיהיה אפשר לדרג יותר תתי-מדדים"\n}\n\n` +
+`חובה: בדיוק 28 פריטים ב-subMetrics, לפי ה-cat וה-id שלמעלה. score הוא מספר שלם בין 30 ל-99 או null אם אי אפשר לשפוט (אז כתוב ב-evidence למה). confidence הוא אחד מ: high, medium, low.` +
+(ctx.count > 1 ? ` יש כמה קליפים: תן ציון אחד לכל תת-מדד המסכם את כל הקליפים, וציין ב-evidence אם היה שוני ביניהם.` : ``);
+        }
+
+        function parseMaddenResponse(text) {
+            const start = text.indexOf('{'), end = text.lastIndexOf('}');
+            if (start < 0 || end <= start) throw new Error('no-json');
+            const obj = JSON.parse(text.slice(start, end + 1));
+            const rows = {};
+            (Array.isArray(obj.subMetrics) ? obj.subMetrics : []).forEach(r => {
+                const key = r && r.cat + '.' + r.id;
+                if (!MADDEN_SUB_INDEX[key] || rows[key]) return;            // unknown or duplicate ids are dropped
+                let score = (r.score === null || r.score === undefined || r.score === '') ? null : Number(r.score);
+                if (score !== null && !isFinite(score)) score = null;
+                if (score !== null) score = Math.max(30, Math.min(99, Math.round(score)));
+                const conf = ['high', 'medium', 'low'].includes(r.confidence) ? r.confidence : 'low';
+                rows[key] = { score, confidence: conf, evidence: String(r.evidence || '').slice(0, 600) };
+            });
+            return { overview: String(obj.overview || ''), limitations: String(obj.limitations || ''), nextFilming: String(obj.nextFilming || ''), rows };
+        }
+
+        function renderMaddenDraft(draft) {
+            const confHe = { high: 'ודאות גבוהה', medium: 'ודאות בינונית', low: 'ודאות נמוכה' };
+            const confCls = { high: 'text-emerald-400 border-emerald-500/40', medium: 'text-amber-300 border-amber-500/40', low: 'text-rose-400 border-rose-500/40' };
+            const html = MADDEN_SUB_CATALOG.map(c => {
+                const rowsHtml = c.subs.map(m => {
+                    const key = c.key + '.' + m.id;
+                    const r = draft.rows[key];
+                    const assessable = r && r.score !== null;
+                    const checked = assessable && r.confidence !== 'low';
+                    return `<div class="flex flex-wrap items-start gap-2 bg-slate-800/60 border border-slate-700 rounded-lg p-2" data-madden-key="${key}">
+                        <input type="checkbox" class="madden-sub-check mt-1 w-4 h-4 accent-purple-400 shrink-0" ${checked ? 'checked' : ''} ${assessable ? '' : 'disabled'}>
+                        <div class="flex-1 min-w-[10rem]">
+                            <div class="font-bold text-slate-100">${escapeHtmlAi(m.label)}</div>
+                            <div class="text-[11px] text-slate-400 leading-relaxed">${assessable ? escapeHtmlAi(r.evidence) : 'לא ניתן להעריך מהסרטון' + (r && r.evidence ? ': ' + escapeHtmlAi(r.evidence) : '')}</div>
+                        </div>
+                        ${assessable ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${confCls[r.confidence]}">${confHe[r.confidence]}</span>
+                        <input type="number" min="30" max="99" step="1" value="${r.score}" class="madden-sub-score w-16 bg-slate-900 border border-slate-600 rounded-lg p-1.5 text-xs text-white text-center focus:outline-none focus:border-purple-400" dir="ltr">`
+                        : `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-600 text-slate-400">ללא ציון</span>`}
+                    </div>`;
+                }).join('');
+                return `<div><div class="text-[11px] font-bold text-purple-300 mb-1.5">${c.key} — ${escapeHtmlAi(c.label)}</div><div class="space-y-1.5">${rowsHtml}</div></div>`;
+            }).join('');
+            document.getElementById('maddenSubTable').innerHTML = html;
+            const d = new Date();
+            document.getElementById('maddenSaveDate').value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            document.getElementById('maddenSaveDate').max = document.getElementById('maddenSaveDate').value;
+            document.getElementById('maddenSaveStatus').innerHTML = '';
+            document.getElementById('maddenSubPanel').classList.remove('hidden');
+        }
+
+        // Writes the checked rows into the same per-day store metrics.html uses (qbmc_metrics_<date>), under
+        // the exact "Madden [CAT.id]: label" names madden.html already reads. madden.html then rebuilds the
+        // category scores and OVR with its own weighting — nothing is recalculated here.
+        function saveMaddenSubMetrics() {
+            const status = document.getElementById('maddenSaveStatus');
+            const date = document.getElementById('maddenSaveDate').value;
+            const todayD = new Date();
+            const today = todayD.getFullYear() + '-' + String(todayD.getMonth() + 1).padStart(2, '0') + '-' + String(todayD.getDate()).padStart(2, '0');
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today) { status.innerHTML = '<span class="text-rose-400">בחר תאריך תקין שאינו עתידי.</span>'; return; }
+            const picked = [];
+            document.querySelectorAll('#maddenSubTable [data-madden-key]').forEach(row => {
+                const cb = row.querySelector('.madden-sub-check'), inp = row.querySelector('.madden-sub-score');
+                if (!cb || !cb.checked || !inp) return;
+                const v = Math.round(Number(inp.value));
+                if (!isFinite(v) || v < 30 || v > 99) return;
+                picked.push({ key: row.getAttribute('data-madden-key'), value: v });
+            });
+            const invalid = Array.from(document.querySelectorAll('#maddenSubTable .madden-sub-check:checked')).length - picked.length;
+            if (!picked.length) { status.innerHTML = '<span class="text-amber-300">לא סומן אף תת-מדד תקין לשמירה (ציונים חייבים להיות בין 30 ל-99).</span>'; return; }
+            let entries = [];
+            try { const raw = localStorage.getItem('qbmc_metrics_' + date); entries = raw ? JSON.parse(raw) : []; if (!Array.isArray(entries)) entries = []; } catch (e) { entries = []; }
+            const names = new Set(picked.map(p => madden_subEntryName(p.key)));
+            const replaced = entries.filter(e => e && names.has(e.name)).length;
+            entries = entries.filter(e => !(e && names.has(e.name)));       // same sub-metric on the same day is replaced, never duplicated
+            picked.forEach(p => entries.push({ name: madden_subEntryName(p.key), value: p.value, unit: MADDEN_UNIT, source: 'ai-video' }));
+            try { localStorage.setItem('qbmc_metrics_' + date, JSON.stringify(entries)); }
+            catch (e) { status.innerHTML = '<span class="text-rose-400">השמירה נכשלה (האחסון בדפדפן מלא או חסום).</span>'; return; }
+            status.innerHTML = `<span class="text-emerald-400">✅ נשמרו ${picked.length} תתי-מדדים לתאריך ${date}${replaced ? ` (${replaced} מהם החליפו ערך קודם מאותו יום)` : ''}${invalid > 0 ? `, ${invalid} שורות עם ציון לא תקין דולגו` : ''}.</span> ` +
+                `<span class="text-slate-400">פתח את <a href="madden.html" class="text-sky-400 underline">דירוג QB (Madden)</a> כדי לראות את הקטגוריות וה-OVR מתעדכנים לפי הנוסחה הקיימת. תתי-מדדים שלא נשמרו נשארים כפי שהיו שם, ולכן ה-OVR יתבסס על שילוב של הציונים האלה עם שאר הנתונים. אפשר לראות ולמחוק רשומות ב<a href="metrics.html" class="text-sky-400 underline">מעקב מדדים</a>.</span>`;
+        }
+
+        // ================= Drill video analysis =================
+        const QT_AI = window.QB_TRAINING || null;   // drill catalog + storage helpers (training-data.js); the page works without it, only drill mode is off
+        let lastDrillDraft = null;
+
+        function currentDrill() {
+            if (!QT_AI) return null;
+            const idx = parseInt(document.getElementById('videoDrill').value, 10);
+            return QT_AI.DRILLS_DATABASE[idx] || null;
+        }
+        function populateDrillSelect() {
+            const sel = document.getElementById('videoDrill');
+            if (!QT_AI) { sel.innerHTML = '<option value="">קובץ training-data.js לא נטען</option>'; return; }
+            let html = '<option value="">בחר דריל…</option>';
+            Object.keys(QT_AI.DRILL_CATEGORY_META).forEach(cat => {
+                const items = QT_AI.DRILLS_DATABASE.map((d, i) => ({ d, i })).filter(x => x.d.category === cat);
+                if (!items.length) return;
+                html += `<optgroup label="${escapeHtmlAi(QT_AI.DRILL_CATEGORY_META[cat].icon + ' ' + QT_AI.DRILL_CATEGORY_META[cat].label)}">` + items.map(x => `<option value="${x.i}">${escapeHtmlAi(x.d.name)}</option>`).join('') + '</optgroup>';
+            });
+            sel.innerHTML = html;
+        }
+        function updateDrillInfo() {
+            const d = currentDrill();
+            document.getElementById('videoDrillInfo').innerHTML = d ? `${escapeHtmlAi(d.desc)}<br><span class="text-amber-300">💡 ${escapeHtmlAi(d.cue)}</span>` : '';
+        }
+
+        function buildDrillUserPrompt(ctx, drill) {
+            const cat = QT_AI.DRILL_CATEGORY_META[drill.category];
+            return `נתח את ביצוע הדריל שבסרטון לפי הכללים.\n\nהדריל שהמשתמש אומר שמוצג: ${drill.name}\nקטגוריה: ${cat ? cat.label : drill.category}\nמשך או חזרות מקובלים: ${drill.duration}\nציוד: ${drill.equipment}\nתיאור הדריל: ${drill.desc}\nנקודת ההדרכה המרכזית: ${drill.cue}\n\nנתוני הצילום:\n- ${buildVideoContextLines(ctx).join('\n- ')}\n\n` +
+`מבנה ה-JSON הנדרש (בדיוק המפתחות האלה):\n{\n  "drillShown": true,\n  "overview": "2-4 משפטים: מה נראה בסרטון, כמה חזרות ובאיזו זווית",\n  "limitations": "מה הגביל את הביטחון",\n  "repsObserved": 5,\n  "score": 74,\n  "confidence": "medium",\n  "scoreBasis": "משפט אחד: על מה הציון מבוסס ומה לא נמדד",\n  "strengths": ["חוזקה שנצפתה, עם קליפ ורגע"],\n  "corrections": [ { "issue": "מה לא בסדר", "evidence": "קליפ 1, 00:04: מה נצפה", "cue": "רמז קצר", "fix": "תיקון או תרגיל מתקן אחד" } ],\n  "nextFilming": "מה לצלם אחרת כדי לשפר את הדיוק"\n}\n\n` +
+`score הוא מספר שלם 30-99 או null (כשהדריל לא מוצג או שאי אפשר לשפוט). ` + (ctx.count > 1 ? `יש כמה קליפים: תן ציון אחד המסכם את כולם וציין אם היה שוני ביניהם.` : ``);
+        }
+
+        function parseDrillResponse(text) {
+            const start = text.indexOf('{'), end = text.lastIndexOf('}');
+            if (start < 0 || end <= start) throw new Error('no-json');
+            const o = JSON.parse(text.slice(start, end + 1));
+            let score = (o.score === null || o.score === undefined || o.score === '') ? null : Number(o.score);
+            if (score !== null && !isFinite(score)) score = null;
+            if (score !== null) score = Math.max(30, Math.min(99, Math.round(score)));
+            const shown = o.drillShown !== false;
+            if (!shown) score = null;                                   // the model itself says the drill isn't visible
+            const strList = a => (Array.isArray(a) ? a : []).map(x => String(x || '').slice(0, 400)).filter(Boolean).slice(0, 5);
+            const corrections = (Array.isArray(o.corrections) ? o.corrections : []).filter(c => c && (c.issue || c.cue)).slice(0, 3)
+                .map(c => ({ issue: String(c.issue || '').slice(0, 300), evidence: String(c.evidence || '').slice(0, 300), cue: String(c.cue || '').slice(0, 200), fix: String(c.fix || '').slice(0, 400) }));
+            return {
+                drillShown: shown, score,
+                confidence: ['high', 'medium', 'low'].includes(o.confidence) ? o.confidence : 'low',
+                overview: String(o.overview || '').slice(0, 800), limitations: String(o.limitations || '').slice(0, 600),
+                scoreBasis: String(o.scoreBasis || '').slice(0, 300), repsObserved: Number.isFinite(Number(o.repsObserved)) ? Number(o.repsObserved) : null,
+                strengths: strList(o.strengths), corrections, nextFilming: String(o.nextFilming || '').slice(0, 400)
+            };
+        }
+
+        function localYmdAi() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+        function renderDrillDraft(draft, drill, clipCount) {
+            const e = escapeHtmlAi;
+            const confHe = { high: 'ודאות גבוהה', medium: 'ודאות בינונית', low: 'ודאות נמוכה' };
+            const g = draft.score !== null ? QT_AI.gradeFor(draft.score) : null;
+            let html = `<div class="flex flex-wrap items-center gap-2">
+                <span class="font-bold text-white">${e(drill.name)}</span>
+                ${g ? `<span class="text-sm font-black px-2.5 py-0.5 rounded-full border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l} • ${draft.score}</span><span class="text-[10px] text-slate-400">${confHe[draft.confidence]}</span>`
+                     : `<span class="text-[11px] font-bold px-2 py-0.5 rounded-full border border-slate-600 text-slate-400">ללא ציון</span>`}
+                ${draft.repsObserved !== null ? `<span class="text-[10px] text-slate-400">חזרות שנצפו: ${draft.repsObserved}</span>` : ''}
+            </div>
+            <p class="leading-relaxed">${e(draft.overview)}</p>`;
+            if (!draft.drillShown) html += `<p class="text-amber-300">⚠️ לפי המודל, הסרטון לא מציג את הדריל שנבחר בצורה שמאפשרת לדרג אותו, ולכן אין ציון.</p>`;
+            if (draft.scoreBasis) html += `<p class="text-[11px] text-slate-400">על מה הציון מבוסס: ${e(draft.scoreBasis)}</p>`;
+            if (draft.strengths.length) html += `<div><div class="text-[11px] font-bold text-emerald-300 mb-1">חוזקות שנצפו</div><ul class="list-disc pr-4 space-y-0.5">${draft.strengths.map(x => `<li>${e(x)}</li>`).join('')}</ul></div>`;
+            html += draft.corrections.length
+                ? `<div><div class="text-[11px] font-bold text-rose-300 mb-1">תיקונים לפי סדר חשיבות</div><div class="space-y-2">${draft.corrections.map((c, i) => `<div class="bg-slate-800/60 border border-slate-700 rounded-lg p-2">
+                    <div class="font-bold text-slate-100">${i + 1}. ${e(c.issue)}</div>
+                    ${c.evidence ? `<div class="text-[11px] text-slate-400">נצפה: ${e(c.evidence)}</div>` : ''}
+                    ${c.cue ? `<div class="text-[11px] text-amber-300">💡 רמז: ${e(c.cue)}</div>` : ''}
+                    ${c.fix ? `<div class="text-[11px] text-sky-300">🔧 ${e(c.fix)}</div>` : ''}</div>`).join('')}</div></div>`
+                : (draft.drillShown ? `<p class="text-[11px] text-slate-400">לא הוצעו תיקונים.</p>` : '');
+            if (draft.limitations) html += `<p class="text-[11px] text-slate-500">מגבלות: ${e(draft.limitations)}</p>`;
+            if (draft.nextFilming) html += `<p class="text-[11px] text-slate-500">לפעם הבאה: ${e(draft.nextFilming)}</p>`;
+            document.getElementById('drillAnalysisBody').innerHTML = html;
+
+            const saveRow = document.getElementById('drillSaveRow');
+            saveRow.classList.toggle('hidden', draft.score === null);
+            document.getElementById('drillScoreInput').value = draft.score !== null ? draft.score : '';
+            const today = localYmdAi();
+            const dateEl = document.getElementById('drillSaveDate'); dateEl.value = today; dateEl.max = today;
+            document.getElementById('drillSaveStatus').innerHTML = draft.score === null ? '<span class="text-slate-400">אין ציון לשמירה. אפשר לצלם מחדש (חזרה ברורה אחת לפחות, כל הגוף בפריים) ולנסות שוב.</span>' : '';
+            lastDrillDraft = { draft, drillName: drill.name, clips: clipCount };
+            document.getElementById('drillAnalysisPanel').classList.remove('hidden');
+        }
+
+        function saveDrillAnalysisResult() {
+            const status = document.getElementById('drillSaveStatus');
+            if (!QT_AI || !lastDrillDraft) return;
+            const score = Math.round(Number(document.getElementById('drillScoreInput').value));
+            const date = document.getElementById('drillSaveDate').value;
+            if (!isFinite(score) || score < 30 || score > 99) { status.innerHTML = '<span class="text-rose-400">הציון חייב להיות מספר בין 30 ל-99.</span>'; return; }
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > localYmdAi()) { status.innerHTML = '<span class="text-rose-400">בחר תאריך תקין שאינו עתידי.</span>'; return; }
+            const d = lastDrillDraft.draft;
+            const ok = QT_AI.saveDrillAnalysis(lastDrillDraft.drillName, {
+                date, score, confidence: d.confidence, summary: d.overview.slice(0, 400), clips: lastDrillDraft.clips,
+                edited: score !== d.score ? true : undefined,
+                corrections: d.corrections.map(c => ({ issue: c.issue, cue: c.cue }))
+            });
+            if (!ok) { status.innerHTML = '<span class="text-rose-400">השמירה נכשלה: הדריל לא נמצא בספריית הדרילים.</span>'; return; }
+            let extra = '';
+            if (document.getElementById('drillMarkDone').checked) { QT_AI.setDrillDone(lastDrillDraft.drillName, date, true); extra = ' והדריל סומן כבוצע ביומן הדרילים ובלוח השנה'; }
+            status.innerHTML = `<span class="text-emerald-400">✅ הניתוח נשמר${extra}.</span> <span class="text-slate-400">הציון והתיקונים יופיעו על כרטיס הדריל ב<a href="training.html#drills" class="text-sky-400 underline">דף האימון</a>.</span>`;
+        }
+
+        // ---- file helpers ----
+        function videoMimeFor(file) {
+            const t = (file.type || '').toLowerCase();
+            if (t === 'video/quicktime') return 'video/mov';
+            if (t) return t;
+            const ext = (file.name.split('.').pop() || '').toLowerCase();
+            return ({ mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/mov', webm: 'video/webm', avi: 'video/avi', mpg: 'video/mpg', mpeg: 'video/mpeg', wmv: 'video/wmv', flv: 'video/x-flv', '3gp': 'video/3gpp', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif' })[ext] || '';
+        }
+        function isVideoFile(file) { return videoMimeFor(file).startsWith('video/'); }
+        function fmtMB(bytes) { return (bytes / 1048576).toFixed(bytes < 10485760 ? 1 : 0) + 'MB'; }
+
+        // Duration from the browser's own decoder; resolves null when it can't decode (e.g. some HEVC files).
+        function readVideoDuration(file) {
+            return new Promise(resolve => {
+                if (!isVideoFile(file)) return resolve(null);
+                const url = URL.createObjectURL(file);
+                const v = document.createElement('video');
+                let done = false;
+                const finish = val => { if (done) return; done = true; URL.revokeObjectURL(url); v.removeAttribute('src'); resolve(val); };
+                v.preload = 'metadata';
+                v.onloadedmetadata = () => finish(isFinite(v.duration) && v.duration > 0 ? v.duration : null);
+                v.onerror = () => finish(null);
+                setTimeout(() => finish(null), 4000);
+                v.src = url;
+            });
+        }
+
+        function chooseVideoFps(mode, speed, totalSeconds) {
+            let fps = mode === 'auto' ? (speed === 'slowmo' ? 5 : 10) : parseInt(mode, 10);
+            if (totalSeconds > 0) fps = Math.min(fps, Math.floor(VIDEO_MAX_TOTAL_FRAMES / totalSeconds));
+            return Math.max(1, fps);
+        }
+
+        let videoSummaryToken = 0;
+        async function updateVideoFileSummary() {
+            const box = document.getElementById('videoFileSummary');
+            const files = Array.from(document.getElementById('videoFileInput').files || []);
+            const token = ++videoSummaryToken;
+            if (!files.length) { box.innerText = ''; return; }
+            const total = files.reduce((n, f) => n + f.size, 0);
+            const durations = await Promise.all(files.map(readVideoDuration));
+            if (token !== videoSummaryToken) return;
+            const known = durations.filter(d => d);
+            const totalSec = known.reduce((n, d) => n + d, 0);
+            const via = total > VIDEO_INLINE_TOTAL_LIMIT ? 'יועלו דרך Files API (הקבצים גדולים מ-14MB)' : 'יישלחו ישירות';
+            const problems = [];
+            if (files.length > VIDEO_MAX_FILES) problems.push(`מקסימום ${VIDEO_MAX_FILES} קבצים בבת אחת`);
+            files.forEach(f => { if (f.size > VIDEO_MAX_FILE_BYTES) problems.push(`${f.name} גדול מדי (מעל ${fmtMB(VIDEO_MAX_FILE_BYTES)})`); if (!videoMimeFor(f)) problems.push(`${f.name}: סוג קובץ לא מזוהה`); });
+            box.innerHTML = files.map((f, i) => `קליפ ${i + 1}: ${escapeHtmlAi(f.name)} • ${fmtMB(f.size)}${durations[i] ? ' • ' + durations[i].toFixed(1) + ' שנ׳' : ''}`).join('<br>') +
+                `<br><span class="text-sky-300">סה"כ ${fmtMB(total)} • ${via}${known.length ? ' • דגימה משוערת: ' + chooseVideoFps(document.getElementById('videoFps').value, document.getElementById('videoSpeed').value, totalSec) + ' פריימים לשנייה' : ''}</span>` +
+                (problems.length ? `<br><span class="text-rose-400">⚠️ ${problems.map(escapeHtmlAi).join(' • ')}</span>` : '');
+        }
+        function escapeHtmlAi(str) {
+            return String(str).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        }
+
+        // ---- Files API (resumable upload). Written from Google's documented REST protocol. ----
+        async function uploadToGeminiFiles(file, mime, onProgress) {
+            const key = getApiKey();
+            const startRes = await fetch(`${GEMINI_HOST}/upload/v1beta/files?key=${encodeURIComponent(key)}`, {
+                method: 'POST',
+                headers: {
+                    'X-Goog-Upload-Protocol': 'resumable',
+                    'X-Goog-Upload-Command': 'start',
+                    'X-Goog-Upload-Header-Content-Length': String(file.size),
+                    'X-Goog-Upload-Header-Content-Type': mime,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ file: { display_name: file.name.slice(0, 100) } })
+            });
+            if (!startRes.ok) throw new Error('פתיחת ההעלאה נכשלה: ' + extractErrorMessage(await startRes.text()));
+            const uploadUrl = startRes.headers.get('x-goog-upload-url');
+            if (!uploadUrl) throw new Error('לא התקבלה כתובת העלאה מגוגל (ייתכן שהדפדפן חסם את התשובה). נסה קובץ קטן מ-14MB או פנה אלי לתיקון.');
+
+            const info = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', uploadUrl);
+                xhr.setRequestHeader('X-Goog-Upload-Offset', '0');
+                xhr.setRequestHeader('X-Goog-Upload-Command', 'upload, finalize');
+                xhr.upload.onprogress = e => { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total); };
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try { resolve(JSON.parse(xhr.responseText)); } catch (err) { reject(new Error('תשובת ההעלאה לא נקראה.')); }
+                    } else reject(new Error('ההעלאה נכשלה: ' + extractErrorMessage(xhr.responseText)));
+                };
+                xhr.onerror = () => reject(new Error('שגיאת רשת בזמן ההעלאה.'));
+                xhr.ontimeout = () => reject(new Error('ההעלאה ארכה יותר מדי.'));
+                xhr.send(file);
+            });
+            if (!info.file || !info.file.name) throw new Error('תשובת ההעלאה חסרה פרטי קובץ.');
+            return info.file;
+        }
+
+        async function waitForGeminiFileActive(fileInfo) {
+            const key = getApiKey();
+            const started = Date.now();
+            let state = fileInfo.state;
+            let uri = fileInfo.uri;
+            while (state === 'PROCESSING' || !state) {
+                if (Date.now() - started > VIDEO_UPLOAD_TIMEOUT_MS) throw new Error('עיבוד הקובץ אצל גוגל ארך יותר מדי. נסה קובץ קצר יותר.');
+                await sleep(VIDEO_UPLOAD_POLL_MS);
+                const res = await fetch(`${GEMINI_HOST}/v1beta/${fileInfo.name}?key=${encodeURIComponent(key)}`);
+                if (!res.ok) throw new Error('בדיקת מצב הקובץ נכשלה: ' + extractErrorMessage(await res.text()));
+                const j = await res.json();
+                state = j.state; uri = j.uri || uri;
+            }
+            if (state !== 'ACTIVE') throw new Error('גוגל לא הצליחה לעבד את הקובץ (מצב: ' + state + '). ודא שהקובץ תקין ונסה פורמט MP4.');
+            return uri;
+        }
+
+        async function deleteGeminiFilesQuietly(names) {
+            const key = getApiKey();
+            await Promise.all(names.map(n => fetch(`${GEMINI_HOST}/v1beta/${n}?key=${encodeURIComponent(key)}`, { method: 'DELETE' }).catch(() => {})));
+        }
 
         async function analyzeVideo() {
-            const fileInput = document.getElementById('videoFileInput');
-            const file = fileInput.files[0];
-            if (!file) { alert('נא לבחור קובץ תמונה או וידאו קודם.'); return; }
-            if (file.size > 20 * 1024 * 1024) { alert('הקובץ גדול מדי (מעל 20MB). נסה קובץ קצר/קטן יותר.'); return; }
+            const files = Array.from(document.getElementById('videoFileInput').files || []);
+            if (!files.length) { alert('נא לבחור לפחות קובץ תמונה או וידאו אחד קודם.'); return; }
+            if (files.length > VIDEO_MAX_FILES) { alert(`אפשר לנתח עד ${VIDEO_MAX_FILES} קבצים בבת אחת.`); return; }
+            const bad = files.find(f => !videoMimeFor(f));
+            if (bad) { alert(`סוג הקובץ של "${bad.name}" לא מזוהה. השתמש ב-MP4/MOV/WEBM או בתמונה.`); return; }
+            const tooBig = files.find(f => f.size > VIDEO_MAX_FILE_BYTES);
+            if (tooBig) { alert(`"${tooBig.name}" גדול מדי (מעל ${fmtMB(VIDEO_MAX_FILE_BYTES)}). קצר או דחוס את הסרטון.`); return; }
+            if (!getApiKey()) { alert('לא הוגדר מפתח Gemini API (בחלק העליון של העמוד).'); return; }
+            const modeSel = document.getElementById('videoMode').value;
+            if (modeSel === 'drill' && !currentDrill()) { alert(QT_AI ? 'בחר קודם איזה דריל מוצג בסרטון.' : 'ניתוח דרילים דורש את הקובץ training-data.js באותה תיקייה.'); return; }
 
-            const context = document.getElementById('videoContext').value.trim();
             const loading = document.getElementById('videoAnalysisLoading');
             const resultBox = document.getElementById('videoAnalysisResult');
             const btn = document.getElementById('analyzeVideoBtn');
+            const setStatus = msg => { loading.innerText = msg; };
 
             loading.classList.remove('hidden');
             resultBox.classList.add('hidden');
             btn.disabled = true;
+            const uploadedNames = [];
 
             try {
-                const base64 = await fileToBase64(file);
-                const parts = [
-                    { text: MADDEN_ANALYSIS_PROMPT + (context ? '\n\nהקשר נוסף מהמאמן: ' + context : '') },
-                    { inline_data: { mime_type: file.type, data: base64 } }
-                ];
-                const text = await callGemini(parts);
-                resultBox.innerText = text;
+                setStatus('קורא את הקבצים...');
+                const durations = await Promise.all(files.map(readVideoDuration));
+                const totalSec = durations.filter(d => d).reduce((n, d) => n + d, 0);
+                const speed = document.getElementById('videoSpeed').value;
+                const fps = chooseVideoFps(document.getElementById('videoFps').value, speed, totalSec);
+                const total = files.reduce((n, f) => n + f.size, 0);
+                const useFilesApi = total > VIDEO_INLINE_TOTAL_LIMIT;
+
+                const mediaParts = [];
+                for (let i = 0; i < files.length; i++) {
+                    const f = files[i], mime = videoMimeFor(f), isVid = mime.startsWith('video/');
+                    mediaParts.push({ text: `קליפ ${i + 1}: ${f.name}` });
+                    let part;
+                    if (useFilesApi) {
+                        setStatus(`מעלה קובץ ${i + 1} מתוך ${files.length}... 0%`);
+                        let uri;
+                        try {
+                            const info = await uploadToGeminiFiles(f, mime, frac => setStatus(`מעלה קובץ ${i + 1} מתוך ${files.length}... ${Math.round(frac * 100)}%`));
+                            uploadedNames.push(info.name);
+                            setStatus(`גוגל מעבדת את קובץ ${i + 1} מתוך ${files.length}...`);
+                            uri = await waitForGeminiFileActive(info);
+                        } catch (upErr) { upErr.uploadStage = true; throw upErr; }
+                        part = { file_data: { mime_type: mime, file_uri: uri } };
+                    } else {
+                        part = { inline_data: { mime_type: mime, data: await fileToBase64(f) } };
+                    }
+                    mediaParts.push(part);
+                }
+
+                const ctx = {
+                    count: files.length,
+                    angle: document.getElementById('videoAngle').value,
+                    speed,
+                    hand: document.getElementById('videoHand').value,
+                    throwType: document.getElementById('videoThrowType').value,
+                    fps,
+                    note: document.getElementById('videoContext').value.trim()
+                };
+                const mode = document.getElementById('videoMode').value;
+                const drillObj = mode === 'drill' ? currentDrill() : null;
+                const buildPrompt = c => (mode === 'madden' ? buildMaddenUserPrompt(c) : mode === 'drill' ? buildDrillUserPrompt(c, drillObj) : buildVideoUserPrompt(c));
+                const userText = { text: buildPrompt(ctx) };
+                const options = mode === 'madden'
+                    ? { timeoutMs: 180000, systemInstruction: MADDEN_SYSTEM_INSTRUCTION, generationConfig: { temperature: 0.2, responseMimeType: 'application/json' } }
+                    : mode === 'drill'
+                        ? { timeoutMs: 180000, systemInstruction: DRILL_SYSTEM_INSTRUCTION, generationConfig: { temperature: 0.2, responseMimeType: 'application/json' } }
+                        : { timeoutMs: 180000, systemInstruction: VIDEO_SYSTEM_INSTRUCTION, generationConfig: { temperature: 0.3 } };
+                document.getElementById('maddenSubPanel').classList.add('hidden');
+                document.getElementById('drillAnalysisPanel').classList.add('hidden');
+                lastMaddenDraft = null; lastDrillDraft = null;
+                const withFps = fps > 1
+                    ? mediaParts.map((p, i, arr) => (p.inline_data || p.file_data) && /^video\//.test((p.inline_data || p.file_data).mime_type) ? Object.assign({}, p, { video_metadata: { fps } }) : p)
+                    : mediaParts;
+
+                setStatus(`מנתח ${files.length > 1 ? files.length + ' קבצים' : 'את הביצוע'} (דגימה: ${fps} פריימים לשנייה)... יכול לקחת עד כמה דקות.`);
+                let text, usedFps = fps;
+                try {
+                    text = await callGemini([...withFps, userText], options);
+                } catch (err) {
+                    // If the API rejects the custom-fps field, retry once at Google's default rather than failing outright.
+                    if (fps > 1 && !err.noKey && !err.fatal && /fps|video_?metadata|videoMetadata/i.test(err.detail || err.message || '')) {
+                        usedFps = 1;
+                        setStatus('הדגימה המוגברת נדחתה, מנסה בדגימה רגילה (1 לשנייה)...');
+                        ctx.fps = 1;
+                        text = await callGemini([...mediaParts, { text: buildPrompt(ctx) }], options);
+                    } else throw err;
+                }
+                const footer = `\n\n— נשלח${files.length === 1 ? ' קובץ אחד' : 'ו ' + files.length + ' קבצים'} • דגימה ${usedFps} פריימים לשנייה${usedFps === 1 && fps > 1 ? ' (הדגימה המוגברת נדחתה)' : ''} • ${useFilesApi ? 'הועלו דרך Files API' : 'נשלחו ישירות'}. זו הערכה ויזואלית, לא מדידה.`;
+                if (mode === 'madden') {
+                    let draft = null;
+                    try { draft = parseMaddenResponse(text); } catch (e) { draft = null; }
+                    if (!draft || !Object.keys(draft.rows).length) {
+                        resultBox.innerText = '⚠️ התשובה לא הגיעה בפורמט הצפוי ולכן לא ניתן להציג טבלת תתי-מדדים. נסה שוב, או עבור ל"ניתוח מכני מפורט". התשובה הגולמית:\n\n' + text;
+                    } else {
+                        lastMaddenDraft = draft;
+                        const assessed = Object.values(draft.rows).filter(r => r.score !== null).length;
+                        resultBox.innerText = '■ סיכום\n' + (draft.overview || '—') + '\n\n■ מגבלות\n' + (draft.limitations || '—') +
+                            `\n\n■ ${assessed} מתוך ${MADDEN_SUB_CATALOG.reduce((n, c) => n + c.subs.length, 0)} תתי-מדדים קיבלו הערכה` +
+                            (draft.nextFilming ? '\n\n■ מה לצלם בפעם הבאה\n' + draft.nextFilming : '') + footer;
+                        renderMaddenDraft(draft);
+                    }
+                } else if (mode === 'drill') {
+                    let draft = null;
+                    try { draft = parseDrillResponse(text); } catch (e) { draft = null; }
+                    if (!draft) {
+                        resultBox.innerText = '⚠️ התשובה לא הגיעה בפורמט הצפוי ולכן לא ניתן להציג ניתוח דריל. נסה שוב, או עבור ל"ניתוח מכני מפורט". התשובה הגולמית:\n\n' + text;
+                    } else {
+                        resultBox.innerText = footer.trim();
+                        renderDrillDraft(draft, drillObj, files.length);
+                    }
+                } else {
+                    resultBox.innerText = text + footer;
+                }
                 resultBox.classList.remove('hidden');
             } catch (err) {
-                resultBox.innerText = '❌ שגיאה: ' + err.message;
+                const detail = err.transient && err.detail ? '\nפירוט טכני: ' + err.detail : '';
+                const hint = err.uploadStage ? '\n\nאפשר לנסות שוב, או לקצר/לדחוס את הסרטון לפחות מ-14MB כדי שיישלח ישירות בלי העלאה.' : '';
+                resultBox.innerText = '❌ שגיאה: ' + err.message + detail + hint;
                 resultBox.classList.remove('hidden');
             } finally {
+                if (uploadedNames.length) deleteGeminiFilesQuietly(uploadedNames);   // don't leave videos sitting in Google storage
                 loading.classList.add('hidden');
                 btn.disabled = false;
             }
         }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const HINTS = {
+                mechanics: 'ניתוח מילולי כנה של המכניקה, עם רגעים בסרטון, בעיות מרכזיות ותרגילים מתאימים. זו הבחירה המומלצת ברוב המקרים.',
+                drill: 'בחר את הדריל שמוצג בסרטון. המודל בודק אם הדריל באמת מוצג, נותן ציון ביצוע (30-99) ועד 3 תיקונים עם רגע בסרטון, ואתה מאשר לפני שהציון נשמר על כרטיס הדריל בדף האימון. הציון מודד טכניקה שנראית בלבד, לא תוצאה.',
+                madden: 'המודל מדרג את 28 תתי-המדדים של דירוג QB בסולם 30-99, ומחזיר "לא ניתן להעריך" למה שאי אפשר לשפוט מהסרטון (למשל קריאת הגנה בלי הגנה בפריים). אתה בודק ומתקן, ורק מה שסימנת נשמר למעקב המדדים ומשם נכנס לדירוג ול-OVR.'
+            };
+            const modeEl = document.getElementById('videoMode');
+            const applyHint = () => { document.getElementById('videoModeHint').innerText = HINTS[modeEl.value] || ''; };
+            const applyMode = () => {
+                applyHint();
+                document.getElementById('videoDrillWrap').classList.toggle('hidden', modeEl.value !== 'drill');
+                if (modeEl.value === 'drill') {
+                    const sel = document.getElementById('videoDrill');
+                    if (!sel.value) { const t = document.getElementById('videoThrowType'); if (t) t.value = 'drill'; }
+                }
+            };
+            populateDrillSelect();
+            document.getElementById('videoDrill').addEventListener('change', updateDrillInfo);
+            modeEl.addEventListener('change', applyMode); applyMode();
+            // Deep link from a drill card on training.html: ai-tools.html?drill=<name>#ai-video
+            try {
+                const wanted = new URLSearchParams(location.search).get('drill');
+                if (wanted && QT_AI) {
+                    const idx = QT_AI.DRILLS_DATABASE.findIndex(d => d.name === wanted);
+                    if (idx >= 0) { modeEl.value = 'drill'; document.getElementById('videoDrill').value = String(idx); applyMode(); updateDrillInfo(); }
+                }
+            } catch (e) {}
+            ['videoFileInput', 'videoFps', 'videoSpeed'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', updateVideoFileSummary);
+            });
+        });
 
         function saveNutritionTargets() {
             const targets = {
@@ -588,7 +1249,7 @@
             box.classList.remove('hidden');
             box.innerText = 'טוען הסבר...';
             try {
-                const text = await callGemini([{ text: `שחקן קוורטרבק נוער/צעיר עם יעד יומי של ${cal} קלוריות ו-${pro} גרם חלבון, במטרת "${goal}". הסבר בקצרה (3-4 משפטים, בעברית) למה מבנה כזה הגיוני עבור קוורטרבק, ותן טיפ מעשי אחד ליישום (למשל פיזור הארוחות סביב אימונים). אל תשנה את המספרים עצמם.` }]);
+                const text = await callGemini([{ text: `שחקן קוורטרבק עם יעד יומי של ${cal} קלוריות ו-${pro} גרם חלבון, במטרת "${goal}". הסבר בקצרה (3-4 משפטים, בעברית) למה מבנה כזה הגיוני עבור קוורטרבק, ותן טיפ מעשי אחד ליישום (למשל פיזור הארוחות סביב אימונים). אל תשנה את המספרים עצמם.` }]);
                 box.innerText = text;
             } catch (err) {
                 box.innerText = 'שגיאה: ' + err.message;
@@ -1366,7 +2027,7 @@
             btn.disabled = true;
 
             try {
-                const prompt = `אתה מאמן ביצועים (Performance Coach) לקוורטרבק נוער/צעיר בפוטבול אמריקאי. נתח את התמונה המלאה הבאה וכתוב סיכום מקצועי בעברית (עד 300 מילים) שכולל:
+                const prompt = `אתה מאמן ביצועים (Performance Coach) לקוורטרבק בפוטבול אמריקאי. נתח את התמונה המלאה הבאה וכתוב סיכום מקצועי בעברית (עד 300 מילים) שכולל:
 1. הערכה כללית של המצב הנוכחי.
 2. האם התזונה תומכת ביעדים הפיזיים (למשל, אם המדדים מראים ירידה בכוח/מהירות אך התזונה חלשה בחלבון/קלוריות — ציין את הקשר האפשרי).
 3. עד 3 המלצות מעשיות וספציפיות לשבועיים הקרובים.

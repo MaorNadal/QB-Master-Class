@@ -383,7 +383,52 @@
     }
     function exerciseStats(id) { const e = loadWorkoutLog()[id]; const arr = e ? datesOf(e.dates) : []; return { count: arr.length, last: lastOf(arr) }; }
 
+    // ---- AI video analysis of drills (written by ai-tools.html, shown on the drill cards) ----
+    // { drillName: [ { date, score, confidence, summary, corrections:[{issue,cue}], clips }, ... ] }, newest last, max 15 per drill.
+    const LS_DRILL_ANALYSIS = 'qbmc_drill_analysis', LS_DRILL_LINKS = 'qbmc_drill_links';
+    const loadDrillAnalyses = () => readObj(LS_DRILL_ANALYSIS);
+    function getDrillAnalyses(name) { const a = loadDrillAnalyses()[name]; return Array.isArray(a) ? a : []; }
+    function latestDrillAnalysis(name) { const a = getDrillAnalyses(name); return a.length ? a[a.length - 1] : null; }
+    function saveDrillAnalysis(name, entry) {
+        if (!DRILLS_DATABASE.some(d => d.name === name)) return false;
+        const all = loadDrillAnalyses();
+        const list = Array.isArray(all[name]) ? all[name] : [];
+        list.push(entry);
+        list.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+        all[name] = list.slice(-15);
+        writeObj(LS_DRILL_ANALYSIS, all);
+        return true;
+    }
+    // "Best example" link per drill, chosen by the user. Only http(s) URLs are ever stored or rendered as links.
+    function isSafeUrl(u) { return typeof u === 'string' && /^https?:\/\/[^\s<>"']+$/i.test(u.trim()); }
+    function getDrillLink(name) { const u = readObj(LS_DRILL_LINKS)[name]; return isSafeUrl(u) ? u.trim() : ''; }
+    function setDrillLink(name, url) {
+        const all = readObj(LS_DRILL_LINKS);
+        if (!url) delete all[name]; else if (isSafeUrl(url)) all[name] = url.trim(); else return false;
+        writeObj(LS_DRILL_LINKS, all);
+        return true;
+    }
+    function drillYoutubeSearchUrl(name) { return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(name + ' quarterback drill'); }
+
+    // Letter grade on the app-wide 30-99 scale — same thresholds as madden.html gradeFor().
+    function gradeFor(v) {
+        if (v >= 95) return { l: 'A+', c: '#34d399' };
+        if (v >= 90) return { l: 'A', c: '#34d399' };
+        if (v >= 85) return { l: 'A-', c: '#4ade80' };
+        if (v >= 80) return { l: 'B+', c: '#a3e635' };
+        if (v >= 75) return { l: 'B', c: '#a3e635' };
+        if (v >= 70) return { l: 'B-', c: '#facc15' };
+        if (v >= 65) return { l: 'C+', c: '#facc15' };
+        if (v >= 60) return { l: 'C', c: '#fb923c' };
+        if (v >= 55) return { l: 'C-', c: '#fb923c' };
+        if (v >= 50) return { l: 'D+', c: '#f87171' };
+        if (v >= 45) return { l: 'D', c: '#f87171' };
+        if (v >= 40) return { l: 'D-', c: '#f87171' };
+        return { l: 'F', c: '#ef4444' };
+    }
+
     window.QB_TRAINING = {
+        getDrillAnalyses, latestDrillAnalysis, saveDrillAnalysis, isSafeUrl, getDrillLink, setDrillLink, drillYoutubeSearchUrl, gradeFor,
         DRILL_CATEGORY_META, DRILLS_DATABASE, WORKOUT_DAY_TITLES, WORKOUT_EXERCISES, EX_BY_ID,
         localDateStr, loadDrillLog, saveDrillLog, loadWorkoutLog, saveWorkoutLog,
         isDrillDone, setDrillDone, drillStats, isExerciseDone, setExerciseDone, exerciseStats
