@@ -82,7 +82,7 @@
                     🎮 כרטיס דירוג קוורטרבק - פורמט Madden
                 </h2>
                 <p class="text-slate-300 text-sm md:text-base mt-1 max-w-2xl mx-auto">
-                    דרג את היכולות, הפיזיות וה-IQ הטקטי שלך בסולם 30-99. המערכת תחשב את ציון ה-OVR הכללי שלך ותייצר כרטיס שחקן ויזואלי.
+                    דרג את היכולות, הפיזיות וה-IQ הטקטי שלך בסולם 1-99. המערכת תחשב את ציון ה-OVR הכללי שלך ותייצר כרטיס שחקן ויזואלי.
                 </p>
                 <div id="realMaddenAutoNote" class="hidden mt-3 max-w-xl mx-auto text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2.5"></div>
                 <div id="realMaddenManualBox" class="hidden mt-4 max-w-xl mx-auto bg-slate-900/80 border border-purple-500/30 rounded-xl p-3">
@@ -174,9 +174,10 @@
                 { id: 'scrambleDecision', label: 'החלטת ריצה מול זריקה ב-Scramble', labelEn: 'Scramble Run-vs-Throw Decision', weight: 1, value: 80 }
             ] }
         ];
+        const MADDEN_TOTAL_SUBS = MADDEN_CATEGORIES.reduce((n, c) => n + c.subs.length, 0); // was hard-coded as 30; the real count is 28
         let maddenExpanded = null; // key of the currently expanded category, or null
 
-        // ---- Letter grades (A+ to F), Madden-scale (30-99) ----
+        // ---- Letter grades (A+ to F), Madden-scale (1-99) ----
         function gradeFor(v) {
             if (v >= 95) return { l: 'A+', c: '#34d399' };
             if (v >= 90) return { l: 'A', c: '#34d399' };
@@ -234,7 +235,7 @@
                                     <span id="val_${cat.key}_${m.id}" class="font-bold text-sky-300 w-6 text-center">${m.value}</span>
                                 </span>
                             </div>
-                            <input type="range" id="rate_${cat.key}_${m.id}" min="30" max="99" value="${m.value}" oninput="onSubMetricInput('${cat.key}','${m.id}', this.value)" class="w-full accent-sky-400">
+                            <input type="range" id="rate_${cat.key}_${m.id}" min="1" max="99" value="${m.value}" oninput="onSubMetricInput('${cat.key}','${m.id}', this.value)" class="w-full accent-sky-400">
                             <div class="text-[9px] text-slate-500 mt-0.5">${m.labelEn}</div>
                         </div>`).join('')}
                     </div>` : ''}
@@ -323,7 +324,7 @@
         function applyMaddenValues(latest) {
             let categoryCount = 0, subCount = 0;
             let mostRecentDate = '';
-            const clamp = v => Math.max(30, Math.min(99, Math.round(v)));
+            const clamp = v => Math.max(1, Math.min(99, Math.round(v)));
 
             // Category-level coach entries spread across all of that category's sub-metrics —
             // applied first, so more specific per-sub-metric data (below) can override it.
@@ -377,7 +378,7 @@
                 const note = document.getElementById('realMaddenAutoNote');
                 const parts = [];
                 if (categoryCount > 0) parts.push(`${categoryCount}/7 קטגוריות נטענו מציון כללי (כל תתי-המדדים שלהן אותחלו לאותו ערך)`);
-                if (subCount > 0) parts.push(`${subCount}/30 תתי-מדדים נטענו בנפרד מציון ספציפי`);
+                if (subCount > 0) parts.push(`${subCount}/${MADDEN_TOTAL_SUBS} תתי-מדדים נטענו בנפרד מציון ספציפי`);
                 note.innerText = `✅ עודכן אוטומטית מלוח המדדים (עדכון אחרון: ${mostRecentDate}): ${parts.join(', ')}. אפשר לכייל כל תת-מדד בנפרד למטה.`;
                 note.classList.remove('hidden');
             } else {
@@ -399,7 +400,7 @@
                     const latest = extractLatestMaddenFromDayMap(dayMap);
                     const { categoryCount, subCount, mostRecentDate } = applyMaddenValues(latest);
                     document.getElementById('realMaddenStatus').innerText = (categoryCount + subCount) > 0
-                        ? `✅ נטענו ${categoryCount}/7 קטגוריות ו-${subCount}/30 תתי-מדדים (עדכון אחרון: ${mostRecentDate}).`
+                        ? `✅ נטענו ${categoryCount}/7 קטגוריות ו-${subCount}/${MADDEN_TOTAL_SUBS} תתי-מדדים (עדכון אחרון: ${mostRecentDate}).`
                         : '⚠️ לא נמצאו רישומי Madden בקובץ הזה.';
                 } catch (err) {
                     document.getElementById('realMaddenStatus').innerText = '❌ קובץ לא תקין.';
@@ -472,7 +473,7 @@
                             grid: { color: '#334155' },
                             pointLabels: { color: '#cbd5e1', font: { size: 10 } },
                             ticks: { display: false, backdropColor: 'transparent' },
-                            min: 30, max: 100
+                            min: 0, max: 100
                         }
                     },
                     plugins: {

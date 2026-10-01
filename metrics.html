@@ -357,13 +357,13 @@
         }
 
         const MADDEN_METRICS = [
-            { name: 'Madden: עוצמת זרוע (THP)', unit: 'דירוג 0-99', short: 'THP' },
-            { name: 'Madden: דיוק קצר (SAC)', unit: 'דירוג 0-99', short: 'SAC' },
-            { name: 'Madden: דיוק בינוני (MAC)', unit: 'דירוג 0-99', short: 'MAC' },
-            { name: 'Madden: דיוק עמוק (DAC)', unit: 'דירוג 0-99', short: 'DAC' },
-            { name: 'Madden: תחושת כיס (AWR)', unit: 'דירוג 0-99', short: 'AWR' },
-            { name: 'Madden: מהירות שחרור (RLS)', unit: 'דירוג 0-99', short: 'RLS' },
-            { name: 'Madden: זריקה בתנועה (RUN)', unit: 'דירוג 0-99', short: 'RUN' }
+            { name: 'Madden: עוצמת זרוע (THP)', unit: 'דירוג 1-99', short: 'THP' },
+            { name: 'Madden: דיוק קצר (SAC)', unit: 'דירוג 1-99', short: 'SAC' },
+            { name: 'Madden: דיוק בינוני (MAC)', unit: 'דירוג 1-99', short: 'MAC' },
+            { name: 'Madden: דיוק עמוק (DAC)', unit: 'דירוג 1-99', short: 'DAC' },
+            { name: 'Madden: תחושת כיס (AWR)', unit: 'דירוג 1-99', short: 'AWR' },
+            { name: 'Madden: מהירות שחרור (RLS)', unit: 'דירוג 1-99', short: 'RLS' },
+            { name: 'Madden: זריקה בתנועה (RUN)', unit: 'דירוג 1-99', short: 'RUN' }
         ];
         const MADDEN_OVR_NAME = 'Madden: OVR כללי (מהמאמן)';
 
@@ -925,9 +925,9 @@
             select.innerHTML = `<option value="">-- בחר מדד --</option>` +
                 `<optgroup label="🎮 דירוג Madden (מהמאמן)">` +
                 MADDEN_METRICS.map(m => `<option value="${m.name}" data-unit="${m.unit}">${m.name}</option>`).join('') +
-                `<option value="${MADDEN_OVR_NAME}" data-unit="דירוג 0-99">${MADDEN_OVR_NAME}</option>` +
-                `</optgroup><optgroup label="🎮 Madden — תתי-מדדים (30-99)">` +
-                MADDEN_SUBMETRICS.map(s => `<option value="${madSubName(s)}" data-unit="דירוג 30-99">${s.catLabel} — ${s.label}</option>`).join('') +
+                `<option value="${MADDEN_OVR_NAME}" data-unit="דירוג 1-99">${MADDEN_OVR_NAME}</option>` +
+                `</optgroup><optgroup label="🎮 Madden — תתי-מדדים (1-99)">` +
+                MADDEN_SUBMETRICS.map(s => `<option value="${madSubName(s)}" data-unit="דירוג 1-99">${s.catLabel} — ${s.label}</option>`).join('') +
                 `</optgroup>` +
                 `<optgroup label="🏋️ מדדים פיזיים נפוצים">` +
                 COMMON_METRICS.map(m => `<option value="${m.name}" data-unit="${m.unit}">${m.name}</option>`).join('') +

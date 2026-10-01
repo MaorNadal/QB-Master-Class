@@ -410,7 +410,7 @@
     }
     function drillYoutubeSearchUrl(name) { return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(name + ' quarterback drill'); }
 
-    // Letter grade on the app-wide 30-99 scale — same thresholds as madden.html gradeFor().
+    // Letter grade on the app-wide 1-99 scale — same thresholds as madden.html gradeFor().
     function gradeFor(v) {
         if (v >= 95) return { l: 'A+', c: '#34d399' };
         if (v >= 90) return { l: 'A', c: '#34d399' };
