@@ -638,6 +638,33 @@
                 if (arr.length) localStorage.setItem('qbmc_metrics_' + ds, JSON.stringify(arr));
                 else localStorage.removeItem('qbmc_metrics_' + ds);
             } catch (e) {}
+            persistMetricPRs();
+        }
+
+        // ---- Personal bests (physical tests) ----
+        // metrics.html owns the "which direction is better" knowledge (METRIC_GRADE_SCALES), so it computes the
+        // personal bests once and persists them under qbmc_metric_prs; player.html only reads that.
+        // Only the graded performance tests have a PR. Body weight / body fat deliberately have none: there is
+        // no universally "better" direction for them. A tie keeps the earliest date (the day it was first reached).
+        function computeMetricPRs() {
+            const prs = {};
+            getAllMetricDates().forEach(ds => {
+                getDayEntries(ds).forEach(e => {
+                    const sc = e && METRIC_GRADE_SCALES[e.name];
+                    const v = e ? parseFloat(e.value) : NaN;
+                    if (!sc || !isFinite(v) || v <= 0) return;
+                    const cur = prs[e.name];
+                    if (!cur) { prs[e.name] = { value: v, unit: e.unit || '', date: ds, direction: sc.direction, first: { value: v, date: ds }, count: 1 }; return; }
+                    cur.count++;
+                    if (ds < cur.first.date) cur.first = { value: v, date: ds };
+                    const better = sc.direction === 'lower' ? v < cur.value : v > cur.value;
+                    if (better || (v === cur.value && ds < cur.date)) { cur.value = v; cur.date = ds; cur.unit = e.unit || cur.unit; }
+                });
+            });
+            return prs;
+        }
+        function persistMetricPRs() {
+            try { localStorage.setItem('qbmc_metric_prs', JSON.stringify({ updatedAt: new Date().toISOString().slice(0, 10), prs: computeMetricPRs() })); } catch (e) {}
         }
 
         function getAllMetricDates() {
@@ -1107,6 +1134,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             const t = new Date();
             viewYear = t.getFullYear(); viewMonth = t.getMonth();
+            persistMetricPRs();
             renderCalendar();
             initCorrelationUI();
         });

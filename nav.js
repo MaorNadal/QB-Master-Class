@@ -20,7 +20,7 @@
         { file: 'film-study.html', group: 'ai', icon: '🎬', title: 'צפייה וניתוח NFL', desc: 'יומן צפייה בפוטבול ותיעוד מהלכים.',
           sections: [['film-howto', 'איך לצפות'], ['film-checklist', 'מה לבדוק'], ['film-archetypes', 'ארכיטיפים'], ['film-log', 'יומן צפייה'], ['film-plays', 'יומן מהלכים'], ['film-links', 'איפה לצפות']] },
         { file: 'player.html', group: 'player', icon: '🪪', title: 'פרטי שחקן', desc: 'פרטים אישיים ופיזיים, מצב קבוצתי, היסטוריית קריירה ותארים.',
-          sections: [['player-details', 'פרטים אישיים'], ['player-status', 'מצב קבוצתי'], ['player-staff', 'צוות אימון'], ['player-game-stats', 'סטטיסטיקות משחק'], ['player-career', 'היסטוריית קריירה'], ['player-achievements', 'הישגים'], ['player-highlights', 'הייטלייטס'], ['player-goals', 'יעדים'], ['player-equipment', 'ציוד']] },
+          sections: [['player-details', 'פרטים אישיים'], ['player-status', 'מצב קבוצתי'], ['player-staff', 'צוות אימון'], ['player-game-stats', 'סטטיסטיקות משחק'], ['player-records', 'שיאים אישיים'], ['player-career', 'היסטוריית קריירה'], ['player-achievements', 'הישגים'], ['player-highlights', 'הייטלייטס'], ['player-goals', 'יעדים'], ['player-equipment', 'ציוד']] },
         { file: 'backup.html', group: 'backup', icon: '🗄️', title: 'מרכז גיבוי', desc: 'איחוד וגיבוי של כל נתוני האפליקציה בקובץ אחד.' }
     ];
     const GROUPS = [

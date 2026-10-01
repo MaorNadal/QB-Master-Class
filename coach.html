@@ -283,7 +283,7 @@ const SHARE_CATEGORIES = [
     { id: 'training', icon: '🏋️', label: 'אימונים ודרילים', desc: 'מה בוצע ב-14 הימים האחרונים והציון האחרון של ניתוחי הדרילים' },
     { id: 'body', icon: '🧍', label: 'פרופיל גוף ויעדי תזונה', desc: 'גיל, מין, גובה, משקל, מטרה ויעדי קלוריות וחלבון, כפי שהוזנו בדף עזרי AI ותזונה', defaultOn: true },
     { id: 'meals', icon: '🍽️', label: 'יומן ארוחות', desc: 'סיכום קלוריות וחלבון יומי ב-7 הימים האחרונים' },
-    { id: 'games', icon: '📊', label: 'סטטיסטיקות משחק', desc: '8 המשחקים האחרונים: תוצאה וסטטיסטיקת מסירות וריצה (בלי שמות אנשים)' }
+    { id: 'games', icon: '📊', label: 'סטטיסטיקות משחק', desc: '8 המשחקים האחרונים: סוג משחק, תוצאה, מסירות, ריצה ו-Fumbles (בלי שמות קבוצות או אנשים)' }
 ];
 // Defaults apply only while the person has never saved a choice: general coach, except the body/nutrition profile
 // (age, height, weight, goal, targets) which they explicitly allowed. Once they tick/untick anything, their choice wins.
@@ -355,9 +355,11 @@ function buildDataContext() {
         const rows = readJson('qbmc_player_game_stats', []);
         const list = (Array.isArray(rows) ? rows : []).slice(0, 8).map(r => {
             const p = r.pass || {}, ru = r.rush || {};
-            const bits = [String(r.date || '?'), r.outcome ? 'תוצאה ' + String(r.outcome).slice(0, 5) : null, (r.scoreUs != null && r.scoreThem != null) ? `${r.scoreUs}-${r.scoreThem}` : null];
+            const typeHe = { practice: 'משחק אימון', regular: 'עונה סדירה', playoff: 'פלייאוף', israbowl: 'ישרא-בול' }[r.type];
+            const bits = [String(r.date || '?'), typeHe || null, r.outcome ? 'תוצאה ' + String(r.outcome).slice(0, 5) : null, (r.scoreUs != null && r.scoreThem != null) ? `${r.scoreUs}-${r.scoreThem}` : null];
             if (p.att != null) bits.push(`מסירות ${p.comp ?? '?'}/${p.att}, ${p.yds ?? '?'} יארד, ${p.td ?? 0} TD, ${p.int ?? 0} INT`);
             if (ru.att != null) bits.push(`ריצות ${ru.att} ל-${ru.yds ?? '?'} יארד`);
+            const bl = r.ball || {}; if (bl.fum != null) bits.push(`Fumbles ${bl.fum}${bl.lost != null ? ` (אבדו ${bl.lost})` : ''}`);
             return bits.filter(Boolean).join(' • ');
         });
         parts.push(list.length ? 'משחקים אחרונים:\n- ' + list.join('\n- ') : 'סטטיסטיקות משחק: אין רשומות.');
