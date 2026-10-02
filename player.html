@@ -13,6 +13,48 @@
             nav, .no-print, button, select, input[type=range] { display: none !important; }
             body { background: white; color: black; }
         }
+
+        /* ---- Printable player sheet (A4). Independent of Tailwind so the print output never depends on the dark theme. ---- */
+        #printSheet { display: none; }
+        .ps { font-family: 'Rubik', Arial, sans-serif; color: #0f172a; background: #fff; direction: rtl; font-size: 11.5px; line-height: 1.45; }
+        .ps * { box-sizing: border-box; }
+        .ps-head { display: flex; gap: 14px; align-items: center; border-bottom: 3px solid #0369a1; padding-bottom: 10px; margin-bottom: 10px; }
+        .ps-photo { width: 92px; height: 92px; border-radius: 10px; object-fit: cover; border: 2px solid #0369a1; background: #e2e8f0; flex-shrink: 0; }
+        .ps-name { font-size: 24px; font-weight: 900; line-height: 1.1; }
+        .ps-sub { color: #334155; font-weight: 700; margin-top: 2px; }
+        .ps-sub img { width: 16px; height: 16px; vertical-align: middle; border-radius: 3px; }
+                .ps td img, .ps li img, .ps-card img { width: 16px; height: 16px; vertical-align: middle; border-radius: 3px; object-fit: cover; }
+        .ps-ovr { margin-right: auto; text-align: center; border: 2px solid #b45309; border-radius: 10px; padding: 6px 12px; }
+        .ps-ovr b { display: block; font-size: 26px; line-height: 1; color: #b45309; }
+        .ps-ovr span { font-size: 9px; font-weight: 700; color: #92400e; }
+        .ps h2 { font-size: 13px; font-weight: 800; color: #0369a1; border-bottom: 1px solid #94a3b8; margin: 12px 0 5px; padding-bottom: 2px; break-after: avoid; }
+        .ps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px 14px; }
+        .ps-grid div b { color: #475569; font-weight: 700; }
+        .ps table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+        .ps th { background: #e0f2fe; color: #0c4a6e; font-weight: 800; text-align: center; padding: 3px 4px; border: 1px solid #94a3b8; }
+        .ps td { padding: 3px 4px; border: 1px solid #cbd5e1; text-align: center; }
+        .ps td.l, .ps th.l { text-align: right; }
+        .ps tr { break-inside: avoid; }
+        .ps .num { direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
+        .ps-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .ps-card { border: 1px solid #cbd5e1; border-radius: 6px; padding: 5px 7px; break-inside: avoid; }
+        .ps-card small { display: block; color: #64748b; font-size: 9.5px; }
+        .ps-card b { font-size: 14px; }
+        .ps-cat { display: flex; gap: 6px; flex-wrap: wrap; }
+        .ps-cat span { border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 8px; font-weight: 700; }
+        .ps ul { margin: 0; padding-right: 18px; }
+        .ps-note { color: #64748b; font-size: 9.5px; margin-top: 3px; }
+        .ps-foot { margin-top: 14px; padding-top: 6px; border-top: 1px solid #cbd5e1; color: #64748b; font-size: 9.5px; }
+        @page { size: A4; margin: 12mm; }
+        @media print {
+            body.ps-active > *:not(#printSheet) { display: none !important; }
+            body.ps-active { background: #fff !important; }
+            body.ps-active #printSheet { display: block !important; position: static !important; overflow: visible !important; background: #fff !important; padding: 0 !important; }
+            body.ps-active .ps-toolbar { display: none !important; }
+            .ps { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+        #printSheet.ps-preview { display: block; position: fixed; inset: 0; z-index: 90; overflow: auto; background: #475569; padding: 16px; }
+        #printSheet.ps-preview .ps { max-width: 794px; margin: 0 auto; padding: 24px; box-shadow: 0 10px 40px #0008; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
@@ -24,6 +66,7 @@
             QB MASTER CLASS • פרטי שחקן
         </div>
         <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-3">כרטיס השחקן</h1>
+        <button type="button" onclick="openExportModal()" class="no-print mb-3 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">📄 ייצוא PDF / הדפסה של כרטיס השחקן</button>
         <p class="text-slate-300 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
             כל הפרטים האישיים, הפיזיים והספורטיביים במקום אחד — ותיעוד הקריירה: קבוצות, משחקים, סטטיסטיקה ותארים.
         </p>
@@ -330,6 +373,33 @@
     <footer class="max-w-7xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 border-t border-slate-800 pt-6">
         <p>QB Master Class 2.0 • מערכת ניתוח טקטי, מכניקה ותוכנית אימונים לקוורטרבקים</p>
     </footer>
+
+    <div id="exportModal" class="no-print hidden fixed inset-0 z-[80] bg-black/70 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+            <div class="flex justify-between items-center mb-1">
+                <h3 class="text-lg font-black text-white">📄 ייצוא כרטיס שחקן</h3>
+                <button type="button" onclick="closeExportModal()" class="text-slate-400 hover:text-white text-xl">✕</button>
+            </div>
+            <p class="text-[11px] text-slate-400 mb-3 leading-relaxed">בחר מה ייכלל במסמך. אפשר לשמור כ-PDF דרך חלון ההדפסה של הדפדפן ("שמור כ-PDF" כיעד). פרטים רגישים מסומנים כבויים כברירת מחדל, וניתן להסתיר אותם לפני שליחה לגיוס או למאמנים.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 text-xs">
+                <label class="block text-slate-400">תקופה
+                    <select id="exPeriod" class="mt-1 w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white"></select>
+                </label>
+                <label class="block text-slate-400">סטטיסטיקות לפי סוג משחק
+                    <select id="exFilter" class="mt-1 w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-white">
+                        <option value="official">כל המשחקים הרשמיים (ללא אימון)</option><option value="regular">עונה סדירה</option><option value="playoff">פלייאוף</option><option value="israbowl">ישרא-בול</option><option value="all">כולל משחקי אימון</option>
+                    </select>
+                </label>
+            </div>
+            <div id="exChecks" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs"></div>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <button type="button" onclick="previewExport()" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm">👁️ תצוגה מקדימה</button>
+                <button type="button" onclick="printExport()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm">🖨️ הדפס / שמור כ-PDF</button>
+                <button type="button" onclick="closeExportModal()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">סגור</button>
+            </div>
+        </div>
+    </div>
+    <div id="printSheet"></div>
 
     <script>
         const PROFILE_KEY = 'qbmc_player_profile';
@@ -1194,6 +1264,212 @@
             renderCareer();
         }
         function saveCareerRows(rows) { localStorage.setItem(CAREER_KEY, JSON.stringify(rows)); }
+
+        // ---- PDF / print export of the player card and season summary ----
+        // Builds a self-contained A4 sheet (#printSheet) from the saved data and prints it through the browser
+        // ("Save as PDF" is a destination of the print dialog), so no external PDF library is needed.
+        // Sensitive items (date of birth, school, coaches' details, goals, equipment) are opt-in.
+        const EXPORT_OPTS_KEY = 'qbmc_player_export_opts';
+        const EXPORT_ITEMS = [
+            { id: 'photo', label: 'תמונת השחקן', on: true },
+            { id: 'basics', label: 'גובה, משקל, יד זריקה וגודל כף יד', on: true },
+            { id: 'school', label: 'בית ספר ושנת סיום', on: false },
+            { id: 'age', label: 'גיל (מחושב מתאריך הלידה)', on: false },
+            { id: 'dob', label: 'תאריך לידה מלא', on: false },
+            { id: 'background', label: 'רקע ספורטיבי', on: true },
+            { id: 'madden', label: 'דירוג QB בסגנון Madden (הערכה עצמית, לא רשמי)', on: true },
+            { id: 'seasons', label: 'סיכום עונות מהמשחקים שתועדו', on: true },
+            { id: 'career', label: 'היסטוריית קריירה שהוזנה ידנית', on: true },
+            { id: 'records', label: 'שיאים אישיים (משחק, עונה ופיזיים)', on: true },
+            { id: 'gamelog', label: 'יומן משחקים (עד 20 אחרונים)', on: false },
+            { id: 'achievements', label: 'הישגים ותארים', on: true },
+            { id: 'highlights', label: 'קישורי הייטלייטס', on: true },
+            { id: 'staff', label: 'צוות אימון (שם ותפקיד)', on: false },
+            { id: 'staffContact', label: 'פרטי קשר של הצוות (טלפון ודוא"ל)', on: false },
+            { id: 'goals', label: 'יעדים', on: false },
+            { id: 'equipment', label: 'מידות וציוד', on: false }
+        ];
+        function loadExportOpts() {
+            let saved = {};
+            try { saved = JSON.parse(localStorage.getItem(EXPORT_OPTS_KEY)) || {}; } catch (e) {}
+            const o = { filter: ['official', 'regular', 'playoff', 'israbowl', 'all'].includes(saved.filter) ? saved.filter : 'official', period: 'all', items: {} };
+            EXPORT_ITEMS.forEach(it => { o.items[it.id] = (saved.items && typeof saved.items[it.id] === 'boolean') ? saved.items[it.id] : it.on; });
+            return o;
+        }
+        function openExportModal() {
+            const o = loadExportOpts();
+            const years = [...new Set(loadGameStats().map(g => String(g.date || '').slice(0, 4)).filter(y => /^\d{4}$/.test(y)))].sort().reverse();
+            document.getElementById('exPeriod').innerHTML = '<option value="all">כל התקופות (כרטיס שחקן מלא)</option>' + years.map(y => `<option value="${y}">סיכום עונת ${y} בלבד</option>`).join('');
+            document.getElementById('exFilter').value = o.filter;
+            document.getElementById('exChecks').innerHTML = EXPORT_ITEMS.map(it => `<label class="flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-lg px-2.5 py-1.5 cursor-pointer text-slate-200"><input type="checkbox" data-ex-item="${it.id}" ${o.items[it.id] ? 'checked' : ''} class="w-3.5 h-3.5 accent-emerald-400">${it.label}</label>`).join('');
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+        function closeExportModal() { document.getElementById('exportModal').classList.add('hidden'); }
+        function readExportOpts() {
+            const o = { filter: document.getElementById('exFilter').value, period: document.getElementById('exPeriod').value, items: {} };
+            document.querySelectorAll('[data-ex-item]').forEach(cb => { o.items[cb.getAttribute('data-ex-item')] = cb.checked; });
+            try { localStorage.setItem(EXPORT_OPTS_KEY, JSON.stringify({ filter: o.filter, items: o.items })); } catch (e) {}
+            return o;
+        }
+
+        function psNum(v) { return `<span class="num">${escHtml(v)}</span>`; }
+        function psCell(v) { return v == null || v === '' ? '—' : psNum(v); }
+        function ageFromDob(dob) {
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dob || '');
+            if (!m) return null;
+            const now = new Date(); let a = now.getFullYear() - Number(m[1]);
+            if (now.getMonth() + 1 < Number(m[2]) || (now.getMonth() + 1 === Number(m[2]) && now.getDate() < Number(m[3]))) a--;
+            return a >= 0 && a < 120 ? a : null;
+        }
+        function safeHttpUrl(u) { return /^https?:\/\/[^\s<>"']+$/i.test(String(u || '').trim()) ? String(u).trim() : ''; }
+        function psLogo(name) { const src = findLogo(name); return src ? `<img src="${src}" alt="">` : ''; }
+
+        // One table row of totals for a group of games.
+        function psSeasonRow(label, team, rows) {
+            const t = sumTotals(rows), rt = passerRatingForRows(rows), rec = recordOf(rows);
+            const cmp = t.pass.att ? `${t.pass.comp}/${t.pass.att}` : null;
+            const pct = t.pass.att ? (Math.round(t.pass.comp / t.pass.att * 1000) / 10).toFixed(1) + '%' : null;
+            const partial = rt && rt.used < rt.passingGames;
+            return `<tr><td>${escHtml(label)}</td><td class="l">${psLogo(team)} ${escHtml(team)}</td><td>${rows.length}</td>
+                <td>${rec ? psNum(`${rec.w}-${rec.l}${rec.t ? '-' + rec.t : ''}`) : '—'}</td>
+                <td>${psCell(cmp)}</td><td>${psCell(pct)}</td><td>${t.pass.att ? psNum(t.pass.yds) : '—'}</td><td>${t.pass.att ? psNum(t.pass.td) : '—'}</td><td>${t.pass.att ? psNum(t.pass.int) : '—'}</td>
+                <td>${rt ? psNum(rt.value.toFixed(1) + (partial ? '*' : '')) : '—'}</td>
+                <td>${t.rush.att ? psNum(`${t.rush.yds} / ${t.rush.td}`) : '—'}</td>
+                <td>${t.ballGames ? psNum(`${t.ball.fum} / ${t.ball.lost}`) : '—'}</td></tr>`;
+        }
+        function psSeasonsSection(games, periodLabel) {
+            if (!games.length) return '<p class="ps-note">אין משחקים תואמים לתקופה ולסוג המשחק שנבחרו.</p>';
+            const groups = {};
+            games.forEach(g => { const y = String(g.date || '').slice(0, 4) || '—'; const k = y + '|' + (g.team || ''); (groups[k] = groups[k] || { y, team: g.team || '', rows: [] }).rows.push(g); });
+            const list = Object.values(groups).sort((a, b) => b.y.localeCompare(a.y) || a.team.localeCompare(b.team));
+            const anyPartial = list.some(g => { const rt = passerRatingForRows(g.rows); return rt && rt.used < rt.passingGames; }) || (() => { const rt = passerRatingForRows(games); return rt && rt.used < rt.passingGames; })();
+            const body = list.map(g => psSeasonRow(g.y, g.team, g.rows)).join('') + (list.length > 1 ? psSeasonRow('סה"כ', '', games).replace('<td>סה"כ</td>', '<td><b>סה"כ</b></td>') : '');
+            return `<table><thead><tr><th>עונה</th><th class="l">קבוצה</th><th>משחקים</th><th>שיא</th><th>השלמות</th><th>%</th><th>יארד מסירה</th><th>TD</th><th>INT</th><th>QB Rating</th><th>ריצה (יארד / TD)</th><th>Fumbles (סה"כ / אבודים)</th></tr></thead><tbody>${body}</tbody></table>
+                <div class="ps-note">QB Rating לפי נוסחת ה-NFL הרשמית, ומחושב רק ממשחקים שהוזנו בהם כל נתוני המסירה${anyPartial ? ' (* = חלק מהמשחקים הושמטו מהחישוב בגלל נתונים חסרים)' : ''}. ${escHtml(periodLabel)}</div>`;
+        }
+        function psRecordsSection(games) {
+            const items = [];
+            GAME_RECORD_DEFS.forEach(def => {
+                const best = bestGameFor(def, games);
+                if (!best) return;
+                const g = best.game;
+                const typeL = GAME_TYPES[g.type] ? ` • ${GAME_TYPES[g.type].l}` : '';
+                items.push(`<div class="ps-card"><small>${escHtml(def.label)}</small><b>${psNum(def.gradeBadge ? Math.round(best.value) : def.fmt(best.value))}</b><small>נגד ${escHtml(g.opponent)} • ${psNum(g.date)}${escHtml(typeL)}${best.ties ? ` • שוויון עם ${best.ties} נוספים` : ''}</small></div>`);
+            });
+            const streak = longestWinStreak(games);
+            if (streak.n >= 2) items.push(`<div class="ps-card"><small>רצף הניצחונות הארוך ביותר</small><b>${streak.n} ניצחונות</b><small>${psNum(streak.from)} → ${psNum(streak.to)}</small></div>`);
+            let phys = '';
+            try {
+                const d = JSON.parse(localStorage.getItem('qbmc_metric_prs'));
+                const prs = d && d.prs && typeof d.prs === 'object' ? d.prs : {};
+                phys = Object.keys(prs).sort().map(n => { const r = prs[n]; return r && isFinite(r.value) ? `<div class="ps-card"><small>${escHtml(n)}</small><b>${psNum(fmtNum(r.value))} ${escHtml(r.unit || '')}</b><small>${psNum(r.date || '')}</small></div>` : ''; }).join('');
+            } catch (e) {}
+            if (!items.length && !phys) return '';
+            return `<h2>שיאים אישיים</h2>${items.length ? `<div class="ps-cards">${items.join('')}</div>` : ''}${phys ? `<div class="ps-note" style="margin:6px 0 3px"><b>שיאים פיזיים (כל התקופות)</b></div><div class="ps-cards">${phys}</div>` : ''}`;
+        }
+        function psGameLogSection(games) {
+            const rows = games.slice().sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 20);
+            if (!rows.length) return '';
+            const line = g => {
+                const p = g.pass || {}, ru = g.rush || {};
+                const bits = [];
+                if (p.att != null || p.comp != null) bits.push(`${p.comp ?? '?'}/${p.att ?? '?'} • ${p.yds ?? '?'} יארד • ${p.td ?? '?'} TD • ${p.int ?? '?'} INT`);
+                if (ru.att != null) bits.push(`ריצה ${ru.yds ?? '?'} יארד${ru.td ? ` • ${ru.td} TD` : ''}`);
+                return bits.length ? psNum(bits.join(' | ')) : '—';
+            };
+            return `<h2>יומן משחקים</h2><table><thead><tr><th>תאריך</th><th class="l">יריב</th><th>סוג</th><th>תוצאה</th><th class="l">מסירות וריצה</th></tr></thead><tbody>${rows.map(g => {
+                const res = { W: 'ניצחון', L: 'הפסד', T: 'תיקו' }[g.outcome] || '';
+                return `<tr><td>${psNum(g.date)}</td><td class="l">${psLogo(g.opponent)} ${escHtml(g.opponent)}</td><td>${escHtml((GAME_TYPES[g.type] || {}).l || '—')}</td><td>${res}${g.scoreUs != null && g.scoreThem != null ? ' ' + psNum(`${g.scoreUs}-${g.scoreThem}`) : ''}</td><td class="l">${line(g)}</td></tr>`;
+            }).join('')}</tbody></table>`;
+        }
+        function buildPrintSheet(o) {
+            const on = o.items;
+            const p = loadProfile();
+            let status = {}; try { status = JSON.parse(localStorage.getItem(STATUS_KEY)) || {}; } catch (e) {}
+            let madden = null; try { madden = JSON.parse(localStorage.getItem('qbmc_madden_computed')); } catch (e) {}
+            const period = o.period === 'all' || !/^\d{4}$/.test(o.period) ? null : o.period;
+            let games = recordGamesFor(o.filter);
+            if (period) games = games.filter(g => String(g.date || '').slice(0, 4) === period);
+            const filterLabel = { official: 'משחקים רשמיים (ללא אימון)', regular: 'עונה סדירה', playoff: 'פלייאוף', israbowl: 'ישרא-בול', all: 'כולל משחקי אימון' }[o.filter];
+            const periodLabel = `${period ? 'עונת ' + period : 'כל התקופות'} • ${filterLabel}.`;
+
+            const sub = [p.position || 'QB', p.jersey ? '#' + p.jersey : '', p.secondaryPositions ? 'עמדות נוספות: ' + p.secondaryPositions : ''].filter(Boolean).map(escHtml).join(' • ');
+            const teamLine = (status.team || p.club) ? `${psLogo(status.team)} ${escHtml(status.team || p.club)}${status.league ? ' • ' + escHtml(status.league) : ''}${status.season ? ' • ' + escHtml(status.season) : ''}` : '';
+            const formats = Array.isArray(p.formats) && p.formats.length ? p.formats.map(f => ({ tackle: 'תאקל', flag: 'פלאג' }[f] || f)).join(', ') : '';
+            const hand = { right: 'ימין', left: 'שמאל' }[p.throwingHand] || '';
+            const age = ageFromDob(p.dob);
+
+            let h = `<div class="ps"><div class="ps-head">
+                ${on.photo && /^data:image\/(jpeg|png|webp);base64,/.test(p.photo || '') ? `<img class="ps-photo" src="${p.photo}" alt="">` : ''}
+                <div><div class="ps-name">${escHtml(p.name) || 'שם השחקן'}</div><div class="ps-sub">${sub}</div><div class="ps-sub">${teamLine}</div>${formats ? `<div class="ps-sub" style="font-weight:400">פורמט: ${escHtml(formats)}</div>` : ''}</div>
+                ${on.madden && madden && isFinite(madden.ovr) ? `<div class="ps-ovr"><b>${escHtml(madden.ovr)}</b><span>OVR (הערכה עצמית)</span></div>` : ''}</div>`;
+
+            const info = [];
+            if (on.basics) {
+                if (p.height) info.push(`<div><b>גובה:</b> ${psNum(p.height)} ס"מ</div>`);
+                if (p.weight) info.push(`<div><b>משקל:</b> ${psNum(p.weight)} ק"ג</div>`);
+                if (hand) info.push(`<div><b>יד זריקה:</b> ${hand}</div>`);
+                if (p.handSize) info.push(`<div><b>גודל כף יד:</b> ${psNum(p.handSize)} ס"מ</div>`);
+            }
+            if (on.age && age != null) info.push(`<div><b>גיל:</b> ${psNum(age)}</div>`);
+            if (on.dob && p.dob) info.push(`<div><b>תאריך לידה:</b> ${psNum(p.dob)}</div>`);
+            if (on.school && p.school) info.push(`<div><b>בית ספר:</b> ${escHtml(p.school)}</div>`);
+            if (on.school && p.gradYear) info.push(`<div><b>שנת סיום:</b> ${psNum(p.gradYear)}</div>`);
+            if (info.length) h += `<div class="ps-grid">${info.join('')}</div>`;
+            if (on.background && p.background) h += `<h2>רקע ספורטיבי</h2><div style="white-space:pre-wrap">${escHtml(p.background)}</div>`;
+
+            if (on.madden && madden && madden.categories) {
+                h += `<h2>דירוג QB בסגנון Madden</h2><div class="ps-cat">${Object.entries(CAT_LABELS).map(([k, l]) => madden.categories[k] != null ? `<span>${escHtml(l)} ${psNum(madden.categories[k])}</span>` : '').join('')}</div>
+                    <div class="ps-note">דירוג עצמי שהוזן ונצבר באפליקציה (סולם 1-99), ואינו דירוג רשמי או מדידה מאומתת.${madden.updatedAt ? ' עודכן ' + escHtml(madden.updatedAt) + '.' : ''}</div>`;
+            }
+            if (on.seasons) h += `<h2>סיכום עונות מהמשחקים שתועדו</h2>${psSeasonsSection(games, periodLabel)}`;
+            if (on.career && !period) {
+                const manual = loadCareer().filter(r => !r.auto);
+                if (manual.length) h += `<h2>היסטוריית קריירה</h2><table><thead><tr><th>עונה</th><th class="l">קבוצה</th><th>עמדה</th><th>משחקים</th><th class="l">סטטיסטיקה</th></tr></thead><tbody>${manual.map(r => `<tr><td>${psCell(r.year)}</td><td class="l">${psLogo(r.team)} ${escHtml(r.team || '')}</td><td>${escHtml(r.position || '—')}</td><td>${psCell(r.games)}</td><td class="l"><bdi>${escHtml(String(r.stats || '').replace(/טאקלים/g, 'תאקלים').replace(/\byds\b/gi, 'יארד')) || '—'}</bdi></td></tr>`).join('')}</tbody></table>`;
+            }
+            if (on.records) h += psRecordsSection(games);
+            if (on.gamelog) h += psGameLogSection(games);
+            if (on.achievements) {
+                const ach = loadAchievements();
+                if (ach.length) h += `<h2>הישגים ותארים</h2><ul>${ach.map(a => `<li>${escHtml(a.text)}${a.date ? ` <span class="ps-note">(${psNum(a.date)})</span>` : ''}</li>`).join('')}</ul>`;
+            }
+            if (on.highlights) {
+                const hl = loadHighlights().filter(x => safeHttpUrl(x.url));
+                if (hl.length) h += `<h2>הייטלייטס</h2><ul>${hl.map(x => `<li>${escHtml(x.title)} — <span class="num">${escHtml(safeHttpUrl(x.url))}</span></li>`).join('')}</ul>`;
+            }
+            if (on.staff) {
+                const staff = loadStaff();
+                if (staff.length) h += `<h2>צוות אימון</h2><ul>${staff.map(m => `<li>${escHtml(m.name)} — ${escHtml(m.role || '')}${on.staffContact ? `${m.phone ? ' • ' + psNum(m.phone) : ''}${m.email ? ' • ' + psNum(m.email) : ''}` : ''}</li>`).join('')}</ul>`;
+            }
+            if (on.goals) {
+                const goals = loadGoals();
+                if (goals.length) h += `<h2>יעדים</h2><ul>${goals.map(g => `<li>${g.done ? '✓ ' : ''}${escHtml(g.text)}${g.date ? ` <span class="ps-note">(עד ${psNum(g.date)})</span>` : ''}</li>`).join('')}</ul>`;
+            }
+            if (on.equipment) {
+                let eq = {}; try { eq = JSON.parse(localStorage.getItem(EQUIPMENT_KEY)) || {}; } catch (e) {}
+                const e2 = [['נעליים', eq.shoes], ['כפפות', eq.gloves], ['קסדה', eq.helmet], ['גופיה', eq.jersey], ['הערות', eq.notes]].filter(x => x[1]);
+                if (e2.length) h += `<h2>מידות וציוד</h2><div class="ps-grid">${e2.map(x => `<div><b>${x[0]}:</b> ${escHtml(x[1])}</div>`).join('')}</div>`;
+            }
+            h += `<div class="ps-foot">הופק ב-QB Master Class בתאריך ${psNum(todayStrPlayer())}. כל הנתונים הוזנו על ידי השחקן או מי מטעמו ואינם מאומתים. סטטיסטיקות משחקי אימון אינן נכללות אלא אם צוין אחרת.</div></div>`;
+            return h;
+        }
+        function renderSheet(o) { document.getElementById('printSheet').innerHTML = buildPrintSheet(o); }
+        function previewExport() {
+            const o = readExportOpts(); renderSheet(o);
+            const el = document.getElementById('printSheet');
+            el.insertAdjacentHTML('afterbegin', `<div class="ps-toolbar" style="max-width:794px;margin:0 auto 10px;display:flex;gap:8px;direction:rtl"><button type="button" onclick="printExport(true)" style="padding:8px 16px;border-radius:8px;background:#059669;color:#fff;font-weight:700">🖨️ הדפס / שמור כ-PDF</button><button type="button" onclick="closePreview()" style="padding:8px 16px;border-radius:8px;background:#e2e8f0;color:#0f172a;font-weight:700">✕ סגור תצוגה מקדימה</button></div>`);
+            el.classList.add('ps-preview'); closeExportModal();
+        }
+        function closePreview() { const el = document.getElementById('printSheet'); el.classList.remove('ps-preview'); el.innerHTML = ''; }
+        function printExport(fromPreview) {
+            if (!fromPreview) { const o = readExportOpts(); renderSheet(o); }
+            else { const t = document.querySelector('#printSheet .ps-toolbar'); if (t) t.remove(); }   // re-add after printing by re-rendering the preview
+            closeExportModal();
+            document.body.classList.add('ps-active');
+            const done = () => { document.body.classList.remove('ps-active'); window.removeEventListener('afterprint', done); if (fromPreview) previewExport(); else if (!document.getElementById('printSheet').classList.contains('ps-preview')) document.getElementById('printSheet').innerHTML = ''; };
+            window.addEventListener('afterprint', done);
+            setTimeout(() => window.print(), 50);
+        }
 
         // ---- Highlight links ----
         const HIGHLIGHTS_KEY = 'qbmc_player_highlights';
