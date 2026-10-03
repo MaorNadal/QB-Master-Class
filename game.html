@@ -478,6 +478,56 @@
             </div>
         </section>
 
+        <section id="presnap-drill" class="bg-slate-800/80 border-2 border-sky-500/60 rounded-2xl p-6 md:p-8 backdrop-blur shadow-2xl">
+            <div class="mb-5 text-center">
+                <span class="px-3 py-1 bg-sky-500/20 text-sky-300 font-bold text-xs rounded-full border border-sky-500/30">תרגיל אינטראקטיבי</span>
+                <h2 class="text-2xl md:text-4xl font-black text-sky-400 mt-2">🎯 תרגיל Pre-Snap: קרא, החלט, קבל ציון</h2>
+                <p class="text-slate-300 text-sm md:text-base mt-1 max-w-3xl mx-auto">רואים מבנה הגנה לפני הסנאפ. בוחרים רמת איום בליץ, Protection וקונספט מסירה, ורק אחר כך נחשפת התשובה עם ההסבר והציון. הציון נקבע לפי נתוני הכיסויים של האפליקציה (לוח ההגנות): זו מסגרת הדרכה ולא אמת מוחלטת, ומאמנים שונים עשויים לבחור אחרת.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-4 text-xs">
+                <label class="text-slate-300 font-bold">מצב:
+                    <select id="psMode" onchange="psNewScenario()" class="mr-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400">
+                        <option value="read">קריאה: שם הכיסוי מוסתר (מציאותי)</option>
+                        <option value="study">לימוד: שם הכיסוי מוצג</option>
+                    </select>
+                </label>
+                <button type="button" onclick="psNewScenario()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold">🔀 תרחיש חדש</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span id="psLookTitle" class="font-bold text-white text-sm"></span>
+                        <span id="psSafetyBadge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-sky-400"></span>
+                    </div>
+                    <div class="relative w-full flex justify-center bg-emerald-950/60 rounded-xl border border-emerald-800/50 p-2">
+                        <canvas id="psCanvas" width="380" height="420" class="max-w-full rounded-lg shadow-inner"></canvas>
+                    </div>
+                    <p id="psLookNote" class="text-[11px] text-slate-400 mt-2 leading-relaxed"></p>
+                </div>
+
+                <div>
+                    <div id="psQuestions" class="space-y-4"></div>
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <button id="psSubmitBtn" type="button" onclick="psSubmit()" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition">✅ בדוק את ההחלטה</button>
+                        <button id="psNextBtn" type="button" onclick="psNewScenario()" class="hidden px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">▶️ תרחיש הבא</button>
+                    </div>
+                    <div id="psMsg" class="text-xs text-amber-300 mt-2"></div>
+                </div>
+            </div>
+
+            <div id="psReveal" class="hidden mt-6 bg-slate-900/80 border border-slate-700 rounded-2xl p-5"></div>
+
+            <div class="mt-6 bg-slate-900/60 border border-slate-700 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-white text-sm">📈 ההתקדמות שלך</h3>
+                    <button type="button" onclick="psResetHistory()" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300">איפוס היסטוריה</button>
+                </div>
+                <div id="psStats" class="text-xs text-slate-300"></div>
+            </div>
+        </section>
+
     </main>
 
     <footer class="max-w-7xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 border-t border-slate-800 pt-6">
@@ -2590,6 +2640,235 @@
         }
 
 
+        // ================= Pre-Snap interactive drill =================
+        // The "answer key" is not a separate list: it is derived from COVERAGE_DATABASE itself
+        // (blitzRisk, protection.scheme text, concepts), so the drill can never disagree with the coverage board.
+        const PS_LOG_KEY = 'qbmc_presnap_log';
+        const PS_WEIGHTS = { blitz: 20, prot: 40, concept: 40 };     // total 100
+        const PS_BLITZ = [
+            { id: 'low', label: 'נמוך', desc: 'בדרך כלל 4 פורצים, מבנה שמרני' },
+            { id: 'medium', label: 'בינוני', desc: 'פורץ נוסף אפשרי (LB/Slot), לחץ מזדמן' },
+            { id: 'high', label: 'גבוה', desc: '5-6 פורצים ומעלה או בליץ מוסווה' }
+        ];
+        const PS_PROTECTIONS = [
+            { id: 'max', label: 'Max Protect', desc: '7-8 חוסמים, רק 1-2 רסיברים יוצאים למסלול' },
+            { id: 'slide', label: '5-Man Slide', desc: 'הקו מחליק לצד אחד, וה-RB חוסם את הצד השני' },
+            { id: 'bob', label: 'BOB / Man Protection', desc: 'כל חוסם מול פורץ, וה-RB בודק את הפורץ הפנוי (RB Check)' }
+        ];
+        // Reads the recommended protection straight from the coverage's own protection.scheme text.
+        // Order matters: "Max Protect" first, then Man/BOB, then Slide (Fire Zone's text mentions Slide only to rule it out).
+        function psCorrectProtection(cov) {
+            const t = (cov.protection && cov.protection.scheme) || '';
+            if (/Max Protect/i.test(t)) return 'max';
+            if (/BOB|Man Protection/i.test(t)) return 'bob';
+            if (/Slide/i.test(t)) return 'slide';
+            return null;
+        }
+        // Partial credit (50%): BOB <-> Slide against low/medium blitz risk; Max <-> BOB against high blitz risk.
+        function psProtectionCredit(chosen, correct, risk) {
+            if (!correct) return null;
+            if (chosen === correct) return 1;
+            const pair = [chosen, correct].sort().join('+');
+            if (risk === 'high') return pair === 'bob+max' ? 0.5 : 0;
+            return pair === 'bob+slide' ? 0.5 : 0;
+        }
+        function psBlitzCredit(chosen, correct) {
+            const order = ['low', 'medium', 'high'];
+            const d = Math.abs(order.indexOf(chosen) - order.indexOf(correct));
+            return d === 0 ? 1 : (d === 1 ? 0.4 : 0);
+        }
+        function psSafetyCount(cov) {
+            const m = /^(\d) Safet/i.exec(cov.safetyBadge || '');
+            return m ? Number(m[1]) : (/^(\d) Safet/i.test(cov.safetyBadge || '') ? 0 : null);
+        }
+        function psLoadLog() {
+            try { const v = JSON.parse(localStorage.getItem(PS_LOG_KEY)); return Array.isArray(v) ? v.filter(e => e && COVERAGE_DATABASE[e.cov] && isFinite(e.pts)) : []; } catch (e) { return []; }
+        }
+        function psSaveLog(list) { try { localStorage.setItem(PS_LOG_KEY, JSON.stringify(list.slice(-300))); return true; } catch (e) { return false; } }
+        function psGrade(v) {
+            const x = Math.max(1, Math.min(99, Math.round(v)));
+            const T = [[95, 'A+', '#34d399'], [90, 'A', '#34d399'], [85, 'A-', '#4ade80'], [80, 'B+', '#a3e635'], [75, 'B', '#a3e635'], [70, 'B-', '#facc15'], [65, 'C+', '#facc15'], [60, 'C', '#fb923c'], [55, 'C-', '#fb923c'], [50, 'D+', '#f87171'], [45, 'D', '#f87171'], [40, 'D-', '#f87171']];
+            const hit = T.find(t => x >= t[0]);
+            return hit ? { l: hit[1], c: hit[2] } : { l: 'F', c: '#ef4444' };
+        }
+        function psBadge(v) { const g = psGrade(v); return `<span class="font-black px-2 py-0.5 rounded-full border" style="color:${g.c};border-color:${g.c}55;background:${g.c}1a">${g.l} • ${Math.round(v)}</span>`; }
+
+        let psCurrent = null, psLastKey = null;
+
+        // Adaptive pick: coverages with a lower past average appear more often (weight 1..3), never the same one twice in a row.
+        function psPickCoverage() {
+            const keys = Object.keys(COVERAGE_DATABASE).filter(k => k !== psLastKey);
+            const log = psLoadLog();
+            const weights = keys.map(k => {
+                const rows = log.filter(e => e.cov === k);
+                if (!rows.length) return 2;
+                const avg = rows.reduce((n, e) => n + e.pts, 0) / rows.length;
+                return 1 + (1 - Math.min(100, avg) / 100) * 2;
+            });
+            let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+            for (let i = 0; i < keys.length; i++) { r -= weights[i]; if (r <= 0) return keys[i]; }
+            return keys[keys.length - 1];
+        }
+        function psShuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+
+        // Concept options: one concept recommended for THIS coverage + 3 that are not recommended for it.
+        // Distractors also avoid coverages that share a weak zone with this one, so a "wrong" option is not secretly also right.
+        function psBuildConceptOptions(key) {
+            const cov = COVERAGE_DATABASE[key];
+            const mine = new Set(cov.concepts.map(c => c.title));
+            const owners = {};
+            Object.entries(COVERAGE_DATABASE).forEach(([k, c]) => c.concepts.forEach(x => { (owners[x.title] = owners[x.title] || { c: x, keys: [] }).keys.push(k); }));
+            const myZones = new Set(cov.weakZones || []);
+            const sharesZone = k => (COVERAGE_DATABASE[k].weakZones || []).some(z => myZones.has(z));
+            let pool = Object.values(owners).filter(o => !mine.has(o.c.title) && !o.keys.includes(key) && !o.keys.some(sharesZone));
+            if (pool.length < 3) pool = Object.values(owners).filter(o => !mine.has(o.c.title) && !o.keys.includes(key));
+            const good = cov.concepts[Math.floor(Math.random() * cov.concepts.length)];
+            const bad = psShuffle(pool).slice(0, 3).map(o => o.c);
+            return psShuffle([{ title: good.title, desc: good.desc, ok: true }].concat(bad.map(c => ({ title: c.title, desc: c.desc, ok: false }))));
+        }
+
+        function psDrawLook(cov, full) {
+            const canvas = document.getElementById('psCanvas'), ctx = canvas.getContext('2d');
+            const names = ['drawZoneBubble', 'drawDropLine', 'drawRushArrow'], keep = {};
+            // Before the snap you only see alignment: blitz arrows, drop lines and zone shading are post-snap information.
+            if (!full) names.forEach(n => { keep[n] = window[n]; window[n] = function () {}; });
+            try { cov.draw(ctx, canvas.width, canvas.height); }
+            finally { if (!full) names.forEach(n => { window[n] = keep[n]; }); }
+        }
+
+        function psNewScenario() {
+            const key = psPickCoverage();
+            psLastKey = key;
+            const cov = COVERAGE_DATABASE[key];
+            const mode = document.getElementById('psMode').value;
+            psCurrent = { key, mode, concepts: psBuildConceptOptions(key), answered: false };
+            psDrawLook(cov, false);
+            const n = psSafetyCount(cov);
+            document.getElementById('psLookTitle').innerText = mode === 'study' ? cov.name : 'מבנה ההגנה לפני הסנאפ';
+            document.getElementById('psSafetyBadge').innerText = mode === 'study' ? cov.typeTag : (n === null ? 'מראה מוסווה' : `${n} Safeties עמוקים`);
+            document.getElementById('psLookNote').innerText = mode === 'study'
+                ? 'מצב לימוד: שם הכיסוי ידוע. בחר את הקריאה וההחלטה שמתאימות לו.'
+                : 'מצב קריאה: רואים רק את העמדות לפני הסנאפ (בלי חיצי בליץ, אזורי כיסוי או קווי נסיגה). כמה כיסויים נראים דומים לפני הסנאפ, והמחויבות היא להחלטה הסבירה ביותר.';
+            document.getElementById('psQuestions').innerHTML = `
+                <fieldset class="bg-slate-900 border border-slate-700 rounded-xl p-3"><legend class="text-xs font-bold text-amber-300 px-1">1. מה רמת איום הבליץ שאתה מצפה לה?</legend>
+                    ${PS_BLITZ.map(o => psRadio('psQ1', o.id, o.label, o.desc)).join('')}</fieldset>
+                <fieldset class="bg-slate-900 border border-slate-700 rounded-xl p-3"><legend class="text-xs font-bold text-amber-300 px-1">2. איזו Protection תקרא?</legend>
+                    ${PS_PROTECTIONS.map(o => psRadio('psQ2', o.id, o.label, o.desc)).join('')}</fieldset>
+                <fieldset class="bg-slate-900 border border-slate-700 rounded-xl p-3"><legend class="text-xs font-bold text-amber-300 px-1">3. איזה קונספט מסירה תתקוף?</legend>
+                    ${psCurrent.concepts.map((c, i) => psRadio('psQ3', String(i), c.title, mode === 'read' ? psMaskCoverageNames(c.desc) : c.desc)).join('')}</fieldset>`;
+            document.getElementById('psReveal').classList.add('hidden');
+            document.getElementById('psReveal').innerHTML = '';
+            document.getElementById('psMsg').innerText = '';
+            document.getElementById('psSubmitBtn').classList.remove('hidden');
+            document.getElementById('psNextBtn').classList.add('hidden');
+            psRenderStats();
+        }
+        // In reading mode a concept's description must not name a coverage (a few of them do, e.g. "Cover 2"),
+        // otherwise a wrong-looking option could hint at the hidden coverage. The reveal always shows the full text.
+        function psMaskCoverageNames(text) { return String(text).replace(/(Cover\s*\d\w*|Tampa\s*2|Palms|Fire\s*Zone)/gi, '…'); }
+        function psRadio(name, val, label, desc) {
+            return `<label class="flex items-start gap-2 py-1.5 cursor-pointer text-xs"><input type="radio" name="${name}" value="${val}" class="mt-0.5 w-4 h-4 accent-sky-400 shrink-0"><span><span class="font-bold text-slate-100">${label}</span><span class="block text-[11px] text-slate-400">${desc}</span></span></label>`;
+        }
+        function psPicked(name) { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : null; }
+
+        function psSubmit() {
+            if (!psCurrent || psCurrent.answered) return;
+            const blitz = psPicked('psQ1'), prot = psPicked('psQ2'), concept = psPicked('psQ3');
+            if (!blitz || !prot || concept === null) { document.getElementById('psMsg').innerText = 'ענה על שלוש השאלות לפני הבדיקה.'; return; }
+            const cov = COVERAGE_DATABASE[psCurrent.key];
+            const correctProt = psCorrectProtection(cov);
+            const chosenConcept = psCurrent.concepts[Number(concept)];
+            const parts = [
+                { id: 'blitz', w: PS_WEIGHTS.blitz, credit: psBlitzCredit(blitz, cov.blitzRisk) },
+                { id: 'prot', w: PS_WEIGHTS.prot, credit: psProtectionCredit(prot, correctProt, cov.blitzRisk) },
+                { id: 'concept', w: PS_WEIGHTS.concept, credit: chosenConcept && chosenConcept.ok ? 1 : 0 }
+            ];
+            // A question with no derivable answer key (credit === null) is left out and the rest is rescaled to 100.
+            const scored = parts.filter(p => p.credit !== null);
+            const totalW = scored.reduce((n, p) => n + p.w, 0);
+            const pts = totalW ? Math.round(scored.reduce((n, p) => n + p.w * p.credit, 0) / totalW * 100) : 0;
+            psCurrent.answered = true;
+
+            const log = psLoadLog();
+            log.push({ d: psToday(), cov: psCurrent.key, mode: psCurrent.mode, pts, blitz: parts[0].credit, prot: parts[1].credit, concept: parts[2].credit });
+            const saved = psSaveLog(log);
+
+            psDrawLook(cov, true);                                  // reveal the full picture (arrows, zones)
+            psRenderReveal(cov, { blitz, prot, chosenConcept }, parts, pts, correctProt, saved);
+            document.getElementById('psSubmitBtn').classList.add('hidden');
+            document.getElementById('psNextBtn').classList.remove('hidden');
+            document.getElementById('psLookTitle').innerText = cov.name;
+            document.getElementById('psSafetyBadge').innerText = cov.typeTag;
+            psRenderStats();
+            document.getElementById('psReveal').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        function psToday() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+        function psCreditText(c, w) {
+            if (c === null) return '<span class="text-slate-500">לא נבדק</span>';
+            const pts = Math.round(c * w);
+            const color = c === 1 ? '#34d399' : (c > 0 ? '#facc15' : '#f87171');
+            return `<span class="font-bold" style="color:${color}">${pts}/${w}${c === 1 ? ' ✓' : (c > 0 ? ' (חלקי)' : ' ✗')}</span>`;
+        }
+        function psRenderReveal(cov, ans, parts, pts, correctProt, saved) {
+            const protLabel = id => (PS_PROTECTIONS.find(p => p.id === id) || {}).label || '—';
+            const blitzLabel = id => (PS_BLITZ.find(p => p.id === id) || {}).label || '—';
+            const mine = new Set(cov.concepts.map(c => c.title));
+            const similar = Object.entries(COVERAGE_DATABASE).filter(([k, c]) => k !== psCurrent.key && psSafetyCount(c) !== null && psSafetyCount(c) === psSafetyCount(cov)).map(([k, c]) => c.name);
+            const html = `
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div><div class="text-[11px] text-slate-400">הכיסוי היה</div><div class="text-lg font-black" style="color:${cov.color}">${cov.name}</div><div class="text-[11px] text-slate-400">${cov.typeTag}</div></div>
+                    <div class="text-center"><div class="text-[11px] text-slate-400">ציון ההחלטה</div><div class="text-2xl">${psBadge(pts)}</div></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs mb-4">
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3"><div class="font-bold text-amber-300 mb-1">1. איום הבליץ ${psCreditText(parts[0].credit, PS_WEIGHTS.blitz)}</div>
+                        <div>בחרת: <b>${blitzLabel(ans.blitz)}</b></div><div>בנתוני הכיסוי: <b>${blitzLabel(cov.blitzRisk)}</b></div>
+                        <div class="text-slate-400 mt-1">${cov.protection.threat}</div></div>
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3"><div class="font-bold text-amber-300 mb-1">2. Protection ${psCreditText(parts[1].credit, PS_WEIGHTS.prot)}</div>
+                        <div>בחרת: <b>${protLabel(ans.prot)}</b></div><div>המומלץ: <b>${correctProt ? protLabel(correctProt) : '—'}</b></div>
+                        <div class="text-slate-400 mt-1">${cov.protection.scheme}</div>
+                        ${parts[1].credit === 0.5 ? '<div class="text-yellow-300 mt-1">קרדיט חלקי: הבחירה שלך סבירה אך לא האופטימלית כאן.</div>' : ''}</div>
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3"><div class="font-bold text-amber-300 mb-1">3. קונספט ${psCreditText(parts[2].credit, PS_WEIGHTS.concept)}</div>
+                        <div>בחרת: <b>${ans.chosenConcept.title}</b></div>
+                        <div class="text-slate-400 mt-1">${ans.chosenConcept.ok ? ans.chosenConcept.desc : 'הקונספט הזה אינו מופיע בין הקונספטים המומלצים נגד הכיסוי הזה בלוח ההגנות.'}</div></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div class="bg-emerald-950/40 border border-emerald-800/50 rounded-xl p-3"><div class="font-bold text-emerald-300 mb-1">✅ קונספטים מומלצים נגד ${cov.name}</div>
+                        <ul class="space-y-1">${cov.concepts.map(c => `<li><b>${c.title}</b>: <span class="text-slate-300">${c.desc}</span></li>`).join('')}</ul></div>
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3"><div class="font-bold text-sky-300 mb-1">🔑 מה לחפש (מפתח ה-LB) ועוד</div>
+                        <p class="text-slate-300">${cov.lbKeys}</p>
+                        <p class="mt-2 text-slate-400"><b>Hot Route:</b> ${cov.protection.hot}</p></div>
+                </div>
+                ${psCurrent.mode === 'read' && similar.length ? `<p class="text-[11px] text-slate-400 mt-3 leading-relaxed">⚠️ <b>למה זה לא תמיד חד-משמעי:</b> לפני הסנאפ המבנה הזה דומה גם ל: ${similar.join(', ')}. ההבדל בין הכיסויים מתגלה בעיקר אחרי הסנאפ (תנועת ה-CBs וה-Safeties), ולכן בפועל מכוונים את ההחלטה לקריאה הסבירה ומתאימים אחרי הסנאפ. ראה גם את <a href="learn.html#presnap" class="text-sky-400 underline">פרוטוקול ה-Pre-Snap</a>.</p>` : ''}
+                ${saved ? '' : '<p class="text-[11px] text-amber-300 mt-2">לא ניתן לשמור את התוצאה בהיסטוריה (האחסון בדפדפן מלא או חסום).</p>'}`;
+            const box = document.getElementById('psReveal');
+            box.innerHTML = html; box.classList.remove('hidden');
+        }
+
+        function psRenderStats() {
+            const log = psLoadLog();
+            const el = document.getElementById('psStats');
+            if (!log.length) { el.innerHTML = '<p class="text-slate-500">עדיין אין תוצאות. ענה על התרחיש הראשון והסטטיסטיקה תופיע כאן.</p>'; return; }
+            const avg = rows => rows.reduce((n, e) => n + e.pts, 0) / rows.length;
+            const last10 = log.slice(-10);
+            const pct = k => { const r = log.filter(e => e[k] !== null && e[k] !== undefined); return r.length ? Math.round(r.filter(e => e[k] === 1).length / r.length * 100) : null; };
+            const byCov = Object.keys(COVERAGE_DATABASE).map(k => ({ k, rows: log.filter(e => e.cov === k) })).filter(x => x.rows.length >= 2).map(x => ({ name: COVERAGE_DATABASE[x.k].name, avg: avg(x.rows), n: x.rows.length })).sort((a, b) => a.avg - b.avg);
+            const weak = byCov.slice(0, 3);
+            el.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3 text-center"><div class="text-[11px] text-slate-400">תרחישים</div><div class="text-lg font-black text-white">${log.length}</div></div>
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3 text-center"><div class="text-[11px] text-slate-400">ממוצע כולל</div><div class="text-lg">${psBadge(avg(log))}</div></div>
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3 text-center"><div class="text-[11px] text-slate-400">ממוצע ${last10.length} אחרונים</div><div class="text-lg">${psBadge(avg(last10))}</div></div>
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3 text-center"><div class="text-[11px] text-slate-400">דיוק מלא לפי החלטה</div><div class="text-[11px] text-slate-200 mt-1">בליץ ${pct('blitz') ?? '—'}% • Protection ${pct('prot') ?? '—'}% • קונספט ${pct('concept') ?? '—'}%</div></div>
+                </div>
+                ${weak.length ? `<div class="text-[11px] text-slate-400">הכיסויים החלשים שלך (לפחות 2 ניסיונות): ${weak.map(w => `<b class="text-slate-200">${w.name}</b> (${Math.round(w.avg)}, ${w.n} ניסיונות)`).join(' • ')}</div>` : '<div class="text-[11px] text-slate-500">פירוט לפי כיסוי יופיע אחרי 2 ניסיונות לפחות בכיסוי אחד.</div>'}
+                <div class="text-[10px] text-slate-500 mt-2">התרגיל מתאים את עצמו: כיסויים שהציון בהם נמוך יותר מופיעים לעיתים קרובות יותר.</div>`;
+        }
+        function psResetHistory() {
+            if (!confirm('למחוק את כל היסטוריית תרגיל ה-Pre-Snap? הפעולה אינה הפיכה.')) return;
+            try { localStorage.removeItem(PS_LOG_KEY); } catch (e) {}
+            psRenderStats();
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             selectCoverage('cover1');
             selectRoute(2);
@@ -2599,6 +2878,7 @@
             populateBuilderRouteSelectors();
             drawBuilderField();
             selectPlay('mesh');
+            psNewScenario();
         });
     </script>
 </body>
