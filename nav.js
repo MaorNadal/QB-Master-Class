@@ -5,7 +5,7 @@
         { file: 'learn.html', group: 'learn', icon: '📘', title: 'לימוד', desc: 'מכניקת זריקה, שרשרת קינטית, פרוטוקול Pre-Snap ומילון מונחים.',
           sections: [['mechanics', 'זריקה ומכניקה'], ['throwing-sequence', 'שרשרת קינטית'], ['presnap', 'Pre-Snap'], ['glossary', 'מילון מונחים']] },
         { file: 'game.html', group: 'game', icon: '🧠', title: 'קריאת משחק', desc: 'לוח 11 הגנות, עץ מסלולים 1-9, Playbook התקפי, סימולטור טקטי ובונה מהלכים.',
-          sections: [['coverage-board', 'לוח הגנות מלא'], ['route-tree', 'עץ מסלולים 1-9'], ['playbook', 'Playbook התקפי'], ['simulator', 'סימולטור'], ['play-builder', 'בונה מהלכים'], ['presnap-drill', 'תרגיל Pre-Snap']] },
+          sections: [['coverage-board', 'לוח הגנות מלא'], ['route-tree', 'עץ מסלולים 1-9'], ['playbook', 'Playbook התקפי'], ['simulator', 'סימולטור'], ['play-builder', 'בונה מהלכים'], ['presnap-drill', 'תרגיל Pre-Snap'], ['coverage-quiz', 'מבחן זיהוי הגנות']] },
         { file: 'training.html', group: 'train', icon: '🏋️', title: 'אימון', desc: 'ספריית דרילים לקוורטרבק ותוכנית האימונים השבועית עם מעקב ביצוע.',
           sections: [['drills', 'דרילים'], ['workout-plan', 'תוכנית אימונים']] },
         { file: 'metrics.html', group: 'track', icon: '📈', title: 'מעקב מדדים', desc: 'מדדים פיזיים ודירוגי Madden לאורך זמן, גרפים ודו"ח למאמן.',

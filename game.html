@@ -528,6 +528,54 @@
             </div>
         </section>
 
+        <section id="coverage-quiz" class="bg-slate-800/80 border-2 border-violet-500/60 rounded-2xl p-6 md:p-8 backdrop-blur shadow-2xl">
+            <div class="mb-5 text-center">
+                <span class="px-3 py-1 bg-violet-500/20 text-violet-300 font-bold text-xs rounded-full border border-violet-500/30">תרגול חופשי</span>
+                <h2 class="text-2xl md:text-4xl font-black text-violet-400 mt-2">🔎 מבחן זיהוי הגנות</h2>
+                <p class="text-slate-300 text-sm md:text-base mt-1 max-w-3xl mx-auto">שלוש דרגות קושי: לזהות את משפחת ההגנה מהמבנה, לזהות כיסוי ספציפי בעזרת רמז מה שקורה אחרי הסנאפ, או לזהות כיסוי רק מהמבנה. ציון A+ עד F, והתרגיל חוזר יותר אל הכיסויים שאתה מפספס.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-4 text-xs">
+                <label class="text-slate-300 font-bold">דרגת קושי:
+                    <select id="cqLevel" onchange="cqNew()" class="mr-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-violet-400">
+                        <option value="A">א׳ • משפחת ההגנה (לפי המבנה)</option>
+                        <option value="B" selected>ב׳ • כיסוי ספציפי עם רמז אחרי הסנאפ</option>
+                        <option value="C">ג׳ • כיסוי ספציפי בלי רמז</option>
+                    </select>
+                </label>
+                <button type="button" onclick="cqNew()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold">🔀 שאלה חדשה</button>
+            </div>
+            <p id="cqLevelNote" class="text-center text-[11px] text-slate-400 max-w-3xl mx-auto mb-4 leading-relaxed"></p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div>
+                    <div class="flex items-center justify-between mb-2"><span id="cqLookTitle" class="font-bold text-white text-sm"></span><span id="cqBadge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-violet-300"></span></div>
+                    <div class="relative w-full flex justify-center bg-emerald-950/60 rounded-xl border border-emerald-800/50 p-2">
+                        <canvas id="cqCanvas" width="380" height="420" class="max-w-full rounded-lg shadow-inner"></canvas>
+                    </div>
+                    <div id="cqCue" class="hidden mt-3 bg-violet-950/40 border border-violet-700/50 rounded-xl p-3 text-xs text-violet-100 leading-relaxed"></div>
+                </div>
+                <div>
+                    <div id="cqQuestions" class="space-y-3"></div>
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <button id="cqSubmit" type="button" onclick="cqSubmit()" class="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm transition">✅ בדוק</button>
+                        <button id="cqNext" type="button" onclick="cqNew()" class="hidden px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">▶️ שאלה הבאה</button>
+                    </div>
+                    <div id="cqMsg" class="text-xs text-amber-300 mt-2"></div>
+                </div>
+            </div>
+
+            <div id="cqReveal" class="hidden mt-6 bg-slate-900/80 border border-slate-700 rounded-2xl p-5"></div>
+
+            <div class="mt-6 bg-slate-900/60 border border-slate-700 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-white text-sm">📈 ההתקדמות שלך במבחן</h3>
+                    <button type="button" onclick="cqResetHistory()" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300">איפוס היסטוריה</button>
+                </div>
+                <div id="cqStats" class="text-xs text-slate-300"></div>
+            </div>
+        </section>
+
     </main>
 
     <footer class="max-w-7xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 border-t border-slate-800 pt-6">
@@ -2727,8 +2775,8 @@
             return psShuffle([{ title: good.title, desc: good.desc, ok: true }].concat(bad.map(c => ({ title: c.title, desc: c.desc, ok: false }))));
         }
 
-        function psDrawLook(cov, full) {
-            const canvas = document.getElementById('psCanvas'), ctx = canvas.getContext('2d');
+        function psDrawLook(cov, full, canvasId) {
+            const canvas = document.getElementById(canvasId || 'psCanvas'), ctx = canvas.getContext('2d');
             const names = ['drawZoneBubble', 'drawDropLine', 'drawRushArrow'], keep = {};
             // Before the snap you only see alignment: blitz arrows, drop lines and zone shading are post-snap information.
             if (!full) names.forEach(n => { keep[n] = window[n]; window[n] = function () {}; });
@@ -2869,6 +2917,182 @@
             psRenderStats();
         }
 
+        // ================= Coverage-ID quiz =================
+        // Level A: the defensive FAMILY, read from what the picture really shows (deep safeties counted from the drawing itself).
+        // Level B: the same look + a post-snap cue, then pick the specific coverage within that family.
+        // Level C: the look only, pick the specific coverage (some looks genuinely overlap before the snap; the reveal says so).
+        const CQ_LOG_KEY = 'qbmc_covquiz_log';
+        const CQ_FAMILIES = {
+            zero: { label: '0 Safeties עמוקים (Zero)', desc: 'אין מגן עמוק. בדרך כלל Man צמוד ובליץ' },
+            single: { label: 'Safety עמוק אחד (Single-High)', desc: 'מגן אחד במרכז העומק, מגנים נוספים בקופסה' },
+            two: { label: 'שני Safeties עמוקים (Two-High)', desc: 'שני מגנים מחלקים את העומק לחצאים או לרבעים' }
+        };
+        // Simplified grouping used only for partial credit. Match/Hybrid coverages sit between man and zone.
+        const CQ_CLASS = { cover0: 'man', cover1: 'man', cover2man: 'man', cover2: 'zone', tampa2: 'zone', cover3: 'zone', cover4: 'zone', cover6: 'zone', cover3match: 'match', cover4palms: 'match', firezone: 'blitzzone' };
+        const CQ_CLASS_HE = { man: 'שמירה אישית', zone: 'Zone', match: 'Match / היברידי', blitzzone: 'בליץ-Zone' };
+        // Post-snap tells. Drafted from the coverage board's own descriptions (overview / LB keys) plus general football knowledge;
+        // they are teaching aids and should be reviewed by a coach before being treated as authoritative.
+        const CQ_CUES = {
+            cover0: ['אין אף Safety עמוק. ה-CBs צמודים לרסיברים והלינבייקרים (MIKE ו-WILL) דוהרים קדימה לתוך ה-Gaps.', 'ברגע הסנאפ כל מגן ננעל על רסיבר אישי ואין עזרה מעל הראש, בזמן ש-5-6 מגנים תוקפים את ה-QB.', 'רסיבר חיצוני חותך פנימה וה-CB נצמד אליו מאחור, בלי שאף Safety מגיע לעזור כי אין כיסוי עמוק בכלל.'],
+            cover1: ['ה-CBs נצמדים לרסיברים בכל חיתוך (Man), וה-Safety היחיד נשאר עמוק במרכז ומחכה למסלול ארוך.', 'ה-Linebackers נצמדים בשמירה אישית ל-TE ול-RB. אם ה-RB נשאר לחסום, ה-MIKE עולה כ-Spy על ה-QB.', 'הרסיברים עוברים זה דרך זה (Mesh/Rub) והשומרים האישיים עוקבים אחריהם בצפיפות, בעוד ה-Safety העמוק נשאר במרכז ולא זז לצד.'],
+            cover2: ['שני ה-Safeties נסוגים לשני חצאי השדה העמוק, וה-CBs נשארים סמוכים ל-LOS ולוחצים את הרסיבר בשטח ה-Flat.', 'אף מגן לא ננעל על רסיבר ספציפי: כולם יורדים לאזורים ומעבירים רסיברים ביניהם, והחור נשאר במרכז העמוק בין שני ה-Safeties.', 'ה-LBs נסוגים לאזורי ה-Hook/Curl בעומק 8-12 יארד, וה-MIKE שומר על המרכז.'],
+            tampa2: ['בסנאפ ה-MIKE מסתובב ורץ אחורה לעומק 15-20 יארד במרכז, כך שנראים שלושה מגנים עמוקים: שני Safeties ובמרכז ה-MLB.', 'ה-MLB הופך ל"Safety שלישי" במרכז, והשטח הרדוד במרכז, מול ה-LBs, מתרוקן.', 'מסלול פנימי (Dig) חותך את המרכז מול ה-MIKE היורד לאחור, והאזור הקצר-בינוני במרכז נפתח.'],
+            cover2man: ['שני ה-Safeties נסוגים כמו ב-Cover 2, אבל ה-CBs וה-LBs נצמדים לרסיבר אישי ולא מחלקים אזורים.', 'גבם של ה-LBs מופנה ל-QB: הם נועלים עיניים על החזה של ה-RB וה-TE ולא קוראים את ה-QB.', 'לכל רסיבר יש שומר אישי מתחת ושני Safeties נותנים עזרה מעל. אזור המרכז העמוק פנוי יחסית.'],
+            cover3: ['Safety אחד נסוג למרכז העמוק ושני ה-CBs רצים אחורה לשליש בצדדים: שלושה מגנים עמוקים בשלישים.', 'ה-Strong Safety יורד לקופסה (Sky) ומתנהג כמו LB, וה-Flats מכוסים בדרך כלל ב-Curl/Flat של ה-LBs.', 'ה-CBs מתנתקים מהרסיברים בנסיגה מהירה אחורה, ואף מגן לא נצמד לרסיבר אישית.'],
+            cover3match: ['מתחיל כמו Cover 3, אבל כשה-Slot יורד ל-Out קצר ה-LB יורד אליו ונצמד אליו אישית (Match).', 'אחרי תחילת המסלולים המגנים מחליפים רסיברים ועוברים משמירת אזור לשמירה אישית לפי מסלולי הרסיברים.', 'Safety יחיד נשאר עמוק, וה-LBs "שורקים" ומעבירים כיסויים תוך כדי מסלול, לפי התנועה של הרסיברים.'],
+            cover4: ['ארבעה מגנים עמוקים (2 CBs ו-2 Safeties) נסוגים לרבעים, וה-Safeties מגיבים מהר לריצה ול-Play Action.', 'ה-Safeties קוראים את ה-Release של הרסיבר הפנימי: אם הוא אנכי הם נצמדים אליו, ואם הוא קצר הם יורדים לסייע.', 'אין רסיבר פנוי עמוק, ו-ה-LBs מגיבים אגרסיבית ל-Run Fake ואחראים על השטח הקצר-בינוני.'],
+            cover4palms: ['Quarters שבו ה-CB החיצוני נצמד לרסיבר החיצוני בשמירה אישית ו-ה-Safety נועל את ה-Slot כשהוא אנכי.', 'ה-CB החיצוני ננעל על הרסיבר שלו, וה-Safety נותן עזרה מעל בזמן ש-ה-LB סוגר את ה-Underneath.', 'כשה-Slot חותך פנימה, ה-SAM או ה-WILL לוקח אותו (Match) ושומר על אזור ה-Hook.'],
+            cover6: ['חצי אחד של השדה משחק Cover 4 (רבעים) והחצי השני Cover 2 (חצאים): ה-Safety בצד ה-Cover 2 נסוג לחצי שלם.', 'ה-LB בצד ה-Cover 2 יורד ל-Hook/Curl קצר, וה-LB בצד ה-Cover 4 קורא את ה-Seam.', 'הכיסוי אינו סימטרי: שני צדי השדה מתנהגים אחרת זה מזה.'],
+            firezone: ['אחד הלינבייקרים (או Safety) פורץ ב-Blitz, וה-DE בצד הנגדי נסוג ב-Zone drop לאזור ה-Flat. זהה את ה-DL שנסוג.', 'נראה בליץ של 5, אבל בפועל 3 מגנים עמוקים ו-3 מתחת. הרסיבר ה"חם" לא פתוח כי DL נפל לאזור שלו.', 'ברגע שה-LB פורץ, מופיע DL בנסיגה על ה-Flat, ושלושה מגנים ממשיכים לכיסוי Zone מאחור.']
+        };
+
+        // Reads the family off the drawing itself: a "deep safety" is an FS/SS/S drawn in the top part of the field.
+        function cqLookFacts(key) {
+            const cov = COVERAGE_DATABASE[key];
+            const rec = [], saved = {}, noop = function () {};
+            ['drawDefender', 'drawZoneBubble', 'drawDropLine', 'drawRushArrow'].forEach(n => { saved[n] = window[n]; });
+            window.drawDefender = function (c, x, y, label) { rec.push({ x, y, label: String(label) }); };
+            window.drawZoneBubble = noop; window.drawDropLine = noop; window.drawRushArrow = noop;
+            try { cov.draw(document.createElement('canvas').getContext('2d'), 380, 420); }
+            finally { Object.keys(saved).forEach(n => { window[n] = saved[n]; }); }
+            const deep = rec.filter(d => /^(FS|SS|S)\d?$/.test(d.label) && d.y <= 110).length;
+            return { deepSafeties: deep, family: deep === 0 ? 'zero' : (deep === 1 ? 'single' : 'two') };
+        }
+        const CQ_FACTS = {};
+        function cqFamilyOf(key) { return (CQ_FACTS[key] = CQ_FACTS[key] || cqLookFacts(key)).family; }
+        function cqMembers(fam) { return Object.keys(COVERAGE_DATABASE).filter(k => cqFamilyOf(k) === fam); }
+
+        function cqLoadLog() {
+            try { const v = JSON.parse(localStorage.getItem(CQ_LOG_KEY)); return Array.isArray(v) ? v.filter(e => e && COVERAGE_DATABASE[e.cov] && isFinite(e.pts) && ['A', 'B', 'C'].includes(e.lvl)) : []; } catch (e) { return []; }
+        }
+        function cqSaveLog(list) { try { localStorage.setItem(CQ_LOG_KEY, JSON.stringify(list.slice(-400))); return true; } catch (e) { return false; } }
+
+        let cqCurrent = null, cqLastKey = null;
+        const CQ_NOTES = {
+            A: 'מזהים רק את משפחת ההגנה לפי מספר ה-Safeties העמוקים שנראים. זה מה שבאמת קוראים לפני הסנאפ.',
+            B: 'רואים את המבנה ומקבלים רמז על מה שקרה אחרי הסנאפ. בוחרים איזה כיסוי מתוך אותה משפחה. כיסוי מהסוג הנכון (שמירה אישית / Zone / Match) מקבל קרדיט חלקי.',
+            C: 'רק המבנה, בלי רמז. כמה כיסויים נראים אותו דבר לפני הסנאפ, ולכן זו הדרגה הקשה והלא חד-משמעית: בחירה בכיסוי מאותה משפחה או מאותו סוג מקבלת קרדיט חלקי.'
+        };
+
+        function cqPick(level) {
+            let pool = Object.keys(COVERAGE_DATABASE);
+            if (level === 'B') pool = pool.filter(k => cqMembers(cqFamilyOf(k)).length >= 2);   // a one-member family (Cover 0) has nothing to choose between
+            pool = pool.filter(k => k !== cqLastKey);
+            const log = cqLoadLog().filter(e => e.lvl === level);
+            const weights = pool.map(k => { const r = log.filter(e => e.cov === k); return r.length ? 1 + (1 - Math.min(100, r.reduce((n, e) => n + e.pts, 0) / r.length) / 100) * 2 : 2; });
+            let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+            for (let i = 0; i < pool.length; i++) { r -= weights[i]; if (r <= 0) return pool[i]; }
+            return pool[pool.length - 1];
+        }
+        function cqRadio(val, label, desc) {
+            return `<label class="flex items-start gap-2 py-1.5 cursor-pointer text-xs"><input type="radio" name="cqAns" value="${val}" class="mt-0.5 w-4 h-4 accent-violet-400 shrink-0"><span><span class="font-bold text-slate-100">${label}</span>${desc ? `<span class="block text-[11px] text-slate-400">${desc}</span>` : ''}</span></label>`;
+        }
+
+        function cqNew() {
+            const level = document.getElementById('cqLevel').value;
+            const key = cqPick(level);
+            cqLastKey = key;
+            const cov = COVERAGE_DATABASE[key], fam = cqFamilyOf(key);
+            const cues = CQ_CUES[key] || [];
+            cqCurrent = { key, level, fam, cue: cues.length ? cues[Math.floor(Math.random() * cues.length)] : '', answered: false };
+            psDrawLook(cov, false, 'cqCanvas');
+            document.getElementById('cqLookTitle').innerText = 'מבנה ההגנה לפני הסנאפ';
+            document.getElementById('cqBadge').innerText = level === 'A' ? 'זהה את המשפחה' : (level === 'B' ? 'זהה את הכיסוי (עם רמז)' : 'זהה את הכיסוי');
+            document.getElementById('cqLevelNote').innerText = CQ_NOTES[level];
+            const cueBox = document.getElementById('cqCue');
+            if (level === 'B') { cueBox.innerHTML = `<div class="font-bold text-violet-300 mb-1">🔔 רמז: מה קורה אחרי הסנאפ</div><div>${cqCurrent.cue}</div>`; cueBox.classList.remove('hidden'); }
+            else { cueBox.classList.add('hidden'); cueBox.innerHTML = ''; }
+            let q;
+            if (level === 'A') q = `<fieldset class="bg-slate-900 border border-slate-700 rounded-xl p-3"><legend class="text-xs font-bold text-amber-300 px-1">לאיזו משפחה שייך המבנה?</legend>${Object.entries(CQ_FAMILIES).map(([id, f]) => cqRadio(id, f.label, f.desc)).join('')}</fieldset>`;
+            else {
+                const opts = (level === 'B' ? cqMembers(fam) : Object.keys(COVERAGE_DATABASE)).slice().sort(() => Math.random() - 0.5);
+                q = `<fieldset class="bg-slate-900 border border-slate-700 rounded-xl p-3"><legend class="text-xs font-bold text-amber-300 px-1">איזה כיסוי זה?</legend>${opts.map(k => cqRadio(k, COVERAGE_DATABASE[k].name, COVERAGE_DATABASE[k].typeTag)).join('')}</fieldset>`;
+            }
+            document.getElementById('cqQuestions').innerHTML = q;
+            document.getElementById('cqReveal').classList.add('hidden'); document.getElementById('cqReveal').innerHTML = '';
+            document.getElementById('cqMsg').innerText = '';
+            document.getElementById('cqSubmit').classList.remove('hidden'); document.getElementById('cqNext').classList.add('hidden');
+            cqRenderStats();
+        }
+
+        // Scoring: exact = 100. Level A is all-or-nothing. B/C give partial credit for a coverage of the same simplified type
+        // (40) and, in level C, for one from the same deep-safety family (20); the best applicable credit counts.
+        function cqScore(level, chosen, cur) {
+            if (level === 'A') return chosen === cur.fam ? 100 : 0;
+            if (chosen === cur.key) return 100;
+            const sameClass = CQ_CLASS[chosen] && CQ_CLASS[chosen] === CQ_CLASS[cur.key];
+            const sameFam = cqFamilyOf(chosen) === cur.fam;
+            return Math.max(sameClass ? 40 : 0, level === 'C' && sameFam ? 20 : 0);
+        }
+        function cqSubmit() {
+            if (!cqCurrent || cqCurrent.answered) return;
+            const el = document.querySelector('input[name="cqAns"]:checked');
+            if (!el) { document.getElementById('cqMsg').innerText = 'בחר תשובה לפני הבדיקה.'; return; }
+            const chosen = el.value, cur = cqCurrent, cov = COVERAGE_DATABASE[cur.key];
+            const valid = cur.level === 'A' ? !!CQ_FAMILIES[chosen] : !!COVERAGE_DATABASE[chosen];
+            if (!valid) return;
+            const pts = cqScore(cur.level, chosen, cur);
+            cur.answered = true;
+            const log = cqLoadLog(); log.push({ d: psToday(), cov: cur.key, lvl: cur.level, pts, ans: chosen });
+            const saved = cqSaveLog(log);
+            psDrawLook(cov, true, 'cqCanvas');
+            document.getElementById('cqLookTitle').innerText = cov.name;
+            document.getElementById('cqBadge').innerText = cov.typeTag;
+            cqRenderReveal(cov, chosen, pts, saved);
+            document.getElementById('cqSubmit').classList.add('hidden'); document.getElementById('cqNext').classList.remove('hidden');
+            cqRenderStats();
+            document.getElementById('cqReveal').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        function cqRenderReveal(cov, chosen, pts, saved) {
+            const cur = cqCurrent, fam = CQ_FAMILIES[cur.fam];
+            const mine = cur.level === 'A' ? (CQ_FAMILIES[chosen] || {}).label : COVERAGE_DATABASE[chosen].name;
+            const right = cur.level === 'A' ? fam.label : cov.name;
+            const same = cqMembers(cur.fam).filter(k => k !== cur.key).map(k => COVERAGE_DATABASE[k].name);
+            const credit = pts === 100 ? '✓ נכון' : (pts > 0 ? 'קרדיט חלקי' : '✗ לא נכון');
+            const partialWhy = pts > 0 && pts < 100 ? `<p class="text-yellow-300 text-[11px] mt-1">${cur.level === 'C' && cqFamilyOf(chosen) === cur.fam && !(CQ_CLASS[chosen] === CQ_CLASS[cur.key]) ? 'בחרת כיסוי מאותה משפחה (אותו מספר Safeties עמוקים).' : `בחרת כיסוי מאותו סוג (${CQ_CLASS_HE[CQ_CLASS[cur.key]]}).`}</p>` : '';
+            const allCues = (CQ_CUES[cur.key] || []).map(c => `<li>${c}</li>`).join('');
+            document.getElementById('cqReveal').innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div><div class="text-[11px] text-slate-400">${cur.level === 'A' ? 'המשפחה' : 'הכיסוי היה'}</div><div class="text-lg font-black" style="color:${cov.color}">${right}</div><div class="text-[11px] text-slate-400">${cur.level === 'A' ? cov.name + ' • ' + cov.typeTag : cov.typeTag}</div></div>
+                    <div class="text-center"><div class="text-[11px] text-slate-400">${credit}</div><div class="text-2xl">${psBadge(pts)}</div></div>
+                </div>
+                <div class="text-xs mb-3">בחרת: <b>${mine}</b>${pts < 100 ? ` • התשובה הנכונה: <b>${right}</b>` : ''}${partialWhy}</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div class="bg-violet-950/40 border border-violet-800/50 rounded-xl p-3"><div class="font-bold text-violet-300 mb-1">🔔 סימנים אחרי הסנאפ שמזהים את ${cov.name.split(' (')[0]}</div><ul class="list-disc pr-4 space-y-1 text-slate-200">${allCues}</ul><p class="text-slate-400 mt-2"><b>מפתח ה-LB:</b> ${cov.lbKeys}</p></div>
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3"><div class="font-bold text-sky-300 mb-1">🔍 אותה משפחה לפני הסנאפ (${fam.label})</div>
+                        <p class="text-slate-300">${same.length ? 'כיסויים נוספים עם אותו מבנה: ' + same.join(', ') + '.' : 'זה הכיסוי היחיד במשפחה הזו.'}</p>
+                        ${same.length ? '<p class="text-slate-400 mt-2">את ההבדל ביניהם מזהים בעיקר אחרי הסנאפ, לפי תנועת ה-CBs, ה-Safeties וה-LBs.</p>' : ''}
+                        <p class="text-slate-400 mt-2"><b>נקודות תורפה:</b> ${(cov.weaknesses || []).join(' • ')}</p></div>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-3">הסימנים נכתבו על בסיס נתוני הלוח וידע כללי והם כלי הדרכה; כדאי לאמת אותם מול מאמן.</p>
+                ${saved ? '' : '<p class="text-[11px] text-amber-300 mt-2">לא ניתן לשמור את התוצאה בהיסטוריה (האחסון בדפדפן מלא או חסום).</p>'}`;
+            document.getElementById('cqReveal').classList.remove('hidden');
+        }
+
+        function cqRenderStats() {
+            const log = cqLoadLog(), el = document.getElementById('cqStats');
+            if (!log.length) { el.innerHTML = '<p class="text-slate-500">עדיין אין תוצאות. ענה על השאלה הראשונה והסטטיסטיקה תופיע כאן.</p>'; return; }
+            const avg = rows => rows.reduce((n, e) => n + e.pts, 0) / rows.length;
+            const exact = rows => Math.round(rows.filter(e => e.pts === 100).length / rows.length * 100);
+            const lv = { A: 'א׳ משפחה', B: 'ב׳ עם רמז', C: 'ג׳ בלי רמז' };
+            const lvlCards = ['A', 'B', 'C'].map(l => { const r = log.filter(e => e.lvl === l); return `<div class="bg-slate-800/70 border border-slate-700 rounded-xl p-3 text-center"><div class="text-[11px] text-slate-400">${lv[l]}</div>${r.length ? `<div class="text-lg">${psBadge(avg(r))}</div><div class="text-[10px] text-slate-400">${r.length} שאלות • ${exact(r)}% מדויק</div>` : '<div class="text-[11px] text-slate-500 mt-1">עדיין לא</div>'}</div>`; }).join('');
+            const spec = log.filter(e => e.lvl !== 'A');
+            const byCov = Object.keys(COVERAGE_DATABASE).map(k => ({ k, rows: spec.filter(e => e.cov === k) })).filter(x => x.rows.length >= 2).map(x => ({ k: x.k, avg: avg(x.rows), n: x.rows.length })).sort((a, b) => a.avg - b.avg).slice(0, 3);
+            // Most frequent wrong answer per coverage = what you tend to confuse it with.
+            const conf = {};
+            spec.filter(e => e.pts < 100 && COVERAGE_DATABASE[e.ans]).forEach(e => { const id = e.cov + '>' + e.ans; conf[id] = (conf[id] || 0) + 1; });
+            const confTop = Object.entries(conf).filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id, n]) => { const [a, b] = id.split('>'); return `${COVERAGE_DATABASE[a].name.split(' (')[0]} ← נבחר כ-${COVERAGE_DATABASE[b].name.split(' (')[0]} (${n} פעמים)`; });
+            el.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">${lvlCards}</div>
+                ${byCov.length ? `<div class="text-[11px] text-slate-400">הכיסויים החלשים שלך (לפחות 2 ניסיונות, דרגות ב׳ו-ג׳): ${byCov.map(w => `<b class="text-slate-200">${COVERAGE_DATABASE[w.k].name.split(' (')[0]}</b> (${Math.round(w.avg)}, ${w.n} ניסיונות)`).join(' • ')}</div>` : '<div class="text-[11px] text-slate-500">פירוט לפי כיסוי יופיע אחרי 2 ניסיונות לפחות בכיסוי אחד.</div>'}
+                ${confTop.length ? `<div class="text-[11px] text-slate-400 mt-1">בלבולים נפוצים: ${confTop.join(' • ')}</div>` : ''}
+                <div class="text-[10px] text-slate-500 mt-2">התרגול מתאים את עצמו לכל דרגה: כיסויים שהציון בהם נמוך יותר מופיעים לעיתים קרובות יותר.</div>`;
+        }
+        function cqResetHistory() {
+            if (!confirm('למחוק את כל היסטוריית מבחן זיהוי ההגנות? הפעולה אינה הפיכה.')) return;
+            try { localStorage.removeItem(CQ_LOG_KEY); } catch (e) {}
+            cqRenderStats();
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             selectCoverage('cover1');
             selectRoute(2);
@@ -2879,6 +3103,7 @@
             drawBuilderField();
             selectPlay('mesh');
             psNewScenario();
+            cqNew();
         });
     </script>
 </body>
