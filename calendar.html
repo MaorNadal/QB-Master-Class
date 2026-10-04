@@ -29,22 +29,32 @@
 
     <main class="max-w-6xl mx-auto px-4 space-y-6">
 
+        <div id="calendar-views" class="no-print flex flex-wrap items-center justify-between gap-3">
+            <div class="inline-flex rounded-xl overflow-hidden border border-slate-700" role="tablist" aria-label="תצוגת לוח השנה">
+                <button type="button" data-view="month" onclick="setView('month')" class="view-tab px-4 py-2 text-sm font-bold transition">חודשי</button>
+                <button type="button" data-view="week" onclick="setView('week')" class="view-tab px-4 py-2 text-sm font-bold transition border-r border-slate-700">שבועי</button>
+                <button type="button" data-view="year" onclick="setView('year')" class="view-tab px-4 py-2 text-sm font-bold transition border-r border-slate-700">שנתי</button>
+                <button type="button" data-view="all" onclick="setView('all')" class="view-tab px-4 py-2 text-sm font-bold transition border-r border-slate-700">כללי</button>
+            </div>
+            <p id="viewHint" class="text-[11px] text-slate-500 max-w-xl leading-relaxed"></p>
+        </div>
+
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="calendar-stats">
             <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg">
                 <div id="statLoggedDays" class="text-2xl font-extrabold text-fuchsia-400 mb-0.5">0</div>
-                <div class="text-[11px] text-slate-300 font-medium">ימי אימון החודש</div>
+                <div id="statLabelDays" class="text-[11px] text-slate-300 font-medium">ימי אימון החודש</div>
             </div>
             <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg">
                 <div id="statSessions" class="text-2xl font-extrabold text-sky-400 mb-0.5">0</div>
-                <div class="text-[11px] text-slate-300 font-medium">סה"כ פעילויות החודש</div>
+                <div id="statLabelSessions" class="text-[11px] text-slate-300 font-medium">סה"כ פעילויות החודש</div>
             </div>
             <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg">
                 <div id="statStreak" class="text-2xl font-extrabold text-amber-400 mb-0.5">0</div>
-                <div class="text-[11px] text-slate-300 font-medium">רצף ימים נוכחי 🔥</div>
+                <div id="statLabelStreak" class="text-[11px] text-slate-300 font-medium">רצף ימים נוכחי 🔥</div>
             </div>
             <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg">
                 <div id="statTopCategory" class="text-lg font-extrabold text-emerald-400 mb-0.5">-</div>
-                <div class="text-[11px] text-slate-300 font-medium">הפעילות הנפוצה החודש</div>
+                <div id="statLabelTop" class="text-[11px] text-slate-300 font-medium">הפעילות הנפוצה החודש</div>
             </div>
         </div>
 
@@ -75,6 +85,10 @@
                 <canvas id="monthChart"></canvas>
             </div>
         </div>
+
+        <div id="weekView" class="hidden space-y-4"></div>
+        <div id="yearView" class="hidden space-y-4"></div>
+        <div id="allView" class="hidden space-y-4"></div>
     </main>
 
     <div id="dayModal" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
@@ -166,7 +180,8 @@
         function goToday() {
             const t = new Date();
             viewYear = t.getFullYear(); viewMonth = t.getMonth();
-            renderCalendar();
+            weekStartStr = weekStartOf(todayLocalStr());
+            refreshView();
         }
 
         async function toggleHolidays() {
@@ -227,8 +242,13 @@
             for (let d = 1; d <= daysInMonth; d++) {
                 const ds = dateStr(viewYear, viewMonth, d);
                 const entries = getDayData(ds);
-                if (entries.length) { loggedDays++; totalSessions += entries.length; }
-                entries.forEach(id => { catCounts[id] = (catCounts[id] || 0) + 1; });
+                const specificCountForDay = getSpecificItemsForDate(ds).length;
+                // A day counts as an active training day if it has a chip OR a specific exercise/drill (same rule as the other views and the hub).
+                if (ds <= todayStr) {   // a mark on a future date is a plan, not training that happened
+                    if (entries.length || specificCountForDay) loggedDays++;
+                    totalSessions += entries.length;
+                    entries.forEach(id => { catCounts[id] = (catCounts[id] || 0) + 1; });
+                }
 
                 const isToday = ds === todayStr;
                 const holidayTitle = holidayMap[ds];
@@ -260,24 +280,21 @@
             Object.entries(catCounts).forEach(([id, n]) => { if (n > topCount) { topCount = n; topCat = CAT_BY_ID[id] ? CAT_BY_ID[id].label : id; } });
             document.getElementById('statTopCategory').innerText = topCat;
 
+            setStatLabels('month');
             document.getElementById('statStreak').innerText = computeStreak();
 
             renderMonthChart(catCounts);
         }
 
+        // Shared definition (training-data.js): chips OR specific items make a day active, and an empty "today" does not
+        // reset the streak (the day isn't over). Falls back to the old chip-only count if that file didn't load.
         function computeStreak() {
-            let streak = 0;
-            let cursor = new Date();
-            while (true) {
-                const ds = dateStr(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
-                const entries = getDayData(ds);
-                if (entries.length > 0) {
-                    streak++;
-                    cursor.setDate(cursor.getDate() - 1);
-                } else {
-                    break;
-                }
+            if (window.QB_TRAINING) {
+                const r = window.QB_TRAINING.currentStreak(todayLocalStr(), window.QB_TRAINING.buildSpecificIndex());
+                return r.days;
             }
+            let streak = 0, cursor = new Date();
+            while (getDayData(dateStr(cursor.getFullYear(), cursor.getMonth(), cursor.getDate())).length > 0) { streak++; cursor.setDate(cursor.getDate() - 1); }
             return streak;
         }
 
@@ -401,7 +418,7 @@
             else if (kind === 'd' && QT.DRILLS_DATABASE[parseInt(ref, 10)]) QT.setDrillDone(QT.DRILLS_DATABASE[parseInt(ref, 10)].name, selectedDateStr, true);
             else return;
             renderSpecificSection(selectedDateStr);
-            renderCalendar();
+            refreshView();
         }
 
         function removeSpecificItem(kind, key) {
@@ -409,7 +426,7 @@
             if (kind === 'w') QT.setExerciseDone(key, selectedDateStr, false);
             else if (kind === 'd') QT.setDrillDone(key, selectedDateStr, false);
             renderSpecificSection(selectedDateStr);
-            renderCalendar();
+            refreshView();
         }
         document.addEventListener('click', e => {
             const btn = e.target.closest('.spec-remove');
@@ -458,7 +475,7 @@
             const selected = Array.from(checks).map(c => c.value);
             setDayData(selectedDateStr, selected);
             closeDayModal();
-            renderCalendar();
+            refreshView();
         }
 
         function exportData() {
@@ -486,7 +503,7 @@
                     Object.entries(backup).forEach(([key, value]) => {
                         if (key.startsWith('qbmc_cal_')) localStorage.setItem(key, value);
                     });
-                    renderCalendar();
+                    refreshView();
                     alert('השחזור הושלם בהצלחה!');
                 } catch (err) {
                     alert('קובץ לא תקין. ודא שזה קובץ גיבוי שיוצא מהמערכת.');
@@ -496,9 +513,246 @@
             event.target.value = '';
         }
 
+        // ================= Views: month (above) / week / year / all-time =================
+        // Every number here is computed from the same sources as the month grid: manual chips (qbmc_cal_*) and the dated
+        // exercise/drill logs, through the shared helpers in training-data.js. A day is "active" if it has either.
+        const VIEW_KEY = 'qbmc_cal_view';
+        const WEEKDAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+        const VIEW_INFO = {
+            month: { days: 'ימי אימון החודש', sessions: 'סה"כ פעילויות החודש', top: 'הפעילות הנפוצה החודש', hint: 'מבט חודשי: לחץ על יום כדי לסמן ולערוך.' },
+            week: { days: 'ימי אימון השבוע', sessions: 'סה"כ פעילויות השבוע', top: 'הפעילות הנפוצה השבוע', hint: 'מבט שבועי: כל יום עם סוגי האימון והתרגילים הספציפיים, והשוואה לשבוע הקודם.' },
+            year: { days: 'ימי אימון השנה', sessions: 'סה"כ פעילויות השנה', top: 'הפעילות הנפוצה השנה', hint: 'מבט שנתי: מפת פעילות לכל הימים, התפלגות לפי חודש וסוג.' },
+            all: { days: 'ימי אימון בסך הכל', sessions: 'סה"כ פעילויות בסך הכל', top: 'הפעילות הנפוצה ביותר', hint: 'מבט כללי: כל הנתונים מההתחלה, לפי סוג, יום בשבוע וחודש.' }
+        };
+        let calView = 'month', weekStartStr = null;
+        const chartInst = {};
+        function mkChart(id, cfg) {
+            const el = document.getElementById(id);
+            if (!el || typeof Chart === 'undefined') return;
+            if (chartInst[id]) chartInst[id].destroy();
+            chartInst[id] = new Chart(el.getContext('2d'), cfg);
+        }
+        function setStatLabels(v) {
+            const i = VIEW_INFO[v];
+            document.getElementById('statLabelDays').innerText = i.days;
+            document.getElementById('statLabelSessions').innerText = i.sessions;
+            document.getElementById('statLabelTop').innerText = i.top;
+        }
+        function weekStartOf(ds) {   // Sunday of the week containing ds (the month grid also starts on Sunday)
+            const [y, m, d] = ds.split('-').map(Number);
+            return window.QB_TRAINING ? window.QB_TRAINING.addDaysStr(ds, -new Date(y, m - 1, d).getDay()) : ds;
+        }
+        function addDaysSafe(ds, n) { return window.QB_TRAINING ? window.QB_TRAINING.addDaysStr(ds, n) : ds; }
+        function fmtShort(ds) { const [y, m, d] = ds.split('-'); return `${Number(d)}/${Number(m)}`; }
+        function colorChip(id) { const c = CAT_BY_ID[id]; return c ? `<span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-slate-700 bg-slate-900/70 text-slate-200"><span class="w-2 h-2 rounded-full" style="background:${c.color}"></span>${escHtml(c.label)}</span>` : ''; }
+        function noQt() { return '<div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-sm text-amber-100">התצוגות הנוספות דורשות את הקובץ <b>training-data.js</b> באותה תיקייה עם שאר הקבצים. ודא שהוא הועלה, ורענן את הדף.</div>'; }
+        function statCard(value, label, color) { return `<div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-center shadow-lg"><div class="text-xl font-extrabold ${color || 'text-fuchsia-400'}">${value}</div><div class="text-[11px] text-slate-300 mt-0.5">${label}</div></div>`; }
+
+        // Aggregates a list of date strings into the numbers every view needs.
+        function aggregate(dates, idx) {
+            const T = window.QB_TRAINING;
+            const out = { days: 0, chips: 0, workouts: 0, drills: 0, items: 0, cat: {}, perDay: [], byWeekday: [0, 0, 0, 0, 0, 0, 0], activeByWeekday: [0, 0, 0, 0, 0, 0, 0] };
+            const todayDs = todayLocalStr();
+            dates.forEach(ds => {
+                const a = T.dayActivity(ds, idx);
+                const wd = new Date(Number(ds.slice(0, 4)), Number(ds.slice(5, 7)) - 1, Number(ds.slice(8, 10))).getDay();
+                a.future = ds > todayDs;
+                out.perDay.push(a);
+                // A mark on a future date is a plan, not training that happened: it is displayed but never counted.
+                if (a.future) return;
+                if (a.active) { out.days++; out.activeByWeekday[wd]++; }
+                out.chips += a.chips.length; out.workouts += a.workouts.length; out.drills += a.drills.length; out.items += a.count; out.byWeekday[wd] += a.count;
+                a.chips.forEach(id => { out.cat[id] = (out.cat[id] || 0) + 1; });
+            });
+            return out;
+        }
+        function topCategoryLabel(cat) {
+            let best = null, n = 0;
+            Object.entries(cat).forEach(([id, c]) => { if (c > n) { n = c; best = id; } });
+            return best ? (CAT_BY_ID[best] ? CAT_BY_ID[best].label : best) : '-';
+        }
+        function setStats(a) {
+            document.getElementById('statLoggedDays').innerText = a.days;
+            document.getElementById('statSessions').innerText = a.chips;
+            document.getElementById('statTopCategory').innerText = topCategoryLabel(a.cat);
+            document.getElementById('statStreak').innerText = computeStreak();
+        }
+        function catChartCfg(cat, horizontal) {
+            const labels = [], data = [], colors = [];
+            CATEGORIES.forEach(c => { if (cat[c.id]) { labels.push(c.label); data.push(cat[c.id]); colors.push(c.color); } });
+            return { labels, data, colors };
+        }
+        function barCfg(labels, datasets, opts) {
+            opts = opts || {};
+            return { type: 'bar', data: { labels, datasets }, options: { indexAxis: opts.horizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: !!opts.legend, labels: { color: '#cbd5e1' } } },
+                scales: { x: { stacked: !!opts.stacked, grid: { color: '#334155' }, ticks: { color: '#cbd5e1', font: { size: 10 }, stepSize: opts.horizontal ? 1 : undefined } }, y: { stacked: !!opts.stacked, grid: { display: opts.horizontal ? false : true, color: '#334155' }, ticks: { color: '#cbd5e1', font: { size: 10 }, stepSize: opts.horizontal ? undefined : 1 }, beginAtZero: true } } } };
+        }
+        function chartBox(id, title, h) { return `<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6"><h3 class="text-center font-bold text-slate-200 text-sm mb-2">${title}</h3><div style="height:${h || 240}px;"><canvas id="${id}"></canvas></div></div>`; }
+
+        // ---------- week ----------
+        function renderWeek() {
+            const box = document.getElementById('weekView');
+            if (!window.QB_TRAINING) { box.innerHTML = noQt(); return; }
+            const T = window.QB_TRAINING, idx = T.buildSpecificIndex(), today = todayLocalStr();
+            if (!weekStartStr) weekStartStr = weekStartOf(today);
+            const dates = Array.from({ length: 7 }, (_, i) => addDaysSafe(weekStartStr, i));
+            const prevDates = dates.map(d => addDaysSafe(d, -7));
+            const a = aggregate(dates, idx), p = aggregate(prevDates, idx);
+            setStatLabels('week'); setStats(a);
+            const diff = (cur, prev) => cur === prev ? 'ללא שינוי' : `${cur > prev ? '▲' : '▼'} ${Math.abs(cur - prev)}`;
+            const dayCards = a.perDay.map((d, i) => {
+                const isToday = d.ds === today, future = d.ds > today;
+                const names = d.workouts.map(w => '🏋️ ' + w.name).concat(d.drills.map(n => '🎯 ' + n));
+                const plannedTag = future && d.chips.length ? '<span class="text-[9px] text-sky-300 mr-1">מתוכנן</span>' : '';
+                return `<button type="button" onclick="openDayModal('${d.ds}')" class="text-right p-3 rounded-xl border ${isToday ? 'border-fuchsia-400 bg-fuchsia-500/10' : 'border-slate-800 bg-slate-900/60'} hover:border-fuchsia-400/60 transition ${future ? 'opacity-60' : ''}">
+                    <div class="flex justify-between items-baseline mb-1.5"><span class="text-xs font-black ${isToday ? 'text-fuchsia-300' : 'text-slate-200'}">${WEEKDAYS[i]}${plannedTag}</span><span class="text-[11px] text-slate-500" dir="ltr">${fmtShort(d.ds)}</span></div>
+                    <div class="flex flex-wrap gap-1 mb-1.5">${d.chips.map(colorChip).join('') || (d.active ? '' : `<span class="text-[10px] text-slate-600">${future ? '—' : 'יום מנוחה / לא נרשם'}</span>`)}</div>
+                    ${names.length ? `<ul class="text-[10px] text-slate-300 space-y-0.5 leading-snug">${names.slice(0, 5).map(n => `<li class="truncate" title="${escHtml(n)}">${escHtml(n)}</li>`).join('')}${names.length > 5 ? `<li class="text-slate-500">+${names.length - 5} נוספים</li>` : ''}</ul>` : ''}
+                </button>`;
+            }).join('');
+            box.innerHTML = `
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="changeWeek(-1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-fuchsia-600 transition text-white font-bold">→</button>
+                        <div class="text-center"><div class="text-xl md:text-2xl font-black text-fuchsia-400">שבוע ${fmtShort(dates[0])} – ${fmtShort(dates[6])}</div><button onclick="goToday()" class="text-[11px] text-slate-400 hover:text-slate-200 underline mt-0.5">חזרה להיום</button></div>
+                        <button onclick="changeWeek(1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-fuchsia-600 transition text-white font-bold">←</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-2">${dayCards}</div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    ${statCard(a.items, 'סה"כ פעולות השבוע (סוגי אימון + תרגילים)', 'text-sky-400')}
+                    ${statCard(`${a.workouts} / ${a.drills}`, 'תרגילי תוכנית / דרילים', 'text-orange-300')}
+                    ${statCard(diff(a.days, p.days), 'ימי אימון לעומת שבוע קודם', 'text-emerald-400')}
+                    ${statCard(diff(a.items, p.items), 'פעולות לעומת שבוע קודם', 'text-amber-400')}
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">${chartBox('weekDayChart', 'פעילות לפי יום בשבוע')}${chartBox('weekCatChart', 'התפלגות סוגי האימון בשבוע')}</div>`;
+            mkChart('weekDayChart', barCfg(WEEKDAYS, [
+                { label: 'סוגי אימון', data: a.perDay.map(d => d.future ? 0 : d.chips.length), backgroundColor: '#d946ef' },
+                { label: 'תרגילים ודרילים', data: a.perDay.map(d => d.future ? 0 : d.workouts.length + d.drills.length), backgroundColor: '#fb923c' }], { stacked: true, legend: true }));
+            const c = catChartCfg(a.cat);
+            mkChart('weekCatChart', barCfg(c.labels, [{ data: c.data, backgroundColor: c.colors }], { horizontal: true }));
+        }
+        function changeWeek(delta) { weekStartStr = addDaysSafe(weekStartStr || weekStartOf(todayLocalStr()), delta * 7); renderWeek(); }
+
+        // ---------- year ----------
+        function heatColor(n) { return n <= 0 ? '#1e293b' : (n === 1 ? '#701a75' : (n <= 3 ? '#a21caf' : (n <= 6 ? '#d946ef' : '#f0abfc'))); }
+        function renderYear() {
+            const box = document.getElementById('yearView');
+            if (!window.QB_TRAINING) { box.innerHTML = noQt(); return; }
+            const T = window.QB_TRAINING, idx = T.buildSpecificIndex(), today = todayLocalStr();
+            const y = viewYear;
+            const all = [];
+            for (let m = 0; m < 12; m++) for (let d = 1, n = new Date(y, m + 1, 0).getDate(); d <= n; d++) all.push(dateStr(y, m, d));
+            const a = aggregate(all, idx);
+            setStatLabels('year'); setStats(a);
+            const perMonth = Array.from({ length: 12 }, (_, m) => aggregate(all.filter(ds => Number(ds.slice(5, 7)) === m + 1), idx));
+            const activeMonths = perMonth.filter(x => x.days > 0).length;
+            const bestMonthIdx = perMonth.reduce((b, x, i) => x.days > (perMonth[b] ? perMonth[b].days : -1) ? i : b, 0);
+            const elapsedDays = all.filter(ds => ds <= today).length;
+            const pct = elapsedDays ? Math.round(a.days / elapsedDays * 100) : 0;
+            const monthsHtml = perMonth.map((pm, m) => {
+                const first = new Date(y, m, 1).getDay(), n = new Date(y, m + 1, 0).getDate();
+                let cells = ''; for (let i = 0; i < first; i++) cells += '<span></span>';
+                for (let d = 1; d <= n; d++) {
+                    const ds = dateStr(y, m, d), info = pm.perDay[d - 1];
+                    const shown = ds > today ? 0 : info.count;   // future marks are plans: not painted as done
+                    cells += `<button type="button" onclick="openDayModal('${ds}')" title="${ds}${shown ? ' • ' + shown + ' פעולות' : ''}" class="aspect-square rounded-[3px] ${ds === today ? 'ring-1 ring-white' : ''}" style="background:${heatColor(shown)};${ds > today ? 'opacity:.45' : ''}"></button>`;
+                }
+                return `<div class="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5"><div class="flex justify-between text-[11px] mb-1.5"><span class="font-bold text-slate-200">${HEB_MONTHS[m]}</span><span class="text-slate-500">${pm.days} ימים</span></div><div class="grid grid-cols-7 gap-[3px]">${cells}</div></div>`;
+            }).join('');
+            box.innerHTML = `
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 md:p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="changeYear(-1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-fuchsia-600 transition text-white font-bold">→</button>
+                        <div class="text-center"><div class="text-xl md:text-2xl font-black text-fuchsia-400">${y}</div><button onclick="goToday()" class="text-[11px] text-slate-400 hover:text-slate-200 underline mt-0.5">חזרה להיום</button></div>
+                        <button onclick="changeYear(1)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-fuchsia-600 transition text-white font-bold">←</button>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5">${monthsHtml}</div>
+                    <div class="flex items-center justify-end gap-1.5 mt-3 text-[10px] text-slate-500">פחות ${[0, 1, 2, 4, 7].map(n => `<span class="w-3 h-3 rounded-[3px] inline-block" style="background:${heatColor(n)}"></span>`).join('')} יותר</div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    ${statCard(`${a.days} <span class="text-xs text-slate-400">(${pct}%)</span>`, 'ימי אימון מתוך הימים שחלפו', 'text-fuchsia-400')}
+                    ${statCard(T.longestStreak(all[0], all[all.length - 1] < today ? all[all.length - 1] : today, idx), 'הרצף הארוך ביותר בשנה', 'text-amber-400')}
+                    ${statCard(a.days ? HEB_MONTHS[bestMonthIdx] : '-', 'החודש הפעיל ביותר', 'text-emerald-400')}
+                    ${statCard(`${a.workouts} / ${a.drills}`, 'תרגילי תוכנית / דרילים', 'text-orange-300')}
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">${chartBox('yearMonthChart', 'ימי אימון לפי חודש')}${chartBox('yearCatChart', 'התפלגות סוגי האימון בשנה', 280)}</div>
+                <p class="text-[11px] text-slate-500">${activeMonths} מתוך 12 חודשים עם פעילות. הצבע מבטא את מספר הפעולות ביום (סוגי אימון + תרגילים ודרילים שנרשמו).</p>`;
+            mkChart('yearMonthChart', barCfg(HEB_MONTHS, [{ data: perMonth.map(x => x.days), backgroundColor: '#d946ef' }]));
+            const c = catChartCfg(a.cat);
+            mkChart('yearCatChart', barCfg(c.labels, [{ data: c.data, backgroundColor: c.colors }], { horizontal: true }));
+        }
+        function changeYear(delta) { viewYear += delta; renderYear(); }
+
+        // ---------- all time ----------
+        function renderAll() {
+            const box = document.getElementById('allView');
+            if (!window.QB_TRAINING) { box.innerHTML = noQt(); return; }
+            const T = window.QB_TRAINING, idx = T.buildSpecificIndex(), today = todayLocalStr();
+            const first = T.firstActivityDate(idx);
+            setStatLabels('all');
+            if (!first || first > today) {
+                setStats({ days: 0, chips: 0, cat: {} });
+                box.innerHTML = '<div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 text-center text-slate-400 text-sm">עדיין אין פעילות רשומה. סמן אימון ביום כלשהו (או תרגיל/דריל בדף האימון) והסיכום הכללי יופיע כאן.</div>';
+                return;
+            }
+            const dates = []; for (let ds = first, i = 0; ds <= today && i < 3700; ds = T.addDaysStr(ds, 1), i++) dates.push(ds);
+            const a = aggregate(dates, idx);
+            setStats(a);
+            const longest = T.longestStreak(first, today, idx);
+            const pct = Math.round(a.days / dates.length * 100);
+            // months timeline (every month from the first activity to now)
+            const months = []; let [cy, cm] = [Number(first.slice(0, 4)), Number(first.slice(5, 7)) - 1];
+            const [ey, em] = [Number(today.slice(0, 4)), Number(today.slice(5, 7)) - 1];
+            while ((cy < ey || (cy === ey && cm <= em)) && months.length < 240) { months.push({ y: cy, m: cm }); cm++; if (cm > 11) { cm = 0; cy++; } }
+            const perMonth = months.map(mm => aggregate(dates.filter(ds => ds.slice(0, 7) === `${mm.y}-${pad(mm.m + 1)}`), idx));
+            const monthLabels = months.map(mm => `${HEB_MONTHS[mm.m].slice(0, 3)} ${String(mm.y).slice(2)}`);
+            const bestWd = a.activeByWeekday.indexOf(Math.max(...a.activeByWeekday));
+            box.innerHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    ${statCard(first, 'תחילת הרישום', 'text-sky-400')}
+                    ${statCard(`${a.days} <span class="text-xs text-slate-400">מתוך ${dates.length} (${pct}%)</span>`, 'ימי אימון מכל הימים מאז ההתחלה', 'text-fuchsia-400')}
+                    ${statCard(longest, 'הרצף הארוך ביותר אי פעם', 'text-amber-400')}
+                    ${statCard(`${a.workouts} / ${a.drills}`, 'תרגילי תוכנית / דרילים (סה"כ)', 'text-orange-300')}
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">${chartBox('allCatChart', 'התפלגות סוגי האימון לאורך כל הזמן', 280)}${chartBox('allWeekdayChart', 'ימי אימון לפי יום בשבוע', 280)}</div>
+                ${chartBox('allMonthChart', 'ימי אימון לפי חודש', 260)}
+                <p class="text-[11px] text-slate-500">היום הפעיל ביותר: <b class="text-slate-300">${WEEKDAYS[bestWd]}</b> (${a.activeByWeekday[bestWd]} ימים). הנתונים כוללים סוגי אימון שסומנו בלוח, ותרגילים ודרילים ספציפיים שנרשמו.</p>`;
+            const c = catChartCfg(a.cat);
+            mkChart('allCatChart', barCfg(c.labels, [{ data: c.data, backgroundColor: c.colors }], { horizontal: true }));
+            mkChart('allWeekdayChart', barCfg(WEEKDAYS, [{ data: a.activeByWeekday, backgroundColor: '#38bdf8' }]));
+            mkChart('allMonthChart', barCfg(monthLabels, [{ data: perMonth.map(x => x.days), backgroundColor: '#d946ef' }]));
+        }
+
+        // ---------- switching ----------
+        function setView(v) {
+            if (!VIEW_INFO[v]) v = 'month';
+            calView = v;
+            try { localStorage.setItem(VIEW_KEY, v); } catch (e) {}
+            document.querySelectorAll('.view-tab').forEach(b => {
+                const on = b.getAttribute('data-view') === v;
+                b.classList.toggle('bg-fuchsia-600', on); b.classList.toggle('text-white', on);
+                b.classList.toggle('bg-slate-800', !on); b.classList.toggle('text-slate-300', !on);
+                b.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            document.getElementById('viewHint').innerText = VIEW_INFO[v].hint;
+            ['calendar-grid', 'calendar-breakdown'].forEach(id => document.getElementById(id).classList.toggle('hidden', v !== 'month'));
+            document.getElementById('weekView').classList.toggle('hidden', v !== 'week');
+            document.getElementById('yearView').classList.toggle('hidden', v !== 'year');
+            document.getElementById('allView').classList.toggle('hidden', v !== 'all');
+            refreshView();
+        }
+        function refreshView() {
+            if (calView === 'week') renderWeek();
+            else if (calView === 'year') renderYear();
+            else if (calView === 'all') renderAll();
+            else renderCalendar();
+        }
+
         window.addEventListener('storage', e => {
-            if (e.key === null || e.key === 'qbmc_drill_log' || e.key === 'qbmc_workout_log') {
-                renderCalendar();
+            if (e.key === null || e.key === 'qbmc_drill_log' || e.key === 'qbmc_workout_log' || (e.key && e.key.startsWith('qbmc_cal_'))) {
+                refreshView();
                 if (selectedDateStr) renderSpecificSection(selectedDateStr);
             }
         });
@@ -506,8 +760,10 @@
         window.addEventListener('DOMContentLoaded', () => {
             const t = new Date();
             viewYear = t.getFullYear(); viewMonth = t.getMonth();
+            weekStartStr = weekStartOf(todayLocalStr());
             renderLegend();
-            renderCalendar();
+            let saved = 'month'; try { saved = localStorage.getItem(VIEW_KEY) || 'month'; } catch (e) {}
+            setView(saved);
         });
     </script>
 </body>

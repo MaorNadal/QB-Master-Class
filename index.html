@@ -96,6 +96,29 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 space-y-8">
+        <section id="my-day" class="rounded-3xl border border-sky-500/30 bg-gradient-to-b from-slate-800/70 to-slate-900/60 p-4 md:p-6 shadow-2xl">
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                <div>
+                    <div class="text-[11px] font-bold text-sky-400 tracking-wider">☀️ היום שלי</div>
+                    <h2 id="mdGreeting" class="text-2xl md:text-3xl font-black text-white"></h2>
+                    <div id="mdDate" class="text-sm text-slate-400"></div>
+                </div>
+                <div id="mdStreak" class="text-center bg-slate-900/70 border border-amber-500/30 rounded-2xl px-4 py-2"></div>
+            </div>
+            <div id="mdFocus" class="mb-4"></div>
+            <div id="mdQuick" class="flex flex-wrap gap-2 mb-5 text-xs font-bold"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div id="mdTraining" class="lg:col-span-2 bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4"></div>
+                <div id="mdNutrition" class="bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4"></div>
+                <div id="mdDrills" class="lg:col-span-2 bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4"></div>
+                <div id="mdGoals" class="bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4"></div>
+                <div id="mdWeek" class="lg:col-span-2 bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4"></div>
+                <div id="mdSnapshot" class="bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4"></div>
+            </div>
+            <div id="mdAlerts" class="mt-4"></div>
+            <p class="text-[10px] text-slate-500 mt-4 leading-relaxed">ההצעות כאן מבוססות על כללים פשוטים ושקופים מהנתונים שהוזנו (לא על AI) ואינן ייעוץ אימוני או רפואי. תוכנית האימון המוצעת נקבעת לפי האימון האחרון שנרשם, ואפשר תמיד לבחור יום אחר.</p>
+        </section>
+
         <div id="hubCards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
     </main>
 
@@ -103,6 +126,7 @@
         <p>QB Master Class 2.0 • מערכת ניתוח טקטי, מכניקה ותוכנית אימונים לקוורטרבקים</p>
     </footer>
 
+    <script src="training-data.js"></script>
     <script>
         // Old links like index.html#playbook pointed at sections that now live on topic pages.
         const MOVED_SECTIONS = {
@@ -114,6 +138,261 @@
             const id = location.hash.replace('#', '');
             if (MOVED_SECTIONS[id]) location.replace(MOVED_SECTIONS[id] + '#' + id);
         })();
+
+        // ================= My Day =================
+        // Everything below is derived by plain, visible rules from data the app already stores (no AI, nothing is sent anywhere).
+        // Marking an exercise/drill here writes to the same dated logs as the training page and the calendar (via training-data.js).
+        const QT = window.QB_TRAINING || null;
+        const MD_MADDEN = { THP: { l: 'עוצמת זרוע', drills: ['mechanics'] }, SAC: { l: 'דיוק קצר', drills: ['accuracy'] }, MAC: { l: 'דיוק בינוני', drills: ['accuracy', 'footwork'] },
+            DAC: { l: 'דיוק עמוק', drills: ['accuracy', 'mechanics'] }, AWR: { l: 'תחושת כיס ומודעות', drills: ['reads', 'pocket'] }, RLS: { l: 'מהירות שחרור', drills: ['mechanics', 'footwork'] }, RUN: { l: 'ניידות וזריקה בתנועה', drills: ['pocket', 'footwork'] } };
+        let mdDay = null;   // plan day shown in the training card (null = the suggested one)
+
+        function mdEsc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+        function mdRead(key, fallback) { try { const v = JSON.parse(localStorage.getItem(key)); return v === null || v === undefined ? fallback : v; } catch (e) { return fallback; } }
+        function mdToday() { return QT ? QT.localDateStr() : (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })(); }
+        function mdDaysBetween(a, b) { const f = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); }; return Math.round((f(b) - f(a)) / 86400000); }
+        function mdCard(icon, title, body, link) {
+            return `<div class="flex items-center justify-between mb-3"><h3 class="font-bold text-white text-sm">${icon} ${title}</h3>${link ? `<a href="${link[0]}" class="text-[11px] text-sky-400 hover:underline">${link[1]}</a>` : ''}</div>${body}`;
+        }
+        function mdBar(pct, color) { return `<div class="h-2 rounded-full bg-slate-800 overflow-hidden"><div class="h-full rounded-full" style="width:${Math.max(0, Math.min(100, pct))}%;background:${color}"></div></div>`; }
+        const MD_NEED_QT = '<p class="text-xs text-amber-200">הקובץ <b>training-data.js</b> לא נטען. ודא שהוא הועלה לאותה תיקייה עם שאר הקבצים.</p>';
+
+        // Which plan day to suggest: today's day if something from the plan is already done today (session in progress),
+        // otherwise the day AFTER the last plan day logged (the plan is a 6-day cycle). Nothing logged yet -> day 1.
+        function mdSuggestedDay(idx, today) {
+            const dayNum = id => Number(String(id).replace(/^d/, '').split('e')[0]);
+            const dayOfDate = ds => { const w = (idx[ds] && idx[ds].w) || []; return w.length ? Math.max(...w.map(x => dayNum(x.id))) : null; };
+            const t = dayOfDate(today);
+            if (t) return { day: t, why: 'כבר התחלת היום' };
+            const dates = Object.keys(idx).filter(ds => ds < today && idx[ds].w.length).sort();
+            if (!dates.length) return { day: 1, why: 'עדיין לא נרשם אימון מהתוכנית' };
+            const last = dates[dates.length - 1], d = dayOfDate(last);
+            return { day: d % 6 + 1, why: `האימון האחרון שנרשם: יום ${d} (${last})` };
+        }
+
+        function mdRenderTraining(idx, today) {
+            const box = document.getElementById('mdTraining');
+            if (!QT) { box.innerHTML = mdCard('🏋️', 'האימון להיום', MD_NEED_QT); return; }
+            const sug = mdSuggestedDay(idx, today);
+            const day = mdDay || sug.day;
+            const list = QT.WORKOUT_EXERCISES.filter(e => e.day === 'd' + day);
+            const done = list.filter(e => QT.isExerciseDone(e.id, today)).length;
+            const sel = `<select id="mdDaySel" onchange="mdPickDay(this.value)" class="bg-slate-900 border border-slate-600 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-sky-400">${[1, 2, 3, 4, 5, 6].map(n => `<option value="${n}" ${n === day ? 'selected' : ''}>יום ${n}${n === sug.day ? ' (מוצע)' : ''}</option>`).join('')}</select>`;
+            const rows = list.map(e => {
+                const d = QT.isExerciseDone(e.id, today);
+                return `<div class="flex items-center justify-between gap-2 bg-slate-800/70 border border-slate-700 rounded-lg px-3 py-2">
+                    <div class="min-w-0"><div class="text-xs font-bold ${d ? 'text-emerald-300' : 'text-slate-100'} truncate">${mdEsc(e.name)}</div><div class="text-[10px] text-slate-400" dir="ltr" style="text-align:right">${mdEsc(e.detail)}</div></div>
+                    <button type="button" data-md-ex="${e.id}" class="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${d ? 'bg-emerald-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'}">${d ? '✅ בוצע' : '⬜ סמן'}</button></div>`;
+            }).join('');
+            box.innerHTML = mdCard('🏋️', 'האימון להיום', `
+                <div class="flex flex-wrap items-center gap-2 mb-2">${sel}<span class="text-xs text-slate-300 font-bold">${mdEsc(QT.WORKOUT_DAY_TITLES[day] || '')}</span></div>
+                <div class="text-[10px] text-slate-500 mb-2">ההצעה: יום ${sug.day} • ${mdEsc(sug.why)}</div>
+                <div class="flex items-center gap-2 mb-3">${mdBar(list.length ? done / list.length * 100 : 0, '#34d399')}<span class="text-[11px] text-slate-300 whitespace-nowrap">${done}/${list.length}</span></div>
+                <div class="space-y-1.5">${rows}</div>`, ['training.html#workout-plan', 'לתוכנית המלאה ←']);
+        }
+
+        function mdWeakest() {
+            const m = mdRead('qbmc_madden_computed', null);
+            if (!m || !m.categories || typeof m.categories !== 'object') return null;
+            const arr = Object.entries(m.categories).filter(([k, v]) => MD_MADDEN[k] && isFinite(v)).sort((a, b) => a[1] - b[1]);
+            return arr.length ? { key: arr[0][0], value: arr[0][1], ovr: m.ovr, all: arr } : null;
+        }
+        // 3 suggestions: two aimed at the weakest Madden category (mapped to drill categories, least-recently-done first),
+        // one from the category practised least recently overall. Without Madden data: least-recently-done drills.
+        function mdSuggestDrills(idx, today) {
+            const lastDone = {};
+            QT.DRILLS_DATABASE.forEach(d => { const dates = (QT.loadDrillLog()[d.name] || []).filter(x => typeof x === 'string').sort(); lastDone[d.name] = dates.length ? dates[dates.length - 1] : null; });
+            const age = d => { const l = lastDone[d.name]; return l ? mdDaysBetween(l, today) : 9999; };
+            const byAge = arr => arr.slice().sort((a, b) => age(b) - age(a));
+            const weak = mdWeakest(), picks = [], used = new Set();
+            const push = (d, reason) => { if (d && !used.has(d.name) && picks.length < 3) { used.add(d.name); picks.push({ d, reason }); } };
+            if (weak) {
+                const cats = MD_MADDEN[weak.key].drills;
+                byAge(QT.DRILLS_DATABASE.filter(d => cats.includes(d.category))).slice(0, 2).forEach(d => push(d, `מחזק את ${MD_MADDEN[weak.key].l} (הקטגוריה החלשה בדירוג: ${weak.value})`));
+            }
+            const catAge = {};
+            Object.keys(QT.DRILL_CATEGORY_META).forEach(c => { const ds = QT.DRILLS_DATABASE.filter(d => d.category === c); catAge[c] = Math.min(...ds.map(age)); });
+            const stalest = Object.keys(catAge).sort((a, b) => catAge[b] - catAge[a]);
+            for (const c of stalest) { if (picks.length >= 3) break; const d = byAge(QT.DRILLS_DATABASE.filter(x => x.category === c && !used.has(x.name)))[0]; if (d) push(d, age(d) >= 9999 ? 'עדיין לא תורגל' : `לא תורגל ${age(d)} ימים`); }
+            return picks;
+        }
+        function mdRenderDrills(idx, today) {
+            const box = document.getElementById('mdDrills');
+            if (!QT) { box.innerHTML = mdCard('🎯', 'דרילים מוצעים להיום', MD_NEED_QT); return; }
+            const picks = mdSuggestDrills(idx, today);
+            const rows = picks.map(({ d, reason }) => {
+                const done = QT.isDrillDone(d.name, today), cat = QT.DRILL_CATEGORY_META[d.category], last = QT.latestDrillAnalysis(d.name);
+                const g = last && typeof last.score === 'number' ? QT.gradeFor(last.score) : null;
+                return `<div class="flex items-center justify-between gap-2 bg-slate-800/70 border border-slate-700 rounded-lg px-3 py-2">
+                    <div class="min-w-0"><div class="text-xs font-bold ${done ? 'text-emerald-300' : 'text-slate-100'}">${cat ? cat.icon : '🎯'} ${mdEsc(d.name)}</div>
+                        <div class="text-[10px] text-slate-400">${mdEsc(reason)}${g ? ` • ניתוח אחרון: <span style="color:${g.c}">${g.l} ${Math.round(last.score)}</span>` : ''}</div>
+                        <div class="text-[10px] text-amber-300/90 mt-0.5">💡 ${mdEsc(d.cue)}</div></div>
+                    <button type="button" data-md-drill="${QT.DRILLS_DATABASE.indexOf(d)}" class="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${done ? 'bg-emerald-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'}">${done ? '✅ בוצע' : '⬜ סמן'}</button></div>`;
+            }).join('');
+            const weak = mdWeakest();
+            box.innerHTML = mdCard('🎯', 'דרילים מוצעים להיום', `<div class="text-[10px] text-slate-500 mb-2">${weak ? `נבחרו לפי הקטגוריה החלשה בדירוג QB ולפי מה שלא תורגל לאחרונה.` : 'עדיין אין דירוג QB, ולכן נבחרו לפי מה שלא תורגל לאחרונה.'}</div><div class="space-y-1.5">${rows}</div>`, ['training.html#drills', 'לכל הדרילים ←']);
+        }
+
+        function mdNutrition(ds) {
+            const t = mdRead('qbmc_nutrition_targets', {}) || {};
+            const meals = mdRead('qbmc_meals_' + ds, []);
+            const list = Array.isArray(meals) ? meals.filter(m => m && typeof m === 'object') : [];
+            return { cal: Number(t.calories) || 0, pro: Number(t.protein) || 0, calSum: list.reduce((n, m) => n + (Number(m.calories) || 0), 0), proSum: list.reduce((n, m) => n + (Number(m.protein) || 0), 0), count: list.length };
+        }
+        function mdRenderNutrition(today) {
+            const box = document.getElementById('mdNutrition');
+            const n = mdNutrition(today);
+            let body;
+            if (!n.cal || !n.pro) body = `<p class="text-xs text-slate-400">עדיין לא הוגדר יעד קלוריות וחלבון יומי.</p><a href="ai-tools.html#ai-nutrition" class="inline-block mt-2 text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white">הגדר יעד</a>`;
+            else {
+                const line = (label, sum, target, unit, color) => {
+                    const left = target - sum;
+                    return `<div class="mb-3"><div class="flex justify-between text-[11px] mb-1"><span class="text-slate-300">${label}</span><span class="text-slate-200" dir="ltr">${Math.round(sum)} / ${target}${unit}</span></div>${mdBar(sum / target * 100, color)}
+                        <div class="text-[10px] text-slate-500 mt-1">${left > 0 ? `נותרו ${Math.round(left)}${unit}` : `חרגת ב-${Math.round(-left)}${unit}`}</div></div>`;
+                };
+                // Deliberately NO grade for today: a day that has just started would read as a failure. Yesterday is complete, so it gets one.
+                let yest = '';
+                if (QT) {
+                    const y = QT.addDaysStr(today, -1), yn = mdNutrition(y);
+                    if (yn.count) {
+                        // same closeness-to-target rule as the nutrition page's daily grade
+                        const calPct = Math.max(0, Math.min(100, 100 - Math.abs(yn.calSum - n.cal) / n.cal * 100)), proPct = Math.max(0, Math.min(100, 100 - Math.abs(yn.proSum - n.pro) / n.pro * 100));
+                        const g = QT.gradeFor((calPct + proPct) / 2);
+                        yest = `<div class="text-[11px] text-slate-400 mt-1">אתמול: <span class="font-black" style="color:${g.c}">${g.l}</span> (${Math.round(yn.calSum)} קק"ל, ${Math.round(yn.proSum)}ג חלבון)</div>`;
+                    }
+                }
+                body = (n.count ? '' : '<p class="text-[11px] text-slate-500 mb-2">עדיין לא נרשמה אף ארוחה היום.</p>') + line('קלוריות', n.calSum, n.cal, '', '#f59e0b') + line('חלבון', n.proSum, n.pro, 'ג', '#38bdf8') + `<div class="text-[11px] text-slate-400">${n.count} ארוחות נרשמו היום</div>` + yest;
+            }
+            box.innerHTML = mdCard('🍽️', 'תזונה היום', body, ['ai-tools.html#ai-nutrition', 'לרישום ארוחה ←']);
+        }
+
+        function mdRenderGoals(today) {
+            const box = document.getElementById('mdGoals');
+            const all = mdRead('qbmc_player_goals', []);
+            const goals = (Array.isArray(all) ? all : []).map((g, i) => ({ g, i })).filter(x => x.g && typeof x.g === 'object' && !x.g.done && x.g.text);
+            goals.sort((a, b) => (a.g.date || '9999').localeCompare(b.g.date || '9999'));
+            if (!goals.length) { box.innerHTML = mdCard('🏁', 'היעדים שלי', '<p class="text-xs text-slate-400">אין יעדים פתוחים. הגדר יעד קצר טווח בדף פרטי שחקן.</p>', ['player.html#player-goals', 'ליעדים ←']); return; }
+            const rows = goals.slice(0, 4).map(({ g, i }) => {
+                let tag = '';
+                if (/^\d{4}-\d{2}-\d{2}$/.test(g.date || '')) {
+                    const d = mdDaysBetween(today, g.date);
+                    tag = d < 0 ? `<span class="text-rose-400">באיחור ${-d} ימים</span>` : (d === 0 ? '<span class="text-amber-300">היום!</span>' : `<span class="${d <= 7 ? 'text-amber-300' : 'text-slate-400'}">בעוד ${d} ימים</span>`);
+                }
+                return `<div class="flex items-start gap-2 bg-slate-800/70 border border-slate-700 rounded-lg px-2.5 py-2"><input type="checkbox" data-md-goal="${i}" class="mt-0.5 w-4 h-4 accent-emerald-400 shrink-0"><div class="min-w-0"><div class="text-xs text-slate-100">${mdEsc(g.text)}</div><div class="text-[10px]">${tag}</div></div></div>`;
+            }).join('');
+            box.innerHTML = mdCard('🏁', 'היעדים שלי', `<div class="space-y-1.5">${rows}</div>${goals.length > 4 ? `<div class="text-[10px] text-slate-500 mt-2">+${goals.length - 4} יעדים נוספים</div>` : ''}`, ['player.html#player-goals', 'לכל היעדים ←']);
+        }
+
+        function mdRenderWeek(idx, today) {
+            const box = document.getElementById('mdWeek');
+            if (!QT) { box.innerHTML = mdCard('📅', '7 הימים האחרונים', MD_NEED_QT); return; }
+            const days = Array.from({ length: 7 }, (_, i) => QT.dayActivity(QT.addDaysStr(today, i - 6), idx));
+            const WD = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+            const tiles = days.map(a => {
+                const [y, m, d] = a.ds.split('-').map(Number), wd = new Date(y, m - 1, d).getDay();
+                const color = a.count <= 0 ? '#1e293b' : (a.count === 1 ? '#0e7490' : (a.count <= 3 ? '#0891b2' : '#22d3ee'));
+                const parts = [a.chips.length ? `${a.chips.length} סוגי אימון` : '', a.workouts.length ? `${a.workouts.length} תרגילי תוכנית` : '', a.drills.length ? `${a.drills.length} דרילים` : ''].filter(Boolean).join(', ');
+                return `<a href="calendar.html" title="${a.ds}${parts ? ' • ' + parts : ''}" class="flex-1 text-center rounded-xl border ${a.ds === today ? 'border-sky-400' : 'border-slate-800'} p-2 hover:border-sky-400/60 transition"><div class="text-[10px] text-slate-400">${WD[wd]}</div><div class="mx-auto my-1 w-7 h-7 rounded-lg" style="background:${color}"></div><div class="text-[10px] text-slate-300">${a.count || '·'}</div></a>`;
+            }).join('');
+            const active = days.filter(a => a.active).length, items = days.reduce((n, a) => n + a.count, 0);
+            box.innerHTML = mdCard('📅', '7 הימים האחרונים', `<div class="flex gap-1.5">${tiles}</div><div class="text-[11px] text-slate-400 mt-2">${active}/7 ימים פעילים • ${items} פעולות (סוגי אימון + תרגילים ודרילים)</div>`, ['calendar.html', 'ללוח השנה ←']);
+        }
+
+        function mdRenderSnapshot(today) {
+            const box = document.getElementById('mdSnapshot');
+            const rows = [];
+            const w = mdWeakest();
+            rows.push(w ? `<div><div class="text-[10px] text-slate-400">דירוג QB (הערכה עצמית)</div><div class="text-lg font-black text-white">OVR ${mdEsc(w.ovr)}</div><div class="text-[10px] text-slate-400">הכי חלש: ${MD_MADDEN[w.key].l} (${w.value})</div></div>` : '<div><div class="text-[10px] text-slate-400">דירוג QB</div><div class="text-xs text-slate-500">עדיין לא חושב. פתח את <a href="madden.html" class="text-sky-400 underline">דירוג QB</a>.</div></div>');
+            const last = mdLastMetricsDate();
+            rows.push(`<div><div class="text-[10px] text-slate-400">מדדים פיזיים</div>${last ? `<div class="text-xs text-slate-200">עודכנו לפני ${mdDaysBetween(last, today)} ימים <span class="text-slate-500" dir="ltr">(${last})</span></div>` : '<div class="text-xs text-slate-500">עדיין לא נרשמו מדדים.</div>'}</div>`);
+            const log = mdRead('qbmc_presnap_log', []);
+            const ps = (Array.isArray(log) ? log : []).filter(e => e && isFinite(e.pts));
+            const psToday = ps.filter(e => e.d === today).length;
+            rows.push(`<div><div class="text-[10px] text-slate-400">תרגיל Pre-Snap</div><div class="text-xs text-slate-200">${ps.length ? `${psToday} תרחישים היום • ממוצע ${Math.round(ps.reduce((n, e) => n + e.pts, 0) / ps.length)}` : 'עדיין לא התחלת'} <a href="game.html#presnap-drill" class="text-sky-400 underline mr-1">${ps.length ? 'להמשך' : 'התחל'}</a></div></div>`);
+            box.innerHTML = mdCard('📌', 'תמונת מצב', `<div class="space-y-3">${rows.join('')}</div>`, ['player.html', 'כרטיס שחקן ←']);
+        }
+        function mdLastMetricsDate() {
+            let best = null;
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (!k || !k.startsWith('qbmc_metrics_') || !/^\d{4}-\d{2}-\d{2}$/.test(k.slice(13))) continue;
+                const arr = mdRead(k, []);
+                if (Array.isArray(arr) && arr.some(e => e && typeof e.name === 'string' && !/^Madden/.test(e.name))) { const d = k.slice(13); if (!best || d > best) best = d; }
+            }
+            return best;
+        }
+
+        function mdRenderStreakAndFocus(idx, today) {
+            const st = document.getElementById('mdStreak');
+            if (QT) {
+                const r = QT.currentStreak(today, idx);
+                st.innerHTML = r.days ? `<div class="text-2xl font-black text-amber-400">🔥 ${r.days}</div><div class="text-[10px] text-slate-400">${r.days === 1 ? 'יום ברצף' : 'ימים ברצף'}${r.todayOpen ? ' • היום עוד פתוח' : ''}</div>` : `<div class="text-lg font-black text-slate-300">🔥 0</div><div class="text-[10px] text-slate-400">התחל רצף היום</div>`;
+            } else st.innerHTML = '';
+            const chips = [];
+            if (QT) {
+                const sug = mdSuggestedDay(idx, today), day = mdDay || sug.day, list = QT.WORKOUT_EXERCISES.filter(e => e.day === 'd' + day), done = list.filter(e => QT.isExerciseDone(e.id, today)).length;
+                chips.push(done === list.length && list.length ? ['emerald', `✅ סיימת את אימון יום ${day}`] : ['sky', `🏋️ יום ${day}: ${done}/${list.length} תרגילים`]);
+            }
+            const n = mdNutrition(today);
+            if (n.cal && n.pro) { const left = n.cal - n.calSum; chips.push([left > 0 ? 'amber' : 'emerald', left > 0 ? `🍽️ נותרו ${Math.round(left)} קק"ל` : '🍽️ הגעת ליעד הקלוריות']); }
+            const goals = (mdRead('qbmc_player_goals', []) || []).filter(g => g && !g.done && /^\d{4}-\d{2}-\d{2}$/.test(g.date || '')).sort((a, b) => a.date.localeCompare(b.date));
+            if (goals.length) { const d = mdDaysBetween(today, goals[0].date); chips.push([d < 0 ? 'rose' : 'violet', `🏁 ${d < 0 ? 'באיחור' : 'היעד הקרוב'}: ${mdEsc(String(goals[0].text).slice(0, 40))}`]); }
+            const cls = { emerald: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200', sky: 'bg-sky-500/10 border-sky-500/30 text-sky-200', amber: 'bg-amber-500/10 border-amber-500/30 text-amber-200', violet: 'bg-violet-500/10 border-violet-500/30 text-violet-200', rose: 'bg-rose-500/10 border-rose-500/30 text-rose-200' };
+            document.getElementById('mdFocus').innerHTML = chips.length ? `<div class="text-[11px] font-bold text-slate-400 mb-1.5">מיקוד היום</div><div class="flex flex-wrap gap-2">${chips.map(c => `<span class="text-xs font-bold px-3 py-1.5 rounded-xl border ${cls[c[0]]}">${c[1]}</span>`).join('')}</div>` : '';
+        }
+
+        // Up to 3 plain-language nudges, most important first. Each is a rule on stored data (not AI) and disappears once fixed.
+        function mdRenderAlerts(idx, today) {
+            const items = [];
+            const n = mdNutrition(today);
+            const goals = (mdRead('qbmc_player_goals', []) || []).filter(g => g && !g.done && /^\d{4}-\d{2}-\d{2}$/.test(g.date || '') && g.date < today);
+            if (goals.length) items.push(['rose', `יש ${goals.length} ${goals.length === 1 ? 'יעד' : 'יעדים'} שעבר תאריך היעד שלהם ולא סומנו כהושלמו.`, 'player.html#player-goals', 'לעדכן']);
+            if (QT) {
+                let gap = 0, ds = today; const first = QT.firstActivityDate(idx);
+                if (first) { for (let i = 0; i < 60; i++) { if (QT.dayActivity(ds, idx).active) break; gap++; ds = QT.addDaysStr(ds, -1); } if (gap >= 3 && gap < 60) items.push(['amber', `לא נרשמה פעילות ${gap} ימים ברציפות.`, 'training.html', 'לאימון']); }
+            }
+            const lm = mdLastMetricsDate();
+            if (lm && mdDaysBetween(lm, today) > 30) items.push(['amber', `המדדים הפיזיים לא עודכנו ${mdDaysBetween(lm, today)} ימים.`, 'metrics.html', 'לעדכן']);
+            if (!n.cal || !n.pro) items.push(['slate', 'לא הוגדר יעד תזונה יומי.', 'ai-tools.html#ai-nutrition', 'להגדיר']);
+            const cls = { rose: 'border-rose-500/30 bg-rose-500/10 text-rose-100', amber: 'border-amber-500/30 bg-amber-500/10 text-amber-100', slate: 'border-slate-600 bg-slate-800/60 text-slate-200' };
+            document.getElementById('mdAlerts').innerHTML = items.slice(0, 3).map(a => `<div class="flex items-center justify-between gap-3 border rounded-xl px-3 py-2 mb-2 text-xs ${cls[a[0]]}"><span>${a[1]}</span><a href="${a[2]}" class="shrink-0 font-bold underline">${a[3]}</a></div>`).join('');
+        }
+
+        function renderMyDay() {
+            const today = mdToday(), idx = QT ? QT.buildSpecificIndex() : {};
+            const h = new Date().getHours();
+            const hello = h >= 5 && h < 11 ? 'בוקר טוב' : (h >= 11 && h < 17 ? 'צהריים טובים' : (h >= 17 && h < 22 ? 'ערב טוב' : 'לילה טוב'));
+            const prof = mdRead('qbmc_player_profile', {}) || {};
+            const first = typeof prof.name === 'string' ? prof.name.trim().split(/\s+/)[0] : '';
+            document.getElementById('mdGreeting').innerText = first ? `${hello}, ${first}` : hello;
+            document.getElementById('mdDate').innerText = new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('mdQuick').innerHTML = [['ai-tools.html#ai-nutrition', '🍽️ רשום ארוחה'], ['metrics.html', '📈 עדכן מדד'], ['ai-tools.html#ai-video', '🎥 נתח וידאו'], ['game.html#presnap-drill', '🎯 תרגיל Pre-Snap'], ['coach.html', '🧑‍🏫 שאל את המאמן'], ['calendar.html', '📅 לוח שנה']]
+                .map(q => `<a href="${q[0]}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-sky-600 text-slate-200 hover:text-white border border-slate-700 transition">${q[1]}</a>`).join('');
+            mdRenderStreakAndFocus(idx, today);
+            mdRenderTraining(idx, today);
+            mdRenderDrills(idx, today);
+            mdRenderNutrition(today);
+            mdRenderGoals(today);
+            mdRenderWeek(idx, today);
+            mdRenderSnapshot(today);
+            mdRenderAlerts(idx, today);
+        }
+        function mdPickDay(v) { mdDay = Number(v); renderMyDay(); }
+        document.addEventListener('click', e => {
+            const ex = e.target.closest('[data-md-ex]'), dr = e.target.closest('[data-md-drill]');
+            if (ex && QT) { const id = ex.getAttribute('data-md-ex'), t = mdToday(); QT.setExerciseDone(id, t, !QT.isExerciseDone(id, t)); renderMyDay(); }
+            if (dr && QT) { const d = QT.DRILLS_DATABASE[Number(dr.getAttribute('data-md-drill'))]; if (d) { const t = mdToday(); QT.setDrillDone(d.name, t, !QT.isDrillDone(d.name, t)); renderMyDay(); } }
+        });
+        document.addEventListener('change', e => {
+            const g = e.target.closest('[data-md-goal]');
+            if (!g) return;
+            const all = mdRead('qbmc_player_goals', []), i = Number(g.getAttribute('data-md-goal'));
+            if (Array.isArray(all) && all[i] && typeof all[i] === 'object') { all[i].done = g.checked; try { localStorage.setItem('qbmc_player_goals', JSON.stringify(all)); } catch (err) {} }
+            renderMyDay();
+        });
+        window.addEventListener('storage', () => renderMyDay());
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) renderMyDay(); });
+        renderMyDay();
 
         (function renderHubCards() {
             const { PAGES, GROUPS } = window.QB_SITE;

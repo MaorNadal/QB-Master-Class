@@ -427,7 +427,68 @@
         return { l: 'F', c: '#ef4444' };
     }
 
+    // ---- Activity across the app (shared by calendar.html's week/year/all views and the hub's "My Day") ----
+    // A day is ACTIVE if it has a manual calendar chip OR any specific exercise/drill logged on it. One definition,
+    // used everywhere, so the numbers on the hub and the calendar can never disagree.
+    function chipsFor(ds) {
+        try { const v = JSON.parse(localStorage.getItem('qbmc_cal_' + ds)); return Array.isArray(v) ? v.filter(x => typeof x === 'string') : []; } catch (e) { return []; }
+    }
+    // ds -> { w: [{id, name}], d: [drillName] }, built once per render instead of re-parsing the logs for every day.
+    function buildSpecificIndex() {
+        const idx = {};
+        const slot = ds => (idx[ds] = idx[ds] || { w: [], d: [] });
+        Object.entries(loadWorkoutLog()).forEach(([id, e]) => {
+            if (!e || !Array.isArray(e.dates)) return;
+            const known = EX_BY_ID[id];
+            e.dates.forEach(ds => { if (typeof ds === 'string') slot(ds).w.push({ id, name: known ? known.name : String(e.name || id) }); });
+        });
+        Object.entries(loadDrillLog()).forEach(([name, dates]) => {
+            if (!Array.isArray(dates)) return;
+            dates.forEach(ds => { if (typeof ds === 'string') slot(ds).d.push(name); });
+        });
+        return idx;
+    }
+    function dayActivity(ds, idx) {
+        const chips = chipsFor(ds), s = (idx && idx[ds]) || { w: [], d: [] };
+        return { ds, chips, workouts: s.w, drills: s.d, count: chips.length + s.w.length + s.d.length, active: chips.length > 0 || s.w.length > 0 || s.d.length > 0 };
+    }
+    function addDaysStr(ds, n) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ds);
+        if (!m) return ds;
+        return localDateStr(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]) + n));
+    }
+    // Current streak of active days. If TODAY has nothing yet, the streak counts back from yesterday (the day isn't over),
+    // so it doesn't read "0" every morning; `todayOpen` tells the caller that case happened.
+    function currentStreak(todayDs, idx) {
+        let ds = todayDs, n = 0, todayOpen = false;
+        if (!dayActivity(ds, idx).active) { todayOpen = true; ds = addDaysStr(ds, -1); }
+        for (let i = 0; i < 3700; i++) {
+            if (!dayActivity(ds, idx).active) break;
+            n++; ds = addDaysStr(ds, -1);
+        }
+        return { days: n, todayOpen };
+    }
+    function longestStreak(startDs, endDs, idx) {
+        let best = 0, cur = 0, ds = startDs;
+        for (let i = 0; i < 3700 && ds <= endDs; i++) {
+            if (dayActivity(ds, idx).active) { cur++; if (cur > best) best = cur; } else cur = 0;
+            ds = addDaysStr(ds, 1);
+        }
+        return best;
+    }
+    // Earliest date with any recorded activity (chips or specific items); null if none.
+    function firstActivityDate(idx) {
+        const dates = Object.keys(idx);
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith('qbmc_cal_') && /^\d{4}-\d{2}-\d{2}$/.test(k.slice(9)) && chipsFor(k.slice(9)).length) dates.push(k.slice(9));
+        }
+        const valid = dates.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+        return valid.length ? valid[0] : null;
+    }
+
     window.QB_TRAINING = {
+        chipsFor, buildSpecificIndex, dayActivity, addDaysStr, currentStreak, longestStreak, firstActivityDate,
         getDrillAnalyses, latestDrillAnalysis, saveDrillAnalysis, isSafeUrl, getDrillLink, setDrillLink, drillYoutubeSearchUrl, gradeFor,
         DRILL_CATEGORY_META, DRILLS_DATABASE, WORKOUT_DAY_TITLES, WORKOUT_EXERCISES, EX_BY_ID,
         localDateStr, loadDrillLog, saveDrillLog, loadWorkoutLog, saveWorkoutLog,

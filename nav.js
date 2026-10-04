@@ -12,7 +12,7 @@
           sections: [['metrics-calendar', 'לוח מדדים'], ['metrics-madden-card', 'כרטיס Madden'], ['metrics-trend-chart', 'מגמת מדד'], ['metrics-correlation', 'ניתוח מתאם'], ['metrics-log-table', 'טבלת רישומים']] },
         { file: 'madden.html', group: 'track', icon: '🏈', title: 'דירוג QB (Madden)', desc: 'מחשבון דירוג שחקן בסגנון Madden, עם טעינה מהמדדים שלך.' },
         { file: 'calendar.html', group: 'track', icon: '📅', title: 'לוח שנה', desc: 'יומן אימונים חודשי, רצפים וחגי ישראל.',
-          sections: [['calendar-stats', 'סטטיסטיקות'], ['calendar-grid', 'לוח חודשי'], ['calendar-legend', 'מקרא'], ['calendar-breakdown', 'התפלגות']] },
+          sections: [['calendar-views', 'תצוגות'], ['calendar-stats', 'סטטיסטיקות'], ['calendar-grid', 'לוח חודשי'], ['calendar-legend', 'מקרא'], ['calendar-breakdown', 'התפלגות']] },
         { file: 'ai-tools.html', group: 'ai', icon: '🤖', title: 'עזרי AI ותזונה', desc: 'ניתוח וידאו, מחשבון ויומן תזונה וניתוח כולל.',
           sections: [['ai-key', 'מפתח API'], ['ai-video', 'ניתוח וידאו'], ['ai-nutrition', 'תזונה'], ['ai-holistic', 'ניתוח כוללני']] },
         { file: 'coach.html', group: 'ai', icon: '🧑‍🏫', title: 'מאמן AI אישי', desc: 'צ\'אט עם מאמן AI כן ואובייקטיבי, עם שם ותמונה לבחירתך ושיתוף נתונים רק באישורך.',
