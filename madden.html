@@ -115,6 +115,31 @@
             </div>
         </section>
 
+        <section id="madden-history" class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 md:p-8 backdrop-blur">
+            <div class="mb-4 text-center">
+                <span class="px-3 py-1 bg-sky-500/20 text-sky-300 font-bold text-xs rounded-full border border-sky-500/30">התקדמות לאורך זמן</span>
+                <h2 class="text-2xl md:text-3xl font-black text-sky-400 mt-2">📈 היסטוריית דירוג ותתי-מדדים</h2>
+                <p class="text-slate-300 text-sm mt-1 max-w-3xl mx-auto">הדירוג נשמר אוטומטית כצילום מצב בכל יום שבו משהו השתנה, כך שאפשר לראות איך כל תת-מדד השתפר או ירד. ערכים שנרשמו בעבר במעקב המדדים (מאמן או ניתוח וידאו) מופיעים גם הם כנקודות מדידה.</p>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-4 text-xs no-print">
+                <label class="text-slate-300 font-bold">תצוגה:
+                    <select id="mhView" onchange="renderMaddenHistory()" class="mr-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400"></select>
+                </label>
+                <label class="text-slate-300 font-bold">טווח:
+                    <select id="mhRange" onchange="renderMaddenHistory()" class="mr-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white focus:outline-none focus:border-sky-400">
+                        <option value="0">כל התקופה</option><option value="365">12 חודשים אחרונים</option><option value="90">90 ימים</option><option value="30">30 ימים</option>
+                    </select>
+                </label>
+                <button type="button" onclick="manualMaddenSnapshot()" class="px-3 py-2 rounded-lg bg-sky-700 hover:bg-sky-600 text-white font-bold">📸 שמור צילום מצב עכשיו</button>
+                <button type="button" onclick="clearMaddenHistory()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300">מחק היסטוריה</button>
+            </div>
+            <div id="mhStatus" class="text-center text-[11px] text-slate-400 mb-2"></div>
+            <div id="mhEmpty" class="hidden text-center text-sm text-slate-400 py-10"></div>
+            <div id="mhChartBox" class="bg-slate-900/70 border border-slate-700 rounded-2xl p-3"><div style="height:340px;"><canvas id="mhChart"></canvas></div></div>
+            <div id="mhTable" class="mt-4"></div>
+            <p class="text-[10px] text-slate-500 mt-3 leading-relaxed">קו רציף וכדורים = צילומי מצב שנשמרו אוטומטית מהדף הזה (הערכה עצמית ו/או נתוני מאמן, כפי שנטענו באותו יום). משולשים = מדידות שנרשמו בעבר במעקב המדדים, לפני תחילת הצילום האוטומטי. נקודה אחת אינה מגמה: הגרף והטבלה מתחילים להיות משמעותיים אחרי לפחות שתי נקודות.</p>
+        </section>
+
     </main>
 
     <footer class="max-w-7xl mx-auto px-4 mt-12 text-center text-xs text-slate-500 border-t border-slate-800 pt-6">
@@ -409,14 +434,19 @@
             reader.readAsText(file);
         }
 
+        // The OVR weighting (unchanged; it used to be written inline inside updateQbCard).
+        function ovrFrom(values) {
+            return Math.round(
+                (values.THP * 0.20) + (values.SAC * 0.15) + (values.MAC * 0.20) + (values.DAC * 0.15) +
+                (values.AWR * 0.15) + (values.RLS * 0.08) + (values.RUN * 0.07)
+            );
+        }
+
         function updateQbCard() {
             const values = {};
             MADDEN_CATEGORIES.forEach(cat => { values[cat.key] = categoryValue(cat); });
 
-            const ovr = Math.round(
-                (values.THP * 0.20) + (values.SAC * 0.15) + (values.MAC * 0.20) + (values.DAC * 0.15) +
-                (values.AWR * 0.15) + (values.RLS * 0.08) + (values.RUN * 0.07)
-            );
+            const ovr = ovrFrom(values);
             const ovrGrade = gradeFor(ovr);
             document.getElementById('qbOvrDisplay').innerHTML = `OVR: ${ovr} <span class="text-xs align-middle" style="color:${ovrGrade.c}">(${ovrGrade.l})</span>`;
 
@@ -433,9 +463,142 @@
                 Object.keys(values).forEach(k => rounded[k] = Math.round(values[k]));
                 localStorage.setItem('qbmc_madden_computed', JSON.stringify({ categories: rounded, ovr, updatedAt: new Date().toISOString().slice(0, 10) }));
             } catch (e) {}
+            scheduleMaddenSnapshot();
         }
 
 
+
+        // ================= History of the rating =================
+        // Snapshots {d, ovr, cat:{THP..}, sub:{"THP.hipShoulder":n,...}} in qbmc_madden_history: one per day (the last state of that
+        // day wins), written only when something actually changed. Past measurements already stored in the tracked metrics
+        // (dated "Madden [CAT.id]" entries) are merged into the sub-metric lines as separate "measured" points.
+        const HISTORY_KEY = 'qbmc_madden_history';
+        const HISTORY_MAX = 500;
+        function mhToday() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+        function loadMaddenHistory() {
+            try {
+                const v = JSON.parse(localStorage.getItem(HISTORY_KEY));
+                if (!Array.isArray(v)) return [];
+                return v.filter(e => e && /^\d{4}-\d{2}-\d{2}$/.test(e.d) && e.sub && typeof e.sub === 'object' && !Array.isArray(e.sub) && e.cat && typeof e.cat === 'object').sort((a, b) => a.d.localeCompare(b.d));
+            } catch (e) { return []; }
+        }
+        function saveMaddenHistory(list) { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(-HISTORY_MAX))); return true; } catch (e) { return false; } }
+        function currentMaddenSnapshot() {
+            const sub = {}, cat = {};
+            MADDEN_CATEGORIES.forEach(c => { cat[c.key] = Math.round(categoryValue(c)); c.subs.forEach(m => { sub[c.key + '.' + m.id] = Math.round(m.value); }); });
+            return { d: mhToday(), ovr: ovrFrom(cat), cat, sub };
+        }
+        let mhTimer = null;
+        function scheduleMaddenSnapshot() { clearTimeout(mhTimer); mhTimer = setTimeout(() => recordMaddenSnapshot(false), 700); }
+        // Returns true when a snapshot was written. Automatic snapshots wait until the person has real data (saved self-assessment);
+        // otherwise the page's factory defaults would be recorded as if they were their ratings.
+        function recordMaddenSnapshot(force) {
+            if (!force) { try { if (localStorage.getItem(SELFASSESS_KEY) === null) return false; } catch (e) { return false; } }
+            const snap = currentMaddenSnapshot(), list = loadMaddenHistory(), last = list[list.length - 1];
+            const same = !!last && JSON.stringify(last.sub) === JSON.stringify(snap.sub);
+            if (last && last.d === snap.d) { if (same && !force) return false; list[list.length - 1] = snap; }
+            else if (same && !force) return false;
+            else list.push(snap);
+            const ok = saveMaddenHistory(list);
+            renderMaddenHistory();
+            return ok;
+        }
+        function manualMaddenSnapshot() {
+            const ok = recordMaddenSnapshot(true);
+            document.getElementById('mhStatus').innerHTML = ok ? '<span class="text-emerald-400">✅ נשמר צילום מצב להיום.</span>' : '<span class="text-rose-400">השמירה נכשלה (האחסון בדפדפן מלא או חסום).</span>';
+        }
+        function clearMaddenHistory() {
+            if (!confirm('למחוק את כל היסטוריית הדירוג? הפעולה אינה הפיכה. (רישומי המאמן במעקב המדדים לא יימחקו.)')) return;
+            try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
+            renderMaddenHistory();
+        }
+        // Dated sub-metric measurements from the metrics store: { "THP.hipShoulder": { "2026-09-01": 72 } }
+        function measuredSubPoints() {
+            const out = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (!k || !k.startsWith('qbmc_metrics_') || !/^\d{4}-\d{2}-\d{2}$/.test(k.slice(13))) continue;
+                let arr; try { arr = JSON.parse(localStorage.getItem(k)); } catch (e) { continue; }
+                if (!Array.isArray(arr)) continue;
+                arr.forEach(e => {
+                    const m = e && typeof e.name === 'string' && e.name.match(MADDEN_SUB_NAME_RE);
+                    const v = e ? parseFloat(e.value) : NaN;
+                    if (!m || !isFinite(v)) return;
+                    (out[m[1] + '.' + m[2]] = out[m[1] + '.' + m[2]] || {})[k.slice(13)] = Math.max(1, Math.min(99, Math.round(v)));
+                });
+            }
+            return out;
+        }
+        const MH_COLORS = ['#a855f7', '#38bdf8', '#34d399', '#fbbf24', '#fb7185', '#f97316', '#22d3ee', '#a3e635'];
+        let mhChart = null;
+        function mhFillViewSelect() {
+            const sel = document.getElementById('mhView');
+            if (sel.options.length) return;
+            sel.innerHTML = '<option value="overview">OVR וכל הקטגוריות</option>' + MADDEN_CATEGORIES.map(c => `<option value="cat:${c.key}">תתי-מדדים: ${c.label}</option>`).join('');
+        }
+        // Builds the lines to draw: [{ id, label, pts:[{d, v, src}] }] for the chosen view and range.
+        function mhSeries(view, cutoff) {
+            const hist = loadMaddenHistory(), measured = measuredSubPoints();
+            const inRange = d => !cutoff || d >= cutoff;
+            if (view === 'overview') {
+                const mk = (id, label, get) => ({ id, label, pts: hist.filter(h => inRange(h.d) && get(h) != null && isFinite(get(h))).map(h => ({ d: h.d, v: get(h), src: 'saved' })) });
+                return [mk('ovr', 'OVR', h => h.ovr)].concat(MADDEN_CATEGORIES.map(c => mk(c.key, `${c.label}`, h => h.cat[c.key])));
+            }
+            const cat = MADDEN_CATEGORIES.find(c => 'cat:' + c.key === view);
+            if (!cat) return [];
+            return cat.subs.map(m => {
+                const key = cat.key + '.' + m.id, byDate = {};
+                Object.entries(measured[key] || {}).forEach(([d, v]) => { byDate[d] = { d, v, src: 'measured' }; });
+                hist.forEach(h => { if (h.sub[key] != null && isFinite(h.sub[key])) byDate[h.d] = { d: h.d, v: h.sub[key], src: 'saved' }; });   // a saved snapshot wins over a measurement on the same day
+                return { id: key, label: m.label, pts: Object.values(byDate).filter(p => inRange(p.d)).sort((a, b) => a.d.localeCompare(b.d)) };
+            });
+        }
+        function mhDateToX(d) { const [y, m, dd] = d.split('-').map(Number); return Date.UTC(y, m - 1, dd) / 86400000; }
+        function mhXToDate(x) { const t = new Date(Math.round(x) * 86400000); return `${String(t.getUTCDate()).padStart(2, '0')}/${String(t.getUTCMonth() + 1).padStart(2, '0')}/${String(t.getUTCFullYear()).slice(2)}`; }
+        function renderMaddenHistory() {
+            mhFillViewSelect();
+            const view = document.getElementById('mhView').value || 'overview';
+            const days = Number(document.getElementById('mhRange').value) || 0;
+            let cutoff = null;
+            if (days) { const t = new Date(); t.setDate(t.getDate() - days); cutoff = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); }
+            const series = mhSeries(view, cutoff);
+            const multi = series.filter(s => s.pts.length >= 2);
+            const snaps = loadMaddenHistory();
+            document.getElementById('mhStatus').innerText = snaps.length ? `${snaps.length} צילומי מצב שמורים • הראשון ${snaps[0].d} • האחרון ${snaps[snaps.length - 1].d}` : 'עדיין לא נשמרו צילומי מצב.';
+            const empty = document.getElementById('mhEmpty'), box = document.getElementById('mhChartBox');
+            if (!multi.length) {
+                empty.innerText = snaps.length || series.some(s => s.pts.length) ? 'יש נקודה אחת בלבד בטווח שנבחר. המגמה תופיע אחרי שתהיה לפחות נקודה שנייה: עדכן דירוג, או שמור צילום מצב בהמשך.' : 'ההיסטוריה תתחיל להיבנות ברגע שתעדכן דירוג בדף הזה. אפשר גם ללחוץ על "שמור צילום מצב עכשיו" כדי לקבוע נקודת התחלה.';
+                empty.classList.remove('hidden'); box.classList.add('hidden');
+                if (mhChart) { mhChart.destroy(); mhChart = null; }
+                document.getElementById('mhTable').innerHTML = '';
+                return;
+            }
+            empty.classList.add('hidden'); box.classList.remove('hidden');
+            if (typeof Chart !== 'undefined') {
+                const datasets = series.filter(s => s.pts.length).map((s, i) => ({
+                    label: s.label, data: s.pts.map(p => ({ x: mhDateToX(p.d), y: p.v })),
+                    borderColor: MH_COLORS[i % MH_COLORS.length], backgroundColor: MH_COLORS[i % MH_COLORS.length],
+                    borderWidth: s.id === 'ovr' ? 3.5 : 2, tension: 0.2, spanGaps: true,
+                    pointStyle: s.pts.map(p => p.src === 'measured' ? 'triangle' : 'circle'), pointRadius: s.pts.map(p => p.src === 'measured' ? 5 : 3.5)
+                }));
+                if (mhChart) mhChart.destroy();
+                mhChart = new Chart(document.getElementById('mhChart').getContext('2d'), {
+                    type: 'line', data: { datasets },
+                    options: { responsive: true, maintainAspectRatio: false, parsing: false,
+                        scales: { x: { type: 'linear', grid: { color: '#334155' }, ticks: { color: '#cbd5e1', font: { size: 10 }, maxTicksLimit: 8, callback: v => mhXToDate(v) } },
+                                  y: { min: 0, max: 100, grid: { color: '#334155' }, ticks: { color: '#cbd5e1', font: { size: 10 } } } },
+                        plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } }, tooltip: { callbacks: { title: items => items.length ? mhXToDate(items[0].parsed.x) : '' } } } }
+                });
+            }
+            // Change table: first vs latest point of each line in the chosen range.
+            const rows = multi.map(s => { const a = s.pts[0], b = s.pts[s.pts.length - 1]; return { label: s.label, a, b, delta: b.v - a.v, n: s.pts.length }; }).sort((x, y) => y.delta - x.delta);
+            const fmt = d => d > 0 ? `<span class="text-emerald-400 font-bold">▲ +${d}</span>` : (d < 0 ? `<span class="text-rose-400 font-bold">▼ ${d}</span>` : '<span class="text-slate-400">ללא שינוי</span>');
+            const best = rows[0], worst = rows[rows.length - 1];
+            const summary = (best.delta > 0 ? `השיפור הגדול ביותר: <b class="text-emerald-300">${best.label}</b> (+${best.delta}). ` : '') + (worst.delta < 0 ? `הירידה הגדולה ביותר: <b class="text-rose-300">${worst.label}</b> (${worst.delta}).` : '');
+            document.getElementById('mhTable').innerHTML = `${summary ? `<p class="text-xs text-slate-300 mb-2">${summary}</p>` : ''}
+                <div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-slate-400 border-b border-slate-700"><th class="p-2 text-right">מדד</th><th class="p-2">מתחילת הטווח</th><th class="p-2">אחרון</th><th class="p-2">שינוי</th><th class="p-2">נקודות</th></tr></thead>
+                <tbody>${rows.map(r => `<tr class="border-b border-slate-800"><td class="p-2 text-right text-slate-200">${r.label}</td><td class="p-2 text-center" dir="ltr">${r.a.v} <span class="text-slate-500">(${r.a.d})</span></td><td class="p-2 text-center" dir="ltr">${r.b.v} <span class="text-slate-500">(${r.b.d})</span></td><td class="p-2 text-center">${fmt(r.delta)}</td><td class="p-2 text-center text-slate-400">${r.n}</td></tr>`).join('')}</tbody></table></div>`;
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
 
@@ -493,6 +656,7 @@
 
             tryAutoLoadMaddenData();
             updateQbCard();
+            renderMaddenHistory();
         });
     </script>
 </body>
