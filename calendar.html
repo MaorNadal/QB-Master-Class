@@ -108,6 +108,14 @@
                 <div id="modalExtraChecks" class="space-y-2"></div>
             </div>
 
+            <div id="modalPracticeWrap" class="mb-5">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">🏟️ אימוני קבוצה ביום זה</div>
+                <div id="modalPracticeList" class="space-y-2"></div>
+                <div id="modalPracticeForm" class="mt-2"></div>
+                <button id="modalPracticeAdd" type="button" onclick="openPracticeForm()" class="mt-2 text-xs font-bold px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white transition">➕ הוסף אימון קבוצה</button>
+                <p class="text-[10px] text-slate-500 mt-1">אימון קבוצה נספר כיום פעיל. בחר תרגילים מהספרייה או כתוב חופשי, וסמן מי הגיע (הסגל מנוהל בדף "הקבוצה").</p>
+            </div>
+
             <div id="modalSpecificWrap" class="mb-5">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">🎯 תרגילים ודרילים ספציפיים שבוצעו ביום זה</div>
                 <div id="modalSpecificItems" class="space-y-1.5 text-xs"></div>
@@ -129,6 +137,7 @@
     </div>
 
     <script src="training-data.js"></script>
+    <script src="practices.js"></script>
     <script>
         const CATEGORIES = [
             { id: 'd1', label: 'יום 1: Upper Body (נפח)', color: '#38bdf8', group: 'system' },
@@ -242,7 +251,7 @@
             for (let d = 1; d <= daysInMonth; d++) {
                 const ds = dateStr(viewYear, viewMonth, d);
                 const entries = getDayData(ds);
-                const specificCountForDay = getSpecificItemsForDate(ds).length;
+                const specificCountForDay = getSpecificItemsForDate(ds).length + (window.QBPractice ? QBPractice.forDate(ds).length : 0);
                 // A day counts as an active training day if it has a chip OR a specific exercise/drill (same rule as the other views and the hub).
                 if (ds <= todayStr) {   // a mark on a future date is a plan, not training that happened
                     if (entries.length || specificCountForDay) loggedDays++;
@@ -260,6 +269,8 @@
                 const extraCount = entries.length > 6 ? `<span class="text-[9px] text-slate-500">+${entries.length - 6}</span>` : '';
                 const specificCount = getSpecificItemsForDate(ds).length;
                 const specificBadge = specificCount ? `<span class="text-[8px] md:text-[9px] text-orange-300" title="${specificCount} תרגילים/דרילים ספציפיים">🎯${specificCount}</span>` : '';
+                const practiceCount = window.QBPractice ? QBPractice.forDate(ds).length : 0;
+                const practiceBadge = practiceCount ? `<span class="text-[8px] md:text-[9px] text-emerald-300" title="${practiceCount} אימוני קבוצה">🏟️${practiceCount > 1 ? practiceCount : ''}</span>` : '';
 
                 html += `
                 <button onclick="openDayModal('${ds}')" class="day-cell text-right p-1.5 md:p-2 rounded-lg border ${isToday ? 'border-fuchsia-400 bg-fuchsia-500/10' : 'border-slate-800 bg-slate-900/60'} hover:border-fuchsia-400/60 transition flex flex-col justify-between">
@@ -267,7 +278,7 @@
                         <span class="text-xs md:text-sm font-bold ${isToday ? 'text-fuchsia-300' : 'text-slate-300'}">${d}</span>
                     </div>
                     ${holidayTitle ? `<div class="text-[8px] md:text-[9px] text-amber-300 leading-tight truncate" title="${holidayTitle}">✡️ ${holidayTitle}</div>` : ''}
-                    <div class="flex flex-wrap gap-0.5 mt-1 items-center">${dots}${extraCount}${specificBadge}</div>
+                    <div class="flex flex-wrap gap-0.5 mt-1 items-center">${dots}${extraCount}${specificBadge}${practiceBadge}</div>
                 </button>`;
             }
             grid.innerHTML = html;
@@ -360,6 +371,33 @@
             });
             return items;
         }
+
+        // ---- Team practices inside the day modal (data + form come from practices.js) ----
+        function renderPracticeSection(ds) {
+            const wrap = document.getElementById('modalPracticeWrap');
+            if (!window.QBPractice) { wrap.classList.add('hidden'); return; }
+            wrap.classList.remove('hidden');
+            const list = QBPractice.forDate(ds);
+            document.getElementById('modalPracticeForm').innerHTML = '';
+            document.getElementById('modalPracticeAdd').classList.remove('hidden');
+            document.getElementById('modalPracticeList').innerHTML = list.length ? list.map(p => `<div>${QBPractice.summaryHtml(p)}
+                <div class="flex gap-2 mt-1"><button type="button" data-pr-edit="${escHtml(p.id)}" class="text-[11px] px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100">✏️ ערוך</button><button type="button" data-pr-del="${escHtml(p.id)}" class="text-[11px] px-2 py-1 rounded bg-rose-800 hover:bg-rose-700 text-white">🗑️ מחק</button></div></div>`).join('')
+                : '<p class="text-[11px] text-slate-500">לא נרשם אימון קבוצה ליום זה.</p>';
+        }
+        function openPracticeForm(editId) {
+            if (!window.QBPractice || !selectedDateStr) return;
+            document.getElementById('modalPracticeAdd').classList.add('hidden');
+            QBPractice.renderForm(document.getElementById('modalPracticeForm'), selectedDateStr, {
+                editId: editId || null,
+                onSaved: () => { renderPracticeSection(selectedDateStr); refreshView(); },
+                onCancel: () => renderPracticeSection(selectedDateStr)
+            });
+        }
+        document.addEventListener('click', e => {
+            const ed = e.target.closest('[data-pr-edit]'), dl = e.target.closest('[data-pr-del]');
+            if (ed) openPracticeForm(ed.getAttribute('data-pr-edit'));
+            if (dl && window.QBPractice && confirm('למחוק את אימון הקבוצה?')) { QBPractice.remove(dl.getAttribute('data-pr-del')); renderPracticeSection(selectedDateStr); refreshView(); }
+        });
 
         function todayLocalStr() { const t = new Date(); return dateStr(t.getFullYear(), t.getMonth(), t.getDate()); }
 
@@ -460,6 +498,7 @@
             document.getElementById('modalExtraChecks').innerHTML = buildChecks('extra');
 
             renderSpecificSection(ds);
+            renderPracticeSection(ds);
 
             document.getElementById('dayModal').classList.remove('hidden');
         }
@@ -551,7 +590,7 @@
         // Aggregates a list of date strings into the numbers every view needs.
         function aggregate(dates, idx) {
             const T = window.QB_TRAINING;
-            const out = { days: 0, chips: 0, workouts: 0, drills: 0, items: 0, cat: {}, perDay: [], byWeekday: [0, 0, 0, 0, 0, 0, 0], activeByWeekday: [0, 0, 0, 0, 0, 0, 0] };
+            const out = { days: 0, chips: 0, workouts: 0, drills: 0, practices: 0, items: 0, cat: {}, perDay: [], byWeekday: [0, 0, 0, 0, 0, 0, 0], activeByWeekday: [0, 0, 0, 0, 0, 0, 0] };
             const todayDs = todayLocalStr();
             dates.forEach(ds => {
                 const a = T.dayActivity(ds, idx);
@@ -561,7 +600,7 @@
                 // A mark on a future date is a plan, not training that happened: it is displayed but never counted.
                 if (a.future) return;
                 if (a.active) { out.days++; out.activeByWeekday[wd]++; }
-                out.chips += a.chips.length; out.workouts += a.workouts.length; out.drills += a.drills.length; out.items += a.count; out.byWeekday[wd] += a.count;
+                out.chips += a.chips.length; out.workouts += a.workouts.length; out.drills += a.drills.length; out.practices += (a.practices || []).length; out.items += a.count; out.byWeekday[wd] += a.count;
                 a.chips.forEach(id => { out.cat[id] = (out.cat[id] || 0) + 1; });
             });
             return out;
@@ -603,7 +642,7 @@
             const diff = (cur, prev) => cur === prev ? 'ללא שינוי' : `${cur > prev ? '▲' : '▼'} ${Math.abs(cur - prev)}`;
             const dayCards = a.perDay.map((d, i) => {
                 const isToday = d.ds === today, future = d.ds > today;
-                const names = d.workouts.map(w => '🏋️ ' + w.name).concat(d.drills.map(n => '🎯 ' + n));
+                const names = (d.practices || []).map(p => '🏟️ ' + p.title).concat(d.workouts.map(w => '🏋️ ' + w.name)).concat(d.drills.map(n => '🎯 ' + n));
                 const plannedTag = future && d.chips.length ? '<span class="text-[9px] text-sky-300 mr-1">מתוכנן</span>' : '';
                 return `<button type="button" onclick="openDayModal('${d.ds}')" class="text-right p-3 rounded-xl border ${isToday ? 'border-fuchsia-400 bg-fuchsia-500/10' : 'border-slate-800 bg-slate-900/60'} hover:border-fuchsia-400/60 transition ${future ? 'opacity-60' : ''}">
                     <div class="flex justify-between items-baseline mb-1.5"><span class="text-xs font-black ${isToday ? 'text-fuchsia-300' : 'text-slate-200'}">${WEEKDAYS[i]}${plannedTag}</span><span class="text-[11px] text-slate-500" dir="ltr">${fmtShort(d.ds)}</span></div>
@@ -622,14 +661,14 @@
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     ${statCard(a.items, 'סה"כ פעולות השבוע (סוגי אימון + תרגילים)', 'text-sky-400')}
-                    ${statCard(`${a.workouts} / ${a.drills}`, 'תרגילי תוכנית / דרילים', 'text-orange-300')}
+                    ${statCard(`${a.workouts} / ${a.drills} / ${a.practices}`, 'תרגילי תוכנית / דרילים / אימוני קבוצה', 'text-orange-300')}
                     ${statCard(diff(a.days, p.days), 'ימי אימון לעומת שבוע קודם', 'text-emerald-400')}
                     ${statCard(diff(a.items, p.items), 'פעולות לעומת שבוע קודם', 'text-amber-400')}
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">${chartBox('weekDayChart', 'פעילות לפי יום בשבוע')}${chartBox('weekCatChart', 'התפלגות סוגי האימון בשבוע')}</div>`;
             mkChart('weekDayChart', barCfg(WEEKDAYS, [
                 { label: 'סוגי אימון', data: a.perDay.map(d => d.future ? 0 : d.chips.length), backgroundColor: '#d946ef' },
-                { label: 'תרגילים ודרילים', data: a.perDay.map(d => d.future ? 0 : d.workouts.length + d.drills.length), backgroundColor: '#fb923c' }], { stacked: true, legend: true }));
+                { label: 'תרגילים, דרילים ואימוני קבוצה', data: a.perDay.map(d => d.future ? 0 : d.workouts.length + d.drills.length + (d.practices || []).length), backgroundColor: '#fb923c' }], { stacked: true, legend: true }));
             const c = catChartCfg(a.cat);
             mkChart('weekCatChart', barCfg(c.labels, [{ data: c.data, backgroundColor: c.colors }], { horizontal: true }));
         }

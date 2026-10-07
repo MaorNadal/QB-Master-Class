@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הקבוצה - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Rubik', sans-serif; background-color: #0f172a; color: #f8fafc; }
+
+        /* ================= Locker room scene (own CSS so it renders the same everywhere) ================= */
+        .lr { --team: #1d4ed8; position: relative; border-radius: 22px; overflow: hidden; border: 3px solid #1e293b; box-shadow: 0 20px 60px #000a;
+              background: linear-gradient(#0b1220 0, #0b1220 40px, #1d2a46 40px, #16213a 70%, #101a2e 100%); padding: 0 0 22px; }
+        .lr-ceil { height: 40px; background: linear-gradient(#05080f, #0b1220); position: relative; border-bottom: 3px solid #223152; }
+        .lr-light { position: absolute; top: 8px; width: 90px; height: 10px; border-radius: 6px; background: #fef9c3; box-shadow: 0 0 40px 14px #fde68a55, 0 22px 70px 22px #fde68a14; }
+        .lr-sign { text-align: center; padding: 18px 12px 6px; }
+        .lr-sign h2 { display: inline-block; font-weight: 900; font-size: clamp(20px, 3.4vw, 34px); letter-spacing: 1px; color: #fff; padding: 6px 28px; border-radius: 12px;
+                      background: linear-gradient(var(--team), #0b1220); border: 2px solid #ffffff33; text-shadow: 0 0 18px #fff6; box-shadow: 0 0 26px var(--team); }
+        .lr-sign p { color: #93a4c3; font-size: 12px; margin-top: 6px; }
+        .lr-wall-stripe { height: 10px; margin: 8px 0 14px; background: repeating-linear-gradient(90deg, var(--team) 0 40px, #ffffff22 40px 44px); opacity: .85; }
+        .lr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 30px 12px; padding: 12px 22px 8px; }
+        .lk { position: relative; height: 222px; cursor: pointer; user-select: none; }
+        .lk-body { position: absolute; inset: 0 0 20px 0; border-radius: 8px 8px 3px 3px; background: linear-gradient(90deg, #5b6b86, #8696b1 14%, #6d7e99 50%, #8696b1 86%, #55657f); border: 2px solid #2b3850; box-shadow: inset 0 0 0 5px #4a5973, 0 10px 18px #0009; overflow: hidden; }
+        .lk-vents { position: absolute; top: 9px; left: 14%; right: 14%; height: 14px; background: repeating-linear-gradient(#1f2a3f 0 3px, transparent 3px 6px); border-radius: 3px; opacity: .8; }
+        .lk-inside { position: absolute; inset: 30px 10px 0 10px; border-radius: 6px 6px 0 0; background: linear-gradient(#0d1424, #1a2540 60%, #121b30); box-shadow: inset 0 0 22px #000c; }
+        .lk-shelf { position: absolute; top: 26%; left: 12%; right: 12%; height: 3px; background: #475a7a; box-shadow: 0 2px 4px #0008; }
+        .lk-hook { position: absolute; top: 12%; right: 20%; width: 6px; height: 6px; border-radius: 50%; background: #c0cae0; }
+        .lk-av { position: absolute; left: 6%; right: 6%; bottom: 0; height: 74%; filter: drop-shadow(0 6px 6px #000a); transition: transform .18s; }
+        .lk:hover .lk-av { transform: translateY(-4px) scale(1.03); }
+        .lk-av > div { width: 100%; height: 100%; }
+        .lk-plate { position: absolute; left: 50%; transform: translateX(-50%); bottom: 6px; z-index: 3; min-width: 86%; text-align: center; padding: 2px 4px; border-radius: 4px;
+                    background: linear-gradient(#e9d28a, #b8923a); color: #2b1d00; font-weight: 800; font-size: 11px; line-height: 1.2; border: 1px solid #6b5316; box-shadow: 0 2px 4px #0008; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lk-num { position: absolute; top: -13px; right: 8px; z-index: 4; width: 30px; height: 30px; border-radius: 50%; background: #0b1220; border: 2px solid #fff; color: #fff; font-weight: 900; font-size: 13px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px #000a; }
+        .lk-pos { position: absolute; top: -10px; left: 8px; z-index: 4; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; color: #fff; border: 1px solid #fff6; box-shadow: 0 3px 8px #000a; }
+        .lk-bench { position: absolute; left: -6px; right: -6px; bottom: 0; height: 22px; background: linear-gradient(#b27a43, #7a4d24); border-radius: 4px; box-shadow: 0 6px 10px #000a, inset 0 2px 0 #d9a066; z-index: 2; }
+        .lk-me::before { content: '⭐ אני'; position: absolute; top: -26px; left: 50%; transform: translateX(-50%); z-index: 5; background: #facc15; color: #422006; font-weight: 900; font-size: 10px; padding: 1px 8px; border-radius: 999px; box-shadow: 0 0 12px #facc15aa; }
+        .lk-empty .lk-body { background: linear-gradient(90deg, #3e4b63, #55637d 14%, #46546d 50%, #55637d 86%, #3a465d); }
+        .lk-empty .lk-inside { background: #2b3750; box-shadow: inset 0 0 12px #0008; }
+        .lk-empty .lk-add { position: absolute; inset: 30px 10px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #a8b6d0; font-weight: 800; font-size: 28px; }
+        .lk-empty .lk-add small { font-size: 10px; font-weight: 600; }
+        .lk-over .lk-body { box-shadow: inset 0 0 0 5px #4a5973, 0 0 0 3px #facc15, 0 10px 18px #0009; }
+        .lk-drag { opacity: .45; }
+        .lr-floor { height: 14px; margin-top: 4px; background: repeating-linear-gradient(90deg, #0a101e 0 60px, #0e1628 60px 62px); }
+        .lr-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 22px 0; color: #94a3b8; font-size: 11px; }
+
+        /* ================= modal ================= */
+        .tm-modal { position: fixed; inset: 0; z-index: 80; background: #000b; display: none; align-items: center; justify-content: center; padding: 12px; }
+        .tm-modal.open { display: flex; }
+        .tm-card { background: #0f172a; border: 1px solid #334155; border-radius: 20px; width: 100%; max-width: 760px; max-height: 92vh; overflow-y: auto; box-shadow: 0 30px 80px #000; }
+        .tm-head { display: flex; gap: 14px; align-items: center; padding: 16px 18px; border-bottom: 1px solid #1e293b; background: linear-gradient(#17233d, #0f172a); border-radius: 20px 20px 0 0; }
+        .tm-head .av { width: 74px; height: 74px; border-radius: 16px; overflow: hidden; background: #1e293b; border: 2px solid #475569; flex-shrink: 0; }
+        .tm-tabs { display: flex; gap: 4px; padding: 8px 14px 0; border-bottom: 1px solid #1e293b; flex-wrap: wrap; }
+        .tm-tab { padding: 7px 14px; border-radius: 10px 10px 0 0; font-size: 12px; font-weight: 700; color: #94a3b8; background: transparent; border: none; cursor: pointer; }
+        .tm-tab.on { background: #1e293b; color: #fff; }
+        .tm-body { padding: 14px 18px 18px; font-size: 12px; }
+        .tm-body label { display: block; color: #94a3b8; margin-bottom: 8px; }
+        .tm-body input[type=text], .tm-body input[type=number], .tm-body select, .tm-body textarea { width: 100%; margin-top: 3px; background: #020617; border: 1px solid #475569; border-radius: 9px; padding: 7px 9px; color: #fff; font-size: 13px; font-family: inherit; }
+        .tm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0 10px; }
+        .tm-li { display: flex; gap: 6px; align-items: center; background: #1e293b80; border: 1px solid #334155; border-radius: 9px; padding: 5px 8px; margin-bottom: 4px; }
+        .tm-li .k { font-weight: 900; width: 18px; text-align: center; }
+        .tm-btn { background: #1e293b; border: 1px solid #475569; border-radius: 9px; padding: 6px 12px; color: #e2e8f0; cursor: pointer; font-size: 12px; font-weight: 700; }
+        .tm-btn.pri { background: #047857; border-color: #34d399; color: #fff; } .tm-btn.red { background: #7f1d1d; border-color: #f87171; color: #fff; }
+        .tm-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+        .tm-chip { display: inline-flex; gap: 5px; align-items: center; padding: 3px 10px; border-radius: 999px; background: #1e293b; border: 1px solid #334155; color: #e2e8f0; cursor: pointer; }
+        .tm-chip.f-on { background: #14532d; border-color: #4ade80; } .tm-chip.t-on { background: #7f1d1d; border-color: #f87171; }
+        .star { font-size: 22px; cursor: pointer; color: #475569; background: none; border: none; } .star.on { color: #facc15; }
+
+        /* ================= dynamics + roster ================= */
+        .dyn-svg { width: 100%; height: auto; background: radial-gradient(circle at 50% 40%, #16213a, #0b1220); border-radius: 18px; border: 1px solid #1e293b; }
+        .tbl { width: 100%; border-collapse: collapse; font-size: 12px; } .tbl th { color: #94a3b8; text-align: right; padding: 6px 8px; border-bottom: 1px solid #334155; } .tbl td { padding: 6px 8px; border-bottom: 1px solid #1e293b; }
+        .tbl tr.row { cursor: pointer; } .tbl tr.row:hover { background: #1e293b; }
+        .pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; color: #fff; }
+        @media print { nav, .no-print, .tm-modal { display: none !important; } body { background: #fff; color: #000; } }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+    <script src="nav.js"></script>
+
+    <header class="max-w-7xl mx-auto px-4 pt-8 pb-4 text-center">
+        <div class="inline-block px-4 py-1.5 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-300 text-sm font-semibold mb-3">🏟️ הקבוצה</div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">חדר ההלבשה</h1>
+        <p class="text-slate-300 max-w-3xl mx-auto text-sm md:text-base leading-relaxed">כל שחקן בארון משלו. לחץ על ארון כדי להוסיף שחקן ולפתוח את הכרטיס שלו: פרטים, נקודות, עצות לפעולה ודינמיקה חברתית. גרור ארון כדי להחליף מקום.</p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 space-y-6">
+        <div class="no-print flex flex-wrap items-center justify-center gap-2 text-xs font-bold" id="team-tabs">
+            <button class="tm-tab on" data-tab="room" onclick="showTab('room')">🏟️ חדר ההלבשה</button>
+            <button class="tm-tab" data-tab="dyn" onclick="showTab('dyn')">🕸️ דינמיקה חברתית</button>
+            <button class="tm-tab" data-tab="roster" onclick="showTab('roster')">📋 סגל</button>
+            <button class="tm-tab" data-tab="prac" onclick="showTab('prac')">🏋️ אימוני קבוצה</button>
+        </div>
+
+        <section id="team-room">
+            <div class="no-print flex flex-wrap items-end justify-between gap-3 mb-3 text-xs">
+                <div class="flex flex-wrap items-end gap-3">
+                    <label class="text-slate-400">שם הקבוצה<input id="teamName" maxlength="40" oninput="onTeamMeta()" class="block mt-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white w-48"></label>
+                    <label class="text-slate-400">צבע הקבוצה<input id="teamColor" type="color" oninput="onTeamMeta()" class="block mt-1 h-9 w-14 bg-slate-900 border border-slate-600 rounded-lg"></label>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button class="tm-btn" onclick="addLockers(6)">➕ הוסף 6 ארונות</button>
+                    <button class="tm-btn" onclick="sortByPosition()">↕️ מיין לפי עמדה</button>
+                </div>
+            </div>
+            <div class="lr" id="lockerRoom">
+                <div class="lr-ceil"><span class="lr-light" style="left:12%"></span><span class="lr-light" style="left:42%"></span><span class="lr-light" style="left:72%"></span></div>
+                <div class="lr-sign"><h2 id="lrTitle"></h2><p id="lrSub"></p></div>
+                <div class="lr-wall-stripe"></div>
+                <div class="lr-grid" id="lockerGrid"></div>
+                <div class="lr-floor"></div>
+                <div class="lr-foot"><span id="lrCount"></span><span>🟦 התקפה &nbsp; 🟥 הגנה &nbsp; 🟩 יחידות מיוחדות &nbsp; ⬜ אחר</span></div>
+            </div>
+        </section>
+
+        <section id="team-dyn" class="hidden"></section>
+        <section id="team-roster" class="hidden"></section>
+        <section id="team-prac" class="hidden"></section>
+    </main>
+
+    <div class="tm-modal" id="pmodal" onclick="if(event.target===this)closePlayer()"><div class="tm-card" id="pcard"></div></div>
+
+    <script src="training-data.js"></script>
+    <script src="avatars.js"></script>
+    <script src="practices.js"></script>
+    <script>
+'use strict';
+// ============================================================================
+// Data: qbmc_team_roster = { v:1, name, color, lockers, players:[ {id, slot, name, pos, num, me, avatar, details, points:[{t,k}], actions:[{t,done}],
+//        social:{ role, style, chem, friends:[id], tensions:[id], notes } } ] }
+// ============================================================================
+const ROSTER_KEY = 'qbmc_team_roster';
+const POS = [
+    ['QB', 'קוורטרבק', 'off'], ['RB', 'ראנינג בק', 'off'], ['WR', 'רסיבר', 'off'], ['TE', 'טייט אנד', 'off'], ['OL', 'קו התקפה', 'off'],
+    ['DL', 'קו הגנה', 'def'], ['LB', 'ליינבקר', 'def'], ['CB', 'קורנרבק', 'def'], ['S', 'סייפטי', 'def'],
+    ['K', 'בועט', 'st'], ['P', 'פאנטר', 'st'], ['ST', 'יחידות מיוחדות', 'st'], ['OTH', 'אחר', 'oth']
+];
+const POS_MAP = Object.fromEntries(POS.map(p => [p[0], { he: p[1], unit: p[2] }]));
+const UNIT = { off: { c: '#2563eb', he: 'התקפה' }, def: { c: '#dc2626', he: 'הגנה' }, st: { c: '#16a34a', he: 'יחידות מיוחדות' }, oth: { c: '#64748b', he: 'אחר' } };
+const ROLES = { '': '—', captain: 'קפטן', leader: 'מנהיג בשטח', mentor: 'מנטור לצעירים', vocal: 'קולני / מלהיב', quiet: 'שקט ועובד', joker: 'מצחיק הקבוצה', newcomer: 'חדש בקבוצה', veteran: 'ותיק' };
+const STYLES = { '': '—', direct: 'מעדיף ישירות וקצר', encourage: 'צריך עידוד', data: 'מגיב לנתונים והסברים', space: 'צריך מרחב', competitive: 'מתחרה, אוהב אתגר' };
+const MAX_PLAYERS = 120;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function cleanPlayer(p, i) {
+    const o = p && typeof p === 'object' ? p : {};
+    const arr = a => Array.isArray(a) ? a : [];
+    const sc = o.social && typeof o.social === 'object' ? o.social : {};
+    return {
+        id: typeof o.id === 'string' && o.id ? o.id.slice(0, 40) : uid(), slot: Number.isInteger(o.slot) && o.slot >= 0 ? o.slot : i,
+        name: String(o.name || '').slice(0, 40), pos: POS_MAP[o.pos] ? o.pos : 'OTH', num: String(o.num == null ? '' : o.num).replace(/[^0-9A-Za-z]/g, '').slice(0, 3), me: o.me === true,
+        avatar: QBAvatar.sanitizeAvatar(o.avatar), details: String(o.details || '').slice(0, 1500),
+        points: arr(o.points).map(x => ({ t: String(x && x.t || '').slice(0, 200), k: ['plus', 'minus', 'note'].includes(x && x.k) ? x.k : 'note' })).filter(x => x.t).slice(0, 40),
+        actions: arr(o.actions).map(x => ({ t: String(x && x.t || '').slice(0, 200), done: !!(x && x.done) })).filter(x => x.t).slice(0, 40),
+        social: { role: ROLES[sc.role] !== undefined ? sc.role : '', style: STYLES[sc.style] !== undefined ? sc.style : '', chem: Math.max(0, Math.min(5, Math.round(Number(sc.chem)) || 0)),
+                  friends: arr(sc.friends).map(String).slice(0, MAX_PLAYERS), tensions: arr(sc.tensions).map(String).slice(0, MAX_PLAYERS), notes: String(sc.notes || '').slice(0, 1000) }
+    };
+}
+let R = { v: 1, name: '', color: '#1d4ed8', lockers: 24, players: [] };
+function loadRoster() {
+    let r = null; try { r = JSON.parse(localStorage.getItem(ROSTER_KEY)); } catch (e) {}
+    r = r && typeof r === 'object' && !Array.isArray(r) ? r : {};
+    const players = (Array.isArray(r.players) ? r.players : []).filter(p => p && typeof p === 'object').slice(0, MAX_PLAYERS).map(cleanPlayer);
+    // unique ids / slots
+    const ids = new Set(), slots = new Set();
+    players.forEach(p => { while (ids.has(p.id)) p.id = uid(); ids.add(p.id); });
+    players.forEach(p => { while (slots.has(p.slot)) p.slot++; slots.add(p.slot); });
+    // friends / tensions may only point at players that exist
+    players.forEach(p => { p.social.friends = p.social.friends.filter(x => ids.has(x) && x !== p.id); p.social.tensions = p.social.tensions.filter(x => ids.has(x) && x !== p.id); });
+    let me = false; players.forEach(p => { if (p.me) { if (me) p.me = false; me = true; } });
+    const maxSlot = players.reduce((n, p) => Math.max(n, p.slot + 1), 0);
+    R = { v: 1, name: String(r.name || '').slice(0, 40), color: /^#[0-9a-f]{6}$/i.test(r.color || '') ? r.color : '#1d4ed8', lockers: Math.max(12, Math.min(150, Math.max(Math.round(Number(r.lockers)) || 24, maxSlot))), players };
+}
+function saveRoster() { try { localStorage.setItem(ROSTER_KEY, JSON.stringify(R)); return true; } catch (e) { alert('השמירה נכשלה: האחסון בדפדפן מלא. נסה להקטין תמונות או למחוק נתונים לא בשימוש.'); return false; } }
+const byId = id => R.players.find(p => p.id === id);
+const unitOf = p => (POS_MAP[p.pos] || POS_MAP.OTH).unit;
+
+// ============================================================================
+// Locker room
+// ============================================================================
+function teamLogoUrl(name) {
+    try { const logos = JSON.parse(localStorage.getItem('qbmc_team_logos')) || {}; const n = String(name).trim().toLowerCase(); const k = Object.keys(logos).find(x => x.trim().toLowerCase() === n); const v = k ? logos[k] : ''; return /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(v || '') ? v : ''; } catch (e) { return ''; }
+}
+function defaultTeamName() { try { const s = JSON.parse(localStorage.getItem('qbmc_player_team_status')) || {}; return String(s.team || '').slice(0, 40); } catch (e) { return ''; } }
+function renderRoom() {
+    const room = document.getElementById('lockerRoom'); room.style.setProperty('--team', R.color);
+    const name = R.name || defaultTeamName();
+    const logo = name ? teamLogoUrl(name) : '';
+    document.getElementById('lrTitle').innerHTML = `${logo ? `<img src="${logo}" alt="" style="height:30px;width:30px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-left:10px">` : ''}${esc(name || 'חדר ההלבשה שלנו')}`;
+    const filled = R.players.length;
+    document.getElementById('lrSub').innerText = filled ? `${filled} שחקנים בסגל` : 'עדיין אין שחקנים. לחץ על ארון ריק כדי להתחיל';
+    document.getElementById('lrCount').innerText = `${filled} שחקנים • ${R.lockers} ארונות`;
+    document.getElementById('teamName').value = R.name; document.getElementById('teamColor').value = R.color;
+    const bySlot = new Map(R.players.map(p => [p.slot, p]));
+    let html = '';
+    for (let s = 0; s < R.lockers; s++) {
+        const p = bySlot.get(s);
+        if (!p) { html += `<div class="lk lk-empty" data-slot="${s}" ondragover="lkOver(event,this)" ondragleave="this.classList.remove('lk-over')" ondrop="lkDrop(event,${s})" onclick="openNew(${s})"><div class="lk-body"><div class="lk-vents"></div><div class="lk-inside"></div><div class="lk-add">＋<small>ארון פנוי</small></div></div><div class="lk-bench"></div></div>`; continue; }
+        const u = UNIT[unitOf(p)];
+        html += `<div class="lk${p.me ? ' lk-me' : ''}" data-slot="${s}" draggable="true" ondragstart="lkStart(event,${s})" ondragend="this.classList.remove('lk-drag')" ondragover="lkOver(event,this)" ondragleave="this.classList.remove('lk-over')" ondrop="lkDrop(event,${s})" onclick="openPlayer('${esc(p.id)}')" title="${esc(p.name)}">
+            <div class="lk-body"><div class="lk-vents"></div><div class="lk-inside"><div class="lk-shelf"></div><div class="lk-hook"></div></div>
+                <div class="lk-av"><div>${QBAvatar.html(p.avatar, { number: p.num })}</div></div></div>
+            ${p.num ? `<div class="lk-num" style="border-color:${u.c}">${esc(p.num)}</div>` : ''}
+            <div class="lk-pos" style="background:${u.c}">${esc(p.pos)}</div>
+            <div class="lk-plate">${esc(p.name || 'ללא שם')}</div><div class="lk-bench"></div></div>`;
+    }
+    document.getElementById('lockerGrid').innerHTML = html;
+}
+function onTeamMeta() { R.name = document.getElementById('teamName').value.slice(0, 40); R.color = document.getElementById('teamColor').value; saveRoster(); renderRoom(); }
+function addLockers(n) { R.lockers = Math.min(150, R.lockers + n); saveRoster(); renderRoom(); }
+function sortByPosition() {
+    const order = POS.map(p => p[0]);
+    const sorted = R.players.slice().sort((a, b) => order.indexOf(a.pos) - order.indexOf(b.pos) || (Number(a.num) || 999) - (Number(b.num) || 999) || a.name.localeCompare(b.name, 'he'));
+    sorted.forEach((p, i) => { p.slot = i; }); R.lockers = Math.max(R.lockers, sorted.length);
+    saveRoster(); renderAll();
+}
+let dragSlot = null;
+function lkStart(e, s) { dragSlot = s; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(s)); } catch (x) {} e.currentTarget.classList.add('lk-drag'); }
+function lkOver(e, el) { if (dragSlot === null) return; e.preventDefault(); el.classList.add('lk-over'); }
+function lkDrop(e, to) {
+    e.preventDefault(); document.querySelectorAll('.lk-over').forEach(x => x.classList.remove('lk-over'));
+    const from = dragSlot; dragSlot = null;
+    if (from === null || from === to) return;
+    const a = R.players.find(p => p.slot === from), b = R.players.find(p => p.slot === to);
+    if (!a) return;
+    if (b) b.slot = from; a.slot = to;   // dropping on an occupied locker swaps the two players
+    saveRoster(); renderAll();
+}
+
+// ============================================================================
+// Player card (modal)
+// ============================================================================
+let editing = null, editorApi = null, curTab = 'info', isNew = false;
+function openNew(slot) {
+    if (R.players.length >= MAX_PLAYERS) { alert('הגעת למספר השחקנים המרבי.'); return; }
+    editing = cleanPlayer({ id: uid(), slot, name: '', pos: 'WR', avatar: { mode: 'face', face: QBAvatar.randomFace('player') } }, slot);
+    isNew = true; curTab = 'info'; drawPlayer();
+}
+function openPlayer(id) { const p = byId(id); if (!p) return; editing = JSON.parse(JSON.stringify(p)); isNew = false; curTab = 'info'; drawPlayer(); }
+function closePlayer() { document.getElementById('pmodal').classList.remove('open'); editing = null; editorApi = null; }
+function pullInfo() {
+    const g = id => document.getElementById(id); if (!g('f_name')) return;
+    editing.name = g('f_name').value.slice(0, 40); editing.pos = g('f_pos').value; editing.num = g('f_num').value.replace(/[^0-9A-Za-z]/g, '').slice(0, 3);
+    editing.me = g('f_me').checked; editing.details = g('f_details').value.slice(0, 1500);
+}
+function pullSocial() {
+    const g = id => document.getElementById(id); if (!g('s_role')) return;
+    editing.social.role = g('s_role').value; editing.social.style = g('s_style').value; editing.social.notes = g('s_notes').value.slice(0, 1000);
+}
+function setTab(t) { if (curTab === 'info') pullInfo(); if (curTab === 'social') pullSocial(); curTab = t; drawPlayer(); }
+function drawPlayer() {
+    const p = editing, u = UNIT[unitOf(p)];
+    const tabs = [['info', '👤 פרטים'], ['pts', '📌 נקודות ועצות'], ['social', '🤝 דינמיקה חברתית'], ['look', '🎨 מראה']];
+    let body = '';
+    if (curTab === 'info') {
+        body = `<div class="tm-grid"><label>שם השחקן<input type="text" id="f_name" value="${esc(p.name)}" maxlength="40"></label>
+            <label>עמדה<select id="f_pos">${POS.map(x => `<option value="${x[0]}"${p.pos === x[0] ? ' selected' : ''}>${x[0]} • ${x[1]}</option>`).join('')}</select></label>
+            <label>מספר חולצה<input type="text" id="f_num" value="${esc(p.num)}" maxlength="3"></label></div>
+            <label style="display:flex;gap:6px;align-items:center;color:#e2e8f0"><input type="checkbox" id="f_me"${p.me ? ' checked' : ''}> זה אני (יסומן בכוכב בחדר)</label>
+            <label>פרטים כלליים<textarea id="f_details" rows="5" maxlength="1500" placeholder="רקע, גיל, שנות ניסיון, מצב כושר, מה חשוב לדעת עליו…">${esc(p.details)}</textarea></label>`;
+    } else if (curTab === 'pts') {
+        const kinds = { plus: ['➕', '#4ade80'], minus: ['➖', '#f87171'], note: ['📝', '#93c5fd'] };
+        body = `<div class="font-bold text-slate-200 mb-1" style="margin-bottom:4px">נקודות (חוזקות, חולשות והערות)</div>
+            ${p.points.map((x, i) => `<div class="tm-li"><span class="k" style="color:${kinds[x.k][1]}">${kinds[x.k][0]}</span><span style="flex:1">${esc(x.t)}</span><button class="tm-btn" onclick="rmPoint(${i})">✕</button></div>`).join('') || '<div style="color:#64748b;margin-bottom:6px">עדיין אין נקודות</div>'}
+            <div style="display:flex;gap:6px;margin:6px 0 14px"><select id="np_k" class="tm-btn" style="width:auto"><option value="plus">➕ חוזקה</option><option value="minus">➖ חולשה</option><option value="note">📝 הערה</option></select><input type="text" id="np_t" maxlength="200" placeholder="הוסף נקודה…" style="margin:0" onkeydown="if(event.key==='Enter')addPoint()"><button class="tm-btn" onclick="addPoint()">הוסף</button></div>
+            <div class="font-bold text-slate-200" style="margin-bottom:4px">✅ עצות לפעולה (מה כדאי לעשות איתו / בשבילו)</div>
+            ${p.actions.map((x, i) => `<div class="tm-li"><input type="checkbox" ${x.done ? 'checked' : ''} onchange="toggleAction(${i},this.checked)"><span style="flex:1;${x.done ? 'text-decoration:line-through;color:#64748b' : ''}">${esc(x.t)}</span><button class="tm-btn" onclick="rmAction(${i})">✕</button></div>`).join('') || '<div style="color:#64748b;margin-bottom:6px">עדיין אין עצות</div>'}
+            <div style="display:flex;gap:6px;margin-top:6px"><input type="text" id="na_t" maxlength="200" placeholder="למשל: לתרגל איתו Slant אחרי האימון…" style="margin:0" onkeydown="if(event.key==='Enter')addAction()"><button class="tm-btn" onclick="addAction()">הוסף</button></div>`;
+    } else if (curTab === 'social') {
+        const others = R.players.filter(x => x.id !== p.id);
+        const chips = (key, cls) => others.length ? `<div class="tm-chips">${others.map(o => `<span class="tm-chip ${p.social[key].includes(o.id) ? cls : ''}" onclick="toggleRel('${key}','${esc(o.id)}')">${esc(o.name || 'ללא שם')} <small style="color:#94a3b8">${esc(o.pos)}</small></span>`).join('')}</div>` : '<div style="color:#64748b">הוסף עוד שחקנים כדי לסמן קשרים.</div>';
+        body = `<div class="tm-grid"><label>תפקיד חברתי בקבוצה<select id="s_role">${Object.entries(ROLES).map(([k, v]) => `<option value="${k}"${p.social.role === k ? ' selected' : ''}>${v}</option>`).join('')}</select></label>
+            <label>איך הכי נכון לתקשר איתו<select id="s_style">${Object.entries(STYLES).map(([k, v]) => `<option value="${k}"${p.social.style === k ? ' selected' : ''}>${v}</option>`).join('')}</select></label></div>
+            <div style="margin-bottom:8px"><div style="color:#94a3b8">כימיה איתי (הקשר המקצועי והאישי)</div><div>${[1, 2, 3, 4, 5].map(n => `<button class="star${p.social.chem >= n ? ' on' : ''}" onclick="setChem(${n === p.social.chem ? 0 : n})">★</button>`).join('')}</div></div>
+            <div style="margin-bottom:8px"><div style="color:#4ade80;font-weight:700">💚 חברים קרובים (לחץ לסימון)</div>${chips('friends', 'f-on')}</div>
+            <div style="margin-bottom:8px"><div style="color:#f87171;font-weight:700">⚡ מתחים או חיכוכים (לחץ לסימון)</div>${chips('tensions', 't-on')}</div>
+            <label>הערות על הדינמיקה<textarea id="s_notes" rows="3" maxlength="1000" placeholder="עם מי הוא מתיישב, מי משפיע עליו, אירועים שחשוב לזכור…">${esc(p.social.notes)}</textarea></label>`;
+    } else {
+        body = '<div id="avEditor"></div>';
+    }
+    document.getElementById('pcard').innerHTML = `
+        <div class="tm-head"><div class="av">${QBAvatar.html(p.avatar, { number: p.num })}</div>
+            <div style="flex:1;min-width:0"><div style="font-size:19px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis">${esc(p.name || (isNew ? 'שחקן חדש' : 'ללא שם'))}</div>
+            <div style="margin-top:3px"><span class="pill" style="background:${u.c}">${esc(p.pos)} • ${esc(POS_MAP[p.pos].he)}</span> ${p.num ? `<span class="pill" style="background:#334155">#${esc(p.num)}</span>` : ''} ${p.me ? '<span class="pill" style="background:#ca8a04">⭐ אני</span>' : ''}</div></div>
+            <button class="tm-btn" onclick="closePlayer()">✕</button></div>
+        <div class="tm-tabs">${tabs.map(t => `<button class="tm-tab${curTab === t[0] ? ' on' : ''}" onclick="setTab('${t[0]}')">${t[1]}</button>`).join('')}</div>
+        <div class="tm-body">${body}
+            <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="tm-btn pri" onclick="savePlayer()">💾 ${isNew ? 'הוסף לחדר' : 'שמור'}</button>${isNew ? '' : '<button class="tm-btn red" onclick="deletePlayer()">🗑️ מחק שחקן</button>'}<button class="tm-btn" onclick="closePlayer()">סגור</button></div></div>`;
+    document.getElementById('pmodal').classList.add('open');
+    if (curTab === 'look') editorApi = QBAvatar.editor(document.getElementById('avEditor'), editing.avatar, v => { editing.avatar = v; document.querySelector('.tm-head .av').innerHTML = QBAvatar.html(v, { number: editing.num }); }, { role: 'player', number: () => editing.num });
+}
+function addPoint() { pullAll(); const t = document.getElementById('np_t').value.trim().slice(0, 200); if (!t) return; editing.points.push({ t, k: document.getElementById('np_k').value }); drawPlayer(); }
+function rmPoint(i) { pullAll(); editing.points.splice(i, 1); drawPlayer(); }
+function addAction() { pullAll(); const t = document.getElementById('na_t').value.trim().slice(0, 200); if (!t) return; editing.actions.push({ t, done: false }); drawPlayer(); }
+function rmAction(i) { pullAll(); editing.actions.splice(i, 1); drawPlayer(); }
+function toggleAction(i, v) { pullAll(); editing.actions[i].done = !!v; drawPlayer(); }
+function setChem(n) { pullAll(); editing.social.chem = n; drawPlayer(); }
+function toggleRel(key, id) {
+    pullAll(); const a = editing.social[key], other = key === 'friends' ? 'tensions' : 'friends', i = a.indexOf(id);
+    if (i >= 0) a.splice(i, 1); else { a.push(id); const j = editing.social[other].indexOf(id); if (j >= 0) editing.social[other].splice(j, 1); }   // a teammate is a friend OR a tension, not both
+    drawPlayer();
+}
+function pullAll() { if (curTab === 'info') pullInfo(); if (curTab === 'social') pullSocial(); }
+function savePlayer() {
+    pullAll();
+    if (!editing.name.trim()) { alert('נא להזין שם לשחקן.'); curTab = 'info'; drawPlayer(); return; }
+    const p = cleanPlayer(editing, editing.slot);
+    if (p.me) R.players.forEach(x => { x.me = false; });
+    const i = R.players.findIndex(x => x.id === p.id);
+    if (i >= 0) R.players[i] = p; else R.players.push(p);
+    // relations are kept symmetric: if A lists B as a friend / tension, B lists A too
+    R.players.forEach(o => {
+        if (o.id === p.id) return;
+        ['friends', 'tensions'].forEach(key => {
+            const other = key === 'friends' ? 'tensions' : 'friends', has = p.social[key].includes(o.id), at = o.social[key].indexOf(p.id);
+            if (has && at < 0) { o.social[key].push(p.id); const j = o.social[other].indexOf(p.id); if (j >= 0) o.social[other].splice(j, 1); }
+            if (!has && at >= 0 && !p.social[other].includes(o.id)) o.social[key].splice(at, 1);
+        });
+    });
+    if (!saveRoster()) return;
+    closePlayer(); renderAll();
+}
+function deletePlayer() {
+    if (!confirm('למחוק את השחקן מהסגל? הפעולה אינה הפיכה.')) return;
+    const id = editing.id;
+    R.players = R.players.filter(x => x.id !== id);
+    R.players.forEach(o => { o.social.friends = o.social.friends.filter(x => x !== id); o.social.tensions = o.social.tensions.filter(x => x !== id); });
+    saveRoster(); closePlayer(); renderAll();
+}
+
+// ============================================================================
+// Social dynamics (network) + insights
+// ============================================================================
+function edges() {
+    const seen = new Set(), out = [];
+    R.players.forEach(p => {
+        [['friends', 'friend'], ['tensions', 'tension']].forEach(([key, type]) => p.social[key].forEach(id => {
+            const k = [p.id, id].sort().join('|') + type; if (seen.has(k) || !byId(id)) return; seen.add(k); out.push({ a: p.id, b: id, type });
+        }));
+    });
+    return out;
+}
+function renderDynamics() {
+    const el = document.getElementById('team-dyn'), ps = R.players;
+    if (ps.length < 2) { el.innerHTML = '<div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 text-center text-slate-400 text-sm">הוסף לפחות שני שחקנים בחדר ההלבשה, וסמן בכרטיס של כל אחד חברים ומתחים. הרשת תופיע כאן.</div>'; return; }
+    const E = edges(), W = 760, H = 520, cx = W / 2, cy = H / 2, rx = W / 2 - 70, ry = H / 2 - 60;
+    const deg = {}; ps.forEach(p => { deg[p.id] = { f: 0, t: 0 }; });
+    E.forEach(e => { deg[e.a][e.type === 'friend' ? 'f' : 't']++; deg[e.b][e.type === 'friend' ? 'f' : 't']++; });
+    const order = ps.slice().sort((a, b) => ['off', 'def', 'st', 'oth'].indexOf(unitOf(a)) - ['off', 'def', 'st', 'oth'].indexOf(unitOf(b)));
+    const pos = {}; order.forEach((p, i) => { const ang = -Math.PI / 2 + i * 2 * Math.PI / order.length; pos[p.id] = { x: cx + rx * Math.cos(ang), y: cy + ry * Math.sin(ang) }; });
+    const lines = E.map(e => { const A = pos[e.a], B = pos[e.b]; return e.type === 'friend' ? `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="#4ade80" stroke-width="2.4" opacity=".75"/>` : `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="#f87171" stroke-width="2.4" stroke-dasharray="7 5" opacity=".9"/>`; }).join('');
+    const nodes = order.map(p => {
+        const q = pos[p.id], u = UNIT[unitOf(p)], n = deg[p.id].f + deg[p.id].t, r = 20 + Math.min(10, n * 2), lead = ['captain', 'leader'].includes(p.social.role);
+        return `<g style="cursor:pointer" onclick="openPlayer('${esc(p.id)}')"><title>${esc(p.name)}</title>
+            ${lead ? `<circle cx="${q.x}" cy="${q.y}" r="${r + 7}" fill="none" stroke="#facc15" stroke-width="3"/>` : ''}
+            <clipPath id="c${esc(p.id)}"><circle cx="${q.x}" cy="${q.y}" r="${r}"/></clipPath>
+            <circle cx="${q.x}" cy="${q.y}" r="${r + 2}" fill="${u.c}"/>
+            <g clip-path="url(#c${esc(p.id)})"><svg x="${q.x - r}" y="${q.y - r}" width="${r * 2}" height="${r * 2}" viewBox="0 0 200 200" overflow="hidden">${p.avatar.mode === 'photo' ? `<image href="${p.avatar.photo}" width="200" height="200" preserveAspectRatio="xMidYMid slice"/>` : QBAvatar.svg(p.avatar.face).replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '')}</svg></g>
+            <text x="${q.x}" y="${q.y + r + 15}" text-anchor="middle" font-size="12" font-weight="700" fill="#e2e8f0" font-family="Rubik, Arial">${esc(p.name || '?').slice(0, 14)}</text></g>`;
+    }).join('');
+    // Rule-based reading of the data the user entered (no AI, nothing sent anywhere).
+    const iso = ps.filter(p => deg[p.id].f + deg[p.id].t === 0), hubs = ps.slice().sort((a, b) => deg[b.id].f - deg[a.id].f).filter(p => deg[p.id].f >= 2).slice(0, 3);
+    const tens = E.filter(e => e.type === 'tension'), leaders = ps.filter(p => ['captain', 'leader'].includes(p.social.role));
+    const lowChem = ps.filter(p => p.social.chem > 0 && p.social.chem <= 2), unrated = ps.filter(p => !p.social.chem && !p.me);
+    const ins = [];
+    if (hubs.length) ins.push(['🌟', `מרכזי חברה: ${hubs.map(p => `<b>${esc(p.name)}</b> (${deg[p.id].f} חברים)`).join(', ')}. שחקנים שיכולים להעביר מסרים לשאר הקבוצה.`]);
+    if (iso.length) ins.push(['🧍', `בלי קשרים מתועדים: ${iso.map(p => `<b>${esc(p.name)}</b>`).join(', ')}. כדאי לבדוק אם הוא מבודד באמת או שפשוט לא עדכנת, ולשקול לשבץ אותו בזוג אימון עם שחקן מחובר.`]);
+    if (tens.length) ins.push(['⚡', `${tens.length} חיכוכים מסומנים: ${tens.slice(0, 4).map(e => `${esc(byId(e.a).name)}↔${esc(byId(e.b).name)}`).join(', ')}. כדאי להימנע מלשבץ אותם יחד במשימות תלויות (למשל בלוק שמגן על ה-QB) עד שהמתח נפתר.`]);
+    if (!leaders.length) ins.push(['👑', 'לא סומן אף קפטן או מנהיג בשטח. אם יש כזה, סמן בכרטיס שלו (תפקיד חברתי).']);
+    if (lowChem.length) ins.push(['📉', `כימיה נמוכה איתך: ${lowChem.map(p => `<b>${esc(p.name)}</b>`).join(', ')}. שווה שיחה אישית, או לבנות איתם אמון דרך תרגילים משותפים.`]);
+    if (unrated.length && ps.length > 2) ins.push(['❔', `לא דורגה כימיה עבור ${unrated.length} שחקנים.`]);
+    const openActions = ps.reduce((n, p) => n + p.actions.filter(a => !a.done).length, 0);
+    if (openActions) ins.push(['✅', `${openActions} עצות לפעולה פתוחות בסגל.`]);
+    el.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2"><svg class="dyn-svg" viewBox="0 0 ${W} ${H}">${lines}${nodes}</svg>
+            <div class="flex flex-wrap gap-4 text-[11px] text-slate-400 mt-2"><span><span style="color:#4ade80">━━</span> חברות</span><span><span style="color:#f87171">╍╍</span> מתח</span><span><span style="color:#facc15">◯</span> קפטן או מנהיג</span><span>גודל העיגול = כמה קשרים רשומים. צבע המסגרת = יחידה.</span></div></div>
+        <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-4"><h3 class="font-bold text-white text-sm mb-3">🔎 מה הנתונים אומרים</h3>
+            ${ins.length ? `<ul class="space-y-2.5 text-xs text-slate-300 leading-relaxed">${ins.map(i => `<li>${i[0]} ${i[1]}</li>`).join('')}</ul>` : '<p class="text-xs text-slate-400">אין עדיין מה להסיק: סמן חברים ומתחים בכרטיסי השחקנים.</p>'}
+            <p class="text-[10px] text-slate-500 mt-4 leading-relaxed">הניתוח מבוסס רק על מה שהזנת. אלה הערכות שלך על אנשים אחרים ולא עובדות, ושמורות רק בדפדפן הזה. ההצעות הן כללי אצבע ולא תחליף לשיחה עם השחקנים.</p></div></div>`;
+}
+
+// ============================================================================
+// Roster table + practices tab
+// ============================================================================
+function renderRoster() {
+    const el = document.getElementById('team-roster'), ps = R.players.slice().sort((a, b) => ['off', 'def', 'st', 'oth'].indexOf(unitOf(a)) - ['off', 'def', 'st', 'oth'].indexOf(unitOf(b)) || a.pos.localeCompare(b.pos) || (Number(a.num) || 999) - (Number(b.num) || 999));
+    if (!ps.length) { el.innerHTML = '<div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 text-center text-slate-400 text-sm">הסגל ריק. הוסף שחקנים בחדר ההלבשה.</div>'; return; }
+    el.innerHTML = `<div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-4 overflow-x-auto"><table class="tbl"><thead><tr><th></th><th>#</th><th>שם</th><th>עמדה</th><th>יחידה</th><th>תפקיד חברתי</th><th>כימיה איתי</th><th>עצות פתוחות</th></tr></thead><tbody>
+        ${ps.map(p => { const u = UNIT[unitOf(p)]; return `<tr class="row" onclick="openPlayer('${esc(p.id)}')"><td style="width:42px"><div style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:#1e293b">${QBAvatar.html(p.avatar, { number: p.num })}</div></td><td>${esc(p.num) || '—'}</td><td style="font-weight:700">${esc(p.name)}${p.me ? ' ⭐' : ''}</td><td>${esc(p.pos)}</td><td><span class="pill" style="background:${u.c}">${u.he}</span></td><td>${esc(ROLES[p.social.role] || '—')}</td><td style="color:#facc15">${p.social.chem ? '★'.repeat(p.social.chem) : '—'}</td><td>${p.actions.filter(a => !a.done).length || '—'}</td></tr>`; }).join('')}
+        </tbody></table></div>`;
+}
+function renderPractices() {
+    const el = document.getElementById('team-prac');
+    const list = QBPractice.list().slice().sort((a, b) => b.date.localeCompare(a.date));
+    const today = QB_TRAINING.localDateStr();
+    el.innerHTML = `<div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-4 md:p-6">
+        <div class="flex flex-wrap items-end justify-between gap-3 mb-4"><h3 class="font-bold text-white">🏋️ אימוני קבוצה</h3>
+            <div class="flex items-end gap-2 no-print"><label class="text-xs text-slate-400">תאריך<input type="date" id="prDate" value="${today}" class="block mt-1 bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-xs"></label><button class="tm-btn pri" onclick="newPractice()">➕ הוסף אימון</button><a href="calendar.html" class="tm-btn">📅 ללוח השנה</a></div></div>
+        <div id="prForm" class="mb-4"></div>
+        ${list.length ? `<div class="space-y-2">${list.map(p => `<div><div class="flex items-center justify-between text-[11px] text-slate-400 mb-1"><span dir="ltr">${esc(p.date)}${p.date > today ? ' • מתוכנן' : ''}</span><span class="no-print"><button class="tm-btn" onclick="editPractice('${esc(p.id)}')">✏️ ערוך</button> <button class="tm-btn red" onclick="deletePractice('${esc(p.id)}')">🗑️</button></span></div>${QBPractice.summaryHtml(p)}</div>`).join('')}</div>` : '<p class="text-sm text-slate-400">עדיין אין אימוני קבוצה. הוסף אימון כאן או ישירות מלוח השנה, ובחר תרגילים מהספרייה או כתוב חופשי.</p>'}
+        <p class="text-[10px] text-slate-500 mt-4">אימוני קבוצה נספרים כיום פעיל בלוח השנה ובמסך "היום שלי".</p></div>`;
+}
+function newPractice() { const d = document.getElementById('prDate').value; if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) { alert('בחר תאריך.'); return; } QBPractice.renderForm(document.getElementById('prForm'), d, { onSaved: () => renderPractices() }); }
+function editPractice(id) { const p = QBPractice.list().find(x => x.id === id); if (!p) return; QBPractice.renderForm(document.getElementById('prForm'), p.date, { editId: id, onSaved: () => renderPractices(), onCancel: () => renderPractices() }); document.getElementById('prForm').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+function deletePractice(id) { if (confirm('למחוק את האימון?')) { QBPractice.remove(id); renderPractices(); } }
+
+function showTab(t) {
+    ['room', 'dyn', 'roster', 'prac'].forEach(x => { document.getElementById('team-' + x).classList.toggle('hidden', x !== t); });
+    document.querySelectorAll('#team-tabs .tm-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+    renderAll();
+}
+function renderAll() {
+    renderRoom();
+    if (!document.getElementById('team-dyn').classList.contains('hidden')) renderDynamics();
+    if (!document.getElementById('team-roster').classList.contains('hidden')) renderRoster();
+    if (!document.getElementById('team-prac').classList.contains('hidden')) renderPractices();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlayer(); });
+window.addEventListener('storage', e => { if (e.key === ROSTER_KEY || e.key === 'qbmc_team_practices') { loadRoster(); renderAll(); } });
+window.addEventListener('DOMContentLoaded', () => { loadRoster(); renderAll(); });
+    </script>
+</body>
+</html>

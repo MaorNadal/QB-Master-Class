@@ -434,9 +434,13 @@
         try { const v = JSON.parse(localStorage.getItem('qbmc_cal_' + ds)); return Array.isArray(v) ? v.filter(x => typeof x === 'string') : []; } catch (e) { return []; }
     }
     // ds -> { w: [{id, name}], d: [drillName] }, built once per render instead of re-parsing the logs for every day.
+    // Team practices (qbmc_team_practices, written by practices.js): [{id, date, title, focus, minutes, drills, notes, attendees}]
+    function loadPractices() {
+        try { const v = JSON.parse(localStorage.getItem('qbmc_team_practices')); return Array.isArray(v) ? v.filter(p => p && typeof p === 'object' && /^\d{4}-\d{2}-\d{2}$/.test(p.date || '')) : []; } catch (e) { return []; }
+    }
     function buildSpecificIndex() {
         const idx = {};
-        const slot = ds => (idx[ds] = idx[ds] || { w: [], d: [] });
+        const slot = ds => (idx[ds] = idx[ds] || { w: [], d: [], p: [] });
         Object.entries(loadWorkoutLog()).forEach(([id, e]) => {
             if (!e || !Array.isArray(e.dates)) return;
             const known = EX_BY_ID[id];
@@ -446,11 +450,13 @@
             if (!Array.isArray(dates)) return;
             dates.forEach(ds => { if (typeof ds === 'string') slot(ds).d.push(name); });
         });
+        loadPractices().forEach(pr => { slot(pr.date).p.push({ id: String(pr.id || ''), title: String(pr.title || 'אימון קבוצה') }); });
         return idx;
     }
+    // A team practice is training that happened, so it makes the day active and counts as one action.
     function dayActivity(ds, idx) {
-        const chips = chipsFor(ds), s = (idx && idx[ds]) || { w: [], d: [] };
-        return { ds, chips, workouts: s.w, drills: s.d, count: chips.length + s.w.length + s.d.length, active: chips.length > 0 || s.w.length > 0 || s.d.length > 0 };
+        const chips = chipsFor(ds), s = (idx && idx[ds]) || { w: [], d: [], p: [] }, pr = s.p || [];
+        return { ds, chips, workouts: s.w, drills: s.d, practices: pr, count: chips.length + s.w.length + s.d.length + pr.length, active: chips.length > 0 || s.w.length > 0 || s.d.length > 0 || pr.length > 0 };
     }
     function addDaysStr(ds, n) {
         const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ds);
@@ -488,7 +494,7 @@
     }
 
     window.QB_TRAINING = {
-        chipsFor, buildSpecificIndex, dayActivity, addDaysStr, currentStreak, longestStreak, firstActivityDate,
+        chipsFor, loadPractices, buildSpecificIndex, dayActivity, addDaysStr, currentStreak, longestStreak, firstActivityDate,
         getDrillAnalyses, latestDrillAnalysis, saveDrillAnalysis, isSafeUrl, getDrillLink, setDrillLink, drillYoutubeSearchUrl, gradeFor,
         DRILL_CATEGORY_META, DRILLS_DATABASE, WORKOUT_DAY_TITLES, WORKOUT_EXERCISES, EX_BY_ID,
         localDateStr, loadDrillLog, saveDrillLog, loadWorkoutLog, saveWorkoutLog,

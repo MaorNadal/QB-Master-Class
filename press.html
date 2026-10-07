@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>זירת העיתונות - QB Master Class</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@400;700;900&display=swap');
+        body { font-family: 'Rubik', sans-serif; background-color: #0f172a; color: #f8fafc; }
+
+        /* ================= Press-conference scene ================= */
+        .pr-scene { position: relative; min-height: 440px; border-radius: 22px; overflow: hidden; border: 3px solid #1e293b; box-shadow: 0 20px 60px #000a;
+                    background: linear-gradient(#0a1124 0, #0d1a36 56%, #1f150c 56%, #2d1d10 100%); }
+        .pr-wall { position: absolute; inset: 0 0 44% 0; background: repeating-linear-gradient(0deg, #ffffff0a 0 1px, transparent 1px 44px), repeating-linear-gradient(90deg, #ffffff0a 0 1px, transparent 1px 88px), linear-gradient(#0e1b38, #0a1226); }
+        .pr-spons { position: absolute; inset: 0 0 44% 0; display: flex; flex-wrap: wrap; align-content: space-around; justify-content: space-around; opacity: .22; padding: 8px 14px; pointer-events: none; }
+        .pr-spons span { font-weight: 900; font-size: 15px; letter-spacing: 2px; color: #cfe0ff; white-space: nowrap; transform: rotate(-4deg); }
+        .pr-banner { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 4; text-align: center; padding: 6px 30px; border-radius: 14px; border: 2px solid #ffffff44;
+                     background: linear-gradient(var(--team, #1d4ed8), #0a1226); box-shadow: 0 0 34px var(--team, #1d4ed8); }
+        .pr-banner b { display: block; font-size: clamp(18px, 3vw, 30px); font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 16px #fff6; }
+        .pr-banner small { color: #cbd5e1; font-size: 11px; }
+        .pr-live { position: absolute; top: 14px; right: 16px; z-index: 5; background: #dc2626; color: #fff; font-weight: 900; font-size: 11px; letter-spacing: 2px; padding: 3px 10px; border-radius: 6px; animation: prblink 1.4s infinite; }
+        @keyframes prblink { 50% { opacity: .45; } }
+        .pr-flash { position: absolute; z-index: 3; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, #fff 0, #fff0 62%); opacity: 0; animation: prflash 3.6s infinite; pointer-events: none; }
+        @keyframes prflash { 0%, 90%, 100% { opacity: 0; transform: scale(.6); } 93% { opacity: .85; transform: scale(1.1); } 96% { opacity: 0; } }
+        .pr-podium { position: absolute; left: 50%; bottom: 122px; transform: translateX(-50%); width: 200px; z-index: 2; text-align: center; }
+        .pr-player { width: 118px; height: 118px; margin: 0 auto -22px; position: relative; z-index: 1; filter: drop-shadow(0 8px 10px #000a); border-radius: 50%; overflow: hidden; background: #1e293b; border: 3px solid #475569; }
+        .pr-desk { position: relative; z-index: 3; height: 62px; border-radius: 10px 10px 4px 4px; background: linear-gradient(#5b3a1e, #3a2412); border: 2px solid #20130a; box-shadow: 0 10px 20px #000a, inset 0 3px 0 #8a5a30; }
+        .pr-desk::before { content: ''; position: absolute; top: -30px; left: 10%; width: 4px; height: 32px; background: #94a3b8; transform: rotate(-8deg); border-radius: 2px; }
+        .pr-desk::after { content: ''; position: absolute; top: -38px; left: calc(10% - 8px); width: 14px; height: 14px; background: radial-gradient(#1f2937, #020617); border-radius: 50%; border: 2px solid #94a3b8; }
+        .pr-desk .pn { position: absolute; bottom: 8px; left: 12%; right: 12%; padding: 2px 4px; border-radius: 4px; background: linear-gradient(#e9d28a, #b8923a); color: #2b1d00; font-size: 11px; font-weight: 800; border: 1px solid #6b5316; }
+        .pr-seats { position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: space-evenly; gap: 6px; padding: 0 10px; z-index: 5; flex-wrap: wrap; }
+        .pr-j { position: relative; width: 112px; text-align: center; transition: transform .25s; }
+        .pr-j .av { width: 82px; height: 82px; margin: 0 auto -14px; border-radius: 50%; overflow: hidden; background: #1e293b; border: 3px solid #475569; position: relative; z-index: 1; filter: drop-shadow(0 6px 6px #000a); }
+        .pr-j .tb { position: relative; z-index: 2; height: 34px; border-radius: 8px 8px 3px 3px; background: linear-gradient(#475569, #2b3648); border: 2px solid #1b2433; box-shadow: 0 6px 12px #000a; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #e2e8f0; padding: 0 4px; line-height: 1.1; }
+        .pr-j .tb small { display: block; font-weight: 500; color: #94a3b8; font-size: 9px; }
+        .pr-j .notepad { position: absolute; right: 8px; bottom: 36px; width: 22px; height: 28px; background: #f8fafc; border-radius: 2px; transform: rotate(10deg); z-index: 3; box-shadow: 0 2px 4px #0008; background-image: repeating-linear-gradient(#f8fafc 0 4px, #94a3b8 4px 5px); }
+        .pr-j.on { transform: translateY(-10px) scale(1.08); } .pr-j.on .av { border-color: #facc15; box-shadow: 0 0 0 4px #facc1555, 0 0 26px #facc15aa; } .pr-j.on .tb { border-color: #facc15; }
+        .pr-j.done .av { filter: grayscale(.7) drop-shadow(0 6px 6px #000a); opacity: .8; }
+        .pr-bubble { position: absolute; z-index: 6; top: 78px; left: 50%; transform: translateX(-50%); width: min(88%, 620px); background: #f8fafc; color: #0f172a; border-radius: 16px; padding: 10px 16px; font-size: 15px; font-weight: 600; line-height: 1.5; box-shadow: 0 10px 30px #000a; }
+        .pr-bubble::after { content: ''; position: absolute; bottom: -10px; right: 46%; border: 10px solid transparent; border-top-color: #f8fafc; border-bottom: 0; }
+        .pr-bubble .who { display: block; font-size: 11px; font-weight: 800; color: #b45309; margin-bottom: 2px; }
+        .pr-bubble.idle { background: #ffffff14; color: #cbd5e1; box-shadow: none; border: 1px dashed #64748b; font-weight: 500; }
+        .pr-bubble.idle::after { display: none; }
+
+        /* ================= panels ================= */
+        .pn-card { background: #1e293b80; border: 1px solid #334155; border-radius: 18px; padding: 16px; }
+        .pn-card label { display: block; color: #94a3b8; font-size: 12px; margin-bottom: 8px; }
+        .pn-card input[type=text], .pn-card select, .pn-card textarea, .pn-card input[type=number] { width: 100%; margin-top: 3px; background: #020617; border: 1px solid #475569; border-radius: 9px; padding: 8px 10px; color: #fff; font-size: 13px; font-family: inherit; }
+        .btn { background: #1e293b; border: 1px solid #475569; border-radius: 10px; padding: 8px 14px; color: #e2e8f0; cursor: pointer; font-size: 13px; font-weight: 700; }
+        .btn.pri { background: #0369a1; border-color: #38bdf8; color: #fff; } .btn.ok { background: #047857; border-color: #34d399; color: #fff; } .btn.red { background: #7f1d1d; border-color: #f87171; color: #fff; } .btn:disabled { opacity: .5; cursor: wait; }
+        .tabs { display: flex; gap: 6px; flex-wrap: wrap; } .tab { padding: 8px 16px; border-radius: 12px; background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-weight: 700; font-size: 13px; cursor: pointer; } .tab.on { background: #0369a1; border-color: #38bdf8; color: #fff; }
+        .dots { display: flex; gap: 6px; justify-content: center; margin: 4px 0 10px; } .dots i { width: 10px; height: 10px; border-radius: 50%; background: #334155; } .dots i.on { background: #facc15; } .dots i.dn { background: #34d399; }
+        .crew { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+        .crew .c { background: #0f172a; border: 1px solid #334155; border-radius: 16px; padding: 12px; text-align: center; cursor: pointer; } .crew .c:hover { border-color: #38bdf8; }
+        .crew .c .av { width: 84px; height: 84px; margin: 0 auto 8px; border-radius: 50%; overflow: hidden; background: #1e293b; border: 2px solid #475569; }
+        .modal { position: fixed; inset: 0; z-index: 80; background: #000b; display: none; align-items: center; justify-content: center; padding: 12px; } .modal.open { display: flex; }
+        .modal .card { background: #0f172a; border: 1px solid #334155; border-radius: 20px; width: 100%; max-width: 640px; max-height: 92vh; overflow-y: auto; padding: 18px; }
+        .arch { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 12px; margin-bottom: 6px; font-size: 12px; }
+
+        /* ================= newspaper ================= */
+        .paper { background: #f3ecd8; color: #1b1b1b; font-family: 'Frank Ruhl Libre', 'David Libre', Georgia, 'Times New Roman', serif; border: 1px solid #cdbf9b; box-shadow: 0 18px 50px #0009; padding: 22px 28px 18px; direction: rtl;
+                 background-image: radial-gradient(#00000008 1px, transparent 1px); background-size: 6px 6px; }
+        .paper-mast { text-align: center; border-bottom: 5px double #1b1b1b; padding-bottom: 6px; }
+        .paper-name { font-size: clamp(36px, 7vw, 72px); font-weight: 900; line-height: 1; letter-spacing: 1px; }
+        .paper-meta { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-top: 1px solid #1b1b1b; border-bottom: 2px solid #1b1b1b; font-size: 12px; padding: 3px 2px; margin-top: 8px; font-weight: 700; }
+        .paper-h1 { font-size: clamp(28px, 4.8vw, 52px); font-weight: 900; line-height: 1.08; margin: 14px 0 4px; }
+        .paper-h2 { font-size: 18px; color: #3d3d3d; font-weight: 700; margin-bottom: 10px; }
+        .paper-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 8px; } @media (max-width: 720px) { .paper-grid { grid-template-columns: 1fr; } }
+        .paper-photo { float: right; width: 150px; margin: 2px 0 8px 14px; border: 1px solid #1b1b1b; } .paper-photo .im { width: 100%; height: 150px; background: #cfc6ad; filter: grayscale(1) contrast(1.15); overflow: hidden; } .paper-photo figcaption { font-size: 10px; padding: 2px 4px; border-top: 1px solid #1b1b1b; }
+        .paper-lead { font-size: 15px; line-height: 1.65; text-align: justify; }
+        .paper-side { border-right: 1px solid #1b1b1b; padding-right: 16px; } @media (max-width: 720px) { .paper-side { border-right: 0; padding-right: 0; } }
+        .paper-quote { border-top: 3px solid #1b1b1b; border-bottom: 3px solid #1b1b1b; padding: 10px 2px; font-size: 20px; font-weight: 900; line-height: 1.3; margin-bottom: 14px; } .paper-quote small { display: block; font-size: 11px; font-weight: 700; margin-top: 4px; }
+        .paper-tick h4 { font-size: 13px; font-weight: 900; border-bottom: 1px solid #1b1b1b; margin-bottom: 4px; } .paper-tick li { font-size: 13px; line-height: 1.45; margin-bottom: 4px; list-style: square inside; }
+        .paper-arts { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0; margin-top: 14px; border-top: 3px solid #1b1b1b; }
+        .paper-art { padding: 10px 14px; border-left: 1px solid #1b1b1b; } .paper-art:last-child { border-left: 0; } .paper-art .k { font-size: 11px; font-weight: 900; color: #8a1c1c; } .paper-art h3 { font-size: 20px; font-weight: 900; line-height: 1.15; margin: 2px 0 6px; } .paper-art p { font-size: 13.5px; line-height: 1.6; } .paper-art .by { font-size: 11px; color: #555; margin-top: 4px; font-weight: 700; }
+        .paper-foot { margin-top: 12px; padding-top: 6px; border-top: 1px solid #1b1b1b; font-size: 10.5px; color: #555; text-align: center; }
+        #paperPrint { display: none; }
+        @media print { body.pp-active > *:not(#paperPrint) { display: none !important; } body.pp-active #paperPrint { display: block !important; } body.pp-active { background: #fff !important; } .paper { box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; } @page { size: A4; margin: 10mm; } }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+    <script src="nav.js"></script>
+
+    <header class="max-w-6xl mx-auto px-4 pt-8 pb-4 text-center">
+        <div class="inline-block px-4 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-300 text-sm font-semibold mb-3">🎙️ זירת העיתונות</div>
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">מסיבת עיתונאים</h1>
+        <p class="text-slate-300 max-w-3xl mx-auto text-sm md:text-base leading-relaxed">אימון תקשורת בטוח: עיתונאים בדיוניים שואלים, אתה עונה, ומתוך התשובות נולד העיתון היומי והשבועי. כך רואים איך המילים שלך נשמעות מבחוץ ואיך אפשר לפרש אותן.</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 space-y-6">
+        <div class="tabs no-print" id="pressTabs">
+            <button class="tab on" data-tab="room" onclick="showTab('room')">🎙️ מסיבת עיתונאים</button>
+            <button class="tab" data-tab="paper" onclick="showTab('paper')">📰 העיתון</button>
+            <button class="tab" data-tab="crew" onclick="showTab('crew')">🧑‍💼 הצוות העיתונאי</button>
+            <button class="tab" data-tab="archive" onclick="showTab('archive')">🗂️ ארכיון</button>
+        </div>
+
+        <section id="press-room">
+            <div class="pr-scene" id="prScene"></div>
+            <div class="pn-card mt-4" id="prPanel"></div>
+        </section>
+        <section id="press-paper" class="hidden"></section>
+        <section id="press-crew" class="hidden"></section>
+        <section id="press-archive" class="hidden"></section>
+    </main>
+
+    <div class="modal" id="jmodal" onclick="if(event.target===this)closeJ()"><div class="card" id="jcard"></div></div>
+    <div id="paperPrint"></div>
+
+    <script src="training-data.js"></script>
+    <script src="avatars.js"></script>
+    <script src="gemini-core.js"></script>
+    <script>
+'use strict';
+// ============================================================================
+// Storage: qbmc_press_cfg {paper, weekly, journalists:[{id,name,outlet,style,avatar}], playerAvatar},
+//          qbmc_press_archive [ {id, date, kind, note, mode, qa:[{jid, jname, outlet, q, a}], feedback, daily} ],
+//          qbmc_press_weekly  [ {id, date, from, to, ed} ]
+// ============================================================================
+const K_CFG = 'qbmc_press_cfg', K_ARCH = 'qbmc_press_archive', K_WEEK = 'qbmc_press_weekly';
+const STYLES = { friendly: 'חמה ותומכת', sharp: 'חדה ושואלת שאלות קשות', analyst: 'אנליטית ומבוססת נתונים', drama: 'אוהבת דרמה וכותרות', skeptic: 'ספקנית' };
+const STYLE_PROMPT = { friendly: 'חמה ותומכת: שואלת על התחושות, ההתרגשות והחברים לקבוצה', sharp: 'חדה: שואלת שאלות ישירות וקשות על טעויות, ביקורת ומה השתבש', analyst: 'אנליטית: שואלת על החלטות טקטיות, קריאות והיבטים מקצועיים', drama: 'אוהבת דרמה: מחפשת סיפור, מתח ויריבויות', skeptic: 'ספקנית: מטילה ספק ומבקשת הוכחות לטענות' };
+const KINDS = { win: 'אחרי ניצחון', loss: 'אחרי הפסד', pregame: 'לפני משחק חשוב', season: 'סיכום עונה', great: 'אחרי משחק אישי מצטיין', bad: 'אחרי משחק אישי חלש', general: 'שיחה כללית' };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const rd = (k, fb) => { try { const v = JSON.parse(localStorage.getItem(k)); return v === null || v === undefined ? fb : v; } catch (e) { return fb; } };
+function wr(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+const todayStr = () => QB_TRAINING.localDateStr();
+
+// ---------- question bank (used without AI, or if the AI fails) ----------
+const BANK = {
+    win: { friendly: ['איך מרגישים עכשיו אחרי הניצחון הזה?', 'למי בקבוצה אתה רוצה להגיד תודה אחרי המשחק?'], sharp: ['הניצחון היה צמוד. מה כמעט השתבש לכם?', 'אם היית צריך לבחור דבר אחד שלא עבד היום, מה זה היה?'], analyst: ['איזו החלטה או קריאה במשחק הכריעה לדעתך את התוצאה?', 'איך ההתאמות שעשיתם במחצית השפיעו על המשחק?'], drama: ['הייתה סערה על המגרש. מה עבר לך בראש ברגעים האחרונים?', 'האם הניצחון הזה משנה את התמונה בליגה?'] },
+    loss: { friendly: ['איך אתה מתמודד עם ההפסד הערב?', 'מה אתה אומר לחברים לקבוצה אחרי משחק כזה?'], sharp: ['הפסדתם. מי לדעתך צריך לקחת אחריות?', 'האם זה היה משחק שהייתם צריכים לנצח?'], analyst: ['איפה בדיוק נפל המשחק מבחינה טקטית?', 'איזו התאמה תעשו לקראת המשחק הבא?'], drama: ['האם ההפסד הזה פוגע בעונה שלכם?', 'יש תחושה של משבר בחדר ההלבשה?'] },
+    pregame: { friendly: ['איך מתכוננים נפשית למשחק כזה?', 'מה המסר שלך לקהל שיגיע לראות אתכם?'], sharp: ['היריבה נחשבת לפייבוריטית. למה שתצליחו הפעם?', 'מה החשש הגדול ביותר שלך לקראת המשחק?'], analyst: ['מהי נקודת החוזק של ההגנה היריבה, ואיך תתמודדו איתה?', 'איזה שינוי משמעותי עשיתם במשחק ההתקפה בשבוע האחרון?'], drama: ['זה משחק עם היסטוריה. מה זה אומר לך?', 'האם אתה מרגיש לחץ מיוחד לפני המשחק?'] },
+    season: { friendly: ['מה הרגע הכי מרגש שלך בעונה הזו?', 'איך השתנה הקשר שלך עם הקבוצה במהלך העונה?'], sharp: ['העונה לא הייתה מושלמת. מה היית משנה?', 'איזו טעות שלך השפיעה הכי הרבה על העונה?'], analyst: ['מה הדבר העיקרי שלמדת על המשחק שלך העונה?', 'איפה ראית את ההתקדמות הגדולה ביותר בנתונים ובקריאת המשחק?'], drama: ['איזה משחק יישאר איתך מהעונה הזו?', 'מה החלום שלך לעונה הבאה?'] },
+    great: { friendly: ['משחק מדהים. איך זה הרגיש?', 'מי עזר לך להגיע למשחק הזה?'], sharp: ['הייתה לך ערב מצוין. האם זה מקרי או שיש לזה המשכיות?', 'מה היית רוצה לשפר למרות ההצלחה?'], analyst: ['מה עבד אצלך במסירות הערב?', 'איך נראתה ההכנה שלך השבוע לפני המשחק הזה?'], drama: ['זה נראה כמו הרגע שלך. מה עבר לך בראש בפליי המכריע?', 'האם זה משחק שתזכור שנים?'] },
+    bad: { friendly: ['משחק קשה. איך אתה מרגיש?', 'מה עזר לך להמשיך להתרכז גם כשלא הלך?'], sharp: ['המשחק שלך היה חלש הערב. מה השתבש?', 'אתה מרגיש שאכזבת את הקבוצה?'], analyst: ['איפה זיהית את הטעויות העיקריות בקריאה או בביצוע?', 'מה תשנה בהכנה לשבוע הבא?'], drama: ['האם ערב כזה משפיע על הביטחון שלך?', 'איך אתה מגיב לביקורת אחרי משחק כזה?'] },
+    general: { friendly: ['מה גורם לך להמשיך ולהתאמן?', 'מי הכי השפיע עליך בדרך?'], sharp: ['מהי החולשה הגדולה ביותר שלך כקוורטרבק?', 'מה היית אומר למי שחושב שאתה לא מספיק טוב?'], analyst: ['איך אתה מתכונן לקריאת הגנות?', 'מה ההרגל הכי חשוב בשגרת האימונים שלך?'], drama: ['איפה אתה רואה את עצמך בעוד חמש שנים?', 'מה החלום הגדול שלך בפוטבול?'] }
+};
+const bankStyle = s => (BANK.win[s] ? s : (s === 'skeptic' ? 'sharp' : 'friendly'));
+
+// ============================================================================
+// Config + crew
+// ============================================================================
+let CFG = null;
+function defaultCrew() {
+    const base = [['נועה גרין', 'ספורט היום', 'friendly'], ['אבי דרור', 'המגרש', 'sharp'], ['מיכל שחר', 'נתוני ספורט', 'analyst'], ['רועי אלון', 'זירת הפוטבול', 'drama']];
+    return base.map(b => ({ id: uid(), name: b[0], outlet: b[1], style: b[2], avatar: { mode: 'face', face: QBAvatar.randomFace('journalist') } }));
+}
+function cleanJ(j) {
+    const o = j && typeof j === 'object' ? j : {};
+    return { id: typeof o.id === 'string' && o.id ? o.id.slice(0, 40) : uid(), name: String(o.name || '').slice(0, 40) || 'עיתונאי', outlet: String(o.outlet || '').slice(0, 40), style: STYLES[o.style] ? o.style : 'friendly', avatar: QBAvatar.sanitizeAvatar(o.avatar) };
+}
+function loadCfg() {
+    const c = rd(K_CFG, null), o = c && typeof c === 'object' && !Array.isArray(c) ? c : {};
+    let js = (Array.isArray(o.journalists) ? o.journalists : []).filter(j => j && typeof j === 'object').slice(0, 6).map(cleanJ);
+    const seen = new Set(); js.forEach(j => { while (seen.has(j.id)) j.id = uid(); seen.add(j.id); });
+    if (!js.length) js = defaultCrew();
+    CFG = { paper: String(o.paper || 'ספורט היום').slice(0, 30), weekly: String(o.weekly || 'השבועון').slice(0, 30), journalists: js, playerAvatar: o.playerAvatar ? QBAvatar.sanitizeAvatar(o.playerAvatar) : null };
+    if (!o.journalists || !o.journalists.length) wr(K_CFG, CFG);
+}
+const saveCfg = () => wr(K_CFG, CFG);
+const jById = id => CFG.journalists.find(j => j.id === id);
+function playerInfo() {
+    const prof = rd('qbmc_player_profile', {}) || {}, roster = rd('qbmc_team_roster', {}) || {};
+    const me = Array.isArray(roster.players) ? roster.players.find(p => p && p.me) : null;
+    let avatar = null;
+    if (me && me.avatar) avatar = QBAvatar.sanitizeAvatar(me.avatar);
+    else if (typeof prof.photo === 'string') { const a = QBAvatar.sanitizeAvatar({ mode: 'photo', photo: prof.photo }); if (a.mode === 'photo') avatar = a; }
+    if (!avatar) { if (!CFG.playerAvatar) { CFG.playerAvatar = { mode: 'face', face: QBAvatar.randomFace('player') }; saveCfg(); } avatar = CFG.playerAvatar; }
+    return { name: String((prof.name || (me && me.name) || '')).trim().slice(0, 40) || 'השחקן', avatar, num: me ? me.num : '' };
+}
+function teamName() { const r = rd('qbmc_team_roster', {}) || {}, s = rd('qbmc_player_team_status', {}) || {}; return String(r.name || s.team || '').slice(0, 40); }
+function teamColor() { const r = rd('qbmc_team_roster', {}) || {}; return /^#[0-9a-f]{6}$/i.test(r.color || '') ? r.color : '#1d4ed8'; }
+
+// ============================================================================
+// Scene
+// ============================================================================
+let CONF = null;     // current conference
+function renderScene() {
+    const pl = playerInfo(), tn = teamName() || 'מסיבת עיתונאים';
+    const sc = document.getElementById('prScene'); sc.style.setProperty('--team', teamColor());
+    const sponsors = Array.from({ length: 14 }, (_, i) => `<span>${esc(tn)}</span>`).join('');
+    const qi = CONF && CONF.phase === 'asking' ? CONF.i : -1, q = qi >= 0 ? CONF.qs[qi] : null, cur = q ? jById(q.jid) : null;
+    sc.innerHTML = `<div class="pr-wall"></div><div class="pr-spons">${sponsors}</div>
+        <div class="pr-banner"><b>${esc(tn)}</b><small>${CONF ? esc(KINDS[CONF.kind] || '') : 'מסיבת עיתונאים'}</small></div><div class="pr-live">● LIVE</div>
+        <i class="pr-flash" style="left:6%;top:30%;animation-delay:.4s"></i><i class="pr-flash" style="left:20%;top:44%;animation-delay:1.7s"></i><i class="pr-flash" style="right:8%;top:34%;animation-delay:1.1s"></i><i class="pr-flash" style="right:22%;top:48%;animation-delay:2.6s"></i>
+        <div class="pr-bubble${q ? '' : ' idle'}">${q && cur ? `<span class="who">🎤 ${esc(cur.name)} • ${esc(cur.outlet)}</span>${esc(q.q)}` : (CONF && CONF.phase === 'done' ? 'מסיבת העיתונאים הסתיימה. תודה לכולם!' : 'הכן את עצמך. הגדר את המסיבה למטה ולחץ "התחל".')}</div>
+        <div class="pr-podium"><div class="pr-player">${QBAvatar.html(pl.avatar, { number: pl.num })}</div><div class="pr-desk"><div class="pn">${esc(pl.name)}</div></div></div>
+        <div class="pr-seats">${CFG.journalists.map(j => { const asked = CONF && CONF.qs ? CONF.qs.findIndex(x => x.jid === j.id) : -1; const isOn = cur && cur.id === j.id; const doneJ = CONF && CONF.qs && CONF.answers && CONF.qs.some((x, i) => x.jid === j.id && CONF.answers[i] !== undefined) && !isOn;
+            return `<div class="pr-j${isOn ? ' on' : ''}${doneJ ? ' done' : ''}"><div class="av">${QBAvatar.html(j.avatar)}</div><i class="notepad"></i><div class="tb"><span>${esc(j.name)}<small>${esc(j.outlet)}</small></span></div></div>`; }).join('')}</div>`;
+}
+
+// ============================================================================
+// Conference flow
+// ============================================================================
+function renderPanel() {
+    const el = document.getElementById('prPanel');
+    if (!CONF || CONF.phase === 'setup') {
+        const has = QBGemini.hasKey();
+        el.innerHTML = `<h3 class="font-bold text-white mb-3">⚙️ הגדרת מסיבת העיתונאים</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label>מה קרה? (הקשר)<select id="cKind">${Object.entries(KINDS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label>
+                <label>מספר שאלות<select id="cN">${[3, 4, 5, 6].map(n => `<option value="${n}"${n === 4 ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+                <label>מקור השאלות והעיתון<select id="cMode"><option value="ai"${has ? '' : ' disabled'}>AI (Gemini)${has ? '' : ' - אין מפתח'}</option><option value="bank"${has ? '' : ' selected'}>מאגר שאלות מובנה (בלי AI)</option></select></label>
+            </div>
+            <label>עובדות לשיחה (אופציונלי): תוצאה, רגע מרכזי, מה שחשוב שהעיתונאים ידעו<textarea id="cNote" rows="2" maxlength="600" placeholder="למשל: ניצחנו 28-21 אחרי שהיינו בפיגור של 14 בתחילת הרבע השלישי. מסרתי שני טאצ׳דאונים."></textarea></label>
+            <label style="display:flex;gap:6px;align-items:center;color:#cbd5e1"><input type="checkbox" id="cStats"> אפשר ל-AI להתבסס גם על סטטיסטיקת המשחקים האחרונים שלי (נשלחות ל-Google רק אם סימנת)</label>
+            <div class="flex flex-wrap items-center gap-2 mt-2"><button class="btn pri" id="startBtn" onclick="startConference()">▶️ התחל מסיבת עיתונאים</button><span id="cMsg" class="text-xs text-amber-300"></span></div>
+            <p class="text-[11px] text-slate-500 mt-3 leading-relaxed">העיתונאים והעיתונים בדיוניים. ב-AI השאלות והכותרות נוצרות רק מתוך מה שכתבת, ולכן עדיף להזין עובדות אמיתיות. אין שליחת פרטים אישיים ל-AI פרט למה שהקלדת (ולסטטיסטיקה אם סימנת).</p>`;
+        return;
+    }
+    if (CONF.phase === 'asking') {
+        const q = CONF.qs[CONF.i], j = jById(q.jid);
+        el.innerHTML = `<div class="dots">${CONF.qs.map((_, i) => `<i class="${i < CONF.i ? 'dn' : (i === CONF.i ? 'on' : '')}"></i>`).join('')}</div>
+            <div class="text-xs text-slate-400 mb-1">שאלה ${CONF.i + 1} מתוך ${CONF.qs.length} • ${j ? esc(j.name) : ''}</div>
+            <label>התשובה שלך<textarea id="ansBox" rows="4" maxlength="1200" placeholder="ענה כמו שהיית עונה מול המצלמות…" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter')submitAnswer()"></textarea></label>
+            <div class="flex flex-wrap gap-2"><button class="btn ok" onclick="submitAnswer()">✅ שלח תשובה</button><button class="btn" onclick="submitAnswer(true)">🤐 ללא תגובה</button><button class="btn red" onclick="abortConference()">✕ סיים</button></div>`;
+        const b = document.getElementById('ansBox'); if (b) b.focus();
+        return;
+    }
+    // done
+    el.innerHTML = `<div class="flex items-center justify-between flex-wrap gap-2 mb-3"><h3 class="font-bold text-white">🏁 המסיבה הסתיימה</h3><div class="flex gap-2"><button class="btn pri" onclick="showTab('paper')">📰 לעיתון של היום</button><button class="btn" onclick="resetConference()">🔁 מסיבה חדשה</button></div></div>${feedbackHtml(CONF.feedback)}`;
+}
+function setMsg(t, bad) { const m = document.getElementById('cMsg'); if (m) { m.className = 'text-xs ' + (bad ? 'text-rose-400' : 'text-amber-300'); m.innerText = t; } }
+function statsSummary() {
+    const games = rd('qbmc_player_game_stats', []);
+    return (Array.isArray(games) ? games : []).filter(g => g && typeof g === 'object').slice(0, 3).map(g => {
+        const p = g.pass && typeof g.pass === 'object' ? g.pass : {};
+        return [g.date, { W: 'ניצחון', L: 'הפסד', T: 'תיקו' }[g.outcome], (g.scoreUs != null && g.scoreThem != null) ? `${g.scoreUs}-${g.scoreThem}` : '', p.att != null ? `מסירות ${p.comp ?? '?'}/${p.att}, ${p.yds ?? '?'} יארד, ${p.td ?? 0} TD, ${p.int ?? 0} INT` : ''].filter(Boolean).join(', ');
+    }).join('\n');
+}
+const PRESS_RULES = `אתה כותב סימולציה של מסיבת עיתונאים ועיתון ספורט לקוורטרבק בפוטבול אמריקאי, לצורך אימון תקשורת. כללים:
+1. כל העיתונאים והעיתונים בדיוניים. אל תזכיר אנשים אמיתיים, עיתונים אמיתיים או קבוצות אמיתיות שלא הופיעו בטקסט של המשתמש.
+2. אל תמציא עובדות: תוצאות, סטטיסטיקות, שמות יריבים, פציעות או אירועים. השתמש אך ורק במה שמופיע בהקשר ובתשובות של השחקן. אם חסר מידע, שאל שאלות כלליות או כתוב בצורה כללית.
+3. שאלות: קצרות (עד 30 מילים), מגוונות, בסגנון של העיתונאי שמפורט. מותר לשאול שאלות קשות ופרובוקטיביות על הביצועים, ההחלטות והקבוצה, אך בלי עלבונות ובלי נושאים אישיים רגישים (משפחה, בריאות, מיניות, דת, פוליטיקה, כסף).
+4. כותרות ומאמרים: ניסוח עיתונאי חי, אבל נאמן לתשובות. כל עיתונאי יכול לבחור זווית שונה (אוהדת, ביקורתית, מספרית, דרמטית) לפי הסגנון שלו, אך חייב להישאר בתוך מה שהשחקן אמר. ציטוטים חייבים להיות מילה במילה מהתשובות.
+5. עברית תקנית בלבד. החזר JSON תקין בלבד, בלי טקסט נוסף ובלי גדרות קוד.`;
+
+async function startConference() {
+    const kind = document.getElementById('cKind').value, n = Number(document.getElementById('cN').value) || 4, mode = document.getElementById('cMode').value, note = document.getElementById('cNote').value.trim().slice(0, 600), stats = document.getElementById('cStats').checked;
+    const btn = document.getElementById('startBtn'); btn.disabled = true; setMsg(mode === 'ai' ? 'מכין שאלות…' : '');
+    const crew = CFG.journalists; let qs = null, usedMode = mode;
+    if (mode === 'ai') {
+        try {
+            const prompt = `הקשר: ${KINDS[kind]}\nעובדות שהשחקן מסר: ${note || '(לא נמסרו)'}\n${stats ? 'סטטיסטיקת משחקים אחרונים (מהמערכת):\n' + (statsSummary() || '(אין)') + '\n' : ''}\nהעיתונאים:\n${crew.map(j => `- id=${j.id} | ${j.name} (${j.outlet}) | סגנון: ${STYLE_PROMPT[j.style]}`).join('\n')}\n\nכתוב בדיוק ${n} שאלות, מחולקות בין העיתונאים בסגנון שלהם (כל עיתונאי לפחות שאלה אחת אם אפשר). פורמט: {"questions":[{"j":"<id של העיתונאי>","q":"<השאלה>"}]}`;
+            const obj = QBGemini.parseJson(await QBGemini.call({ system: PRESS_RULES, prompt, json: true, temperature: 0.8, timeoutMs: 60000 }));
+            const ids = new Set(crew.map(j => j.id)), seen = new Set(); let rr = 0;
+            qs = (Array.isArray(obj.questions) ? obj.questions : []).map(x => ({ jid: ids.has(x && x.j) ? x.j : crew[rr++ % crew.length].id, q: String(x && x.q || '').trim().slice(0, 260) }))
+                .filter(x => x.q && !seen.has(x.q) && seen.add(x.q)).slice(0, n);
+            if (!qs.length) throw new Error('empty');
+        } catch (err) {
+            usedMode = 'bank'; qs = null;
+            setMsg('ה-AI לא החזיר שאלות תקינות (' + (err.message || '').slice(0, 80) + '), עברתי למאגר השאלות המובנה.', true);
+        }
+    }
+    if (!qs) {
+        const used = new Set(); qs = [];
+        for (let i = 0; i < n; i++) {
+            const j = crew[i % crew.length], pool = (BANK[kind][bankStyle(j.style)] || []).filter(q => !used.has(q));
+            const pick = pool.length ? pool[Math.floor(Math.random() * pool.length)] : (BANK[kind].friendly[0]);
+            used.add(pick); qs.push({ jid: j.id, q: pick });
+        }
+    }
+    CONF = { id: uid(), date: todayStr(), kind, note, mode: usedMode, stats, qs, answers: [], i: 0, phase: 'asking' };
+    renderScene(); renderPanel();
+}
+function submitAnswer(skip) {
+    if (!CONF || CONF.phase !== 'asking') return;
+    const box = document.getElementById('ansBox'); let a = skip ? '' : box.value.trim();
+    if (!skip && !a) { box.focus(); return; }
+    CONF.answers[CONF.i] = a.slice(0, 1200);
+    CONF.i++;
+    if (CONF.i >= CONF.qs.length) finishConference(); else { renderScene(); renderPanel(); }
+}
+function abortConference() { if (CONF && CONF.answers.length && !confirm('לסיים עכשיו? תשובות שנמסרו עד כה יישמרו.')) return; if (CONF && CONF.answers.length) { CONF.qs = CONF.qs.slice(0, CONF.answers.length); finishConference(); } else resetConference(); }
+function resetConference() { CONF = null; renderScene(); renderPanel(); }
+function transcript(c) { return c.qs.map((x, i) => { const j = jById(x.jid) || { name: 'עיתונאי', outlet: '' }; return { jid: x.jid, jname: j.name, outlet: j.outlet, style: j.style || 'friendly', q: x.q, a: c.answers[i] || '' }; }); }
+
+async function finishConference() {
+    CONF.phase = 'done'; const qa = transcript(CONF);
+    document.getElementById('prPanel').innerHTML = '<p class="text-sm text-amber-300">מכין את הכותרות והמשוב… (עד חצי דקה)</p>';
+    renderScene();
+    let feedback = null, daily = null, notice = '';
+    if (CONF.mode === 'ai') {
+        try {
+            const out = QBGemini.parseJson(await QBGemini.call({ system: PRESS_RULES, prompt: editionPrompt(CONF, qa), json: true, temperature: 0.7, timeoutMs: 90000 }));
+            daily = normalizeEdition(out, qa, 'daily'); feedback = normalizeFeedback(out.feedback);
+        } catch (err) { notice = 'ה-AI לא הצליח הפעם (' + (err.message || '').slice(0, 80) + '), הכותרות והמשוב הופקו בכללים פשוטים במקום.'; }
+    }
+    if (!daily) daily = bankEdition(CONF, qa);
+    if (!feedback) feedback = bankFeedback(qa);
+    feedback.notice = notice; feedback.mode = daily.fromAi ? 'ai' : 'bank';
+    CONF.feedback = feedback; CONF.daily = daily;
+    const arch = loadArch(); arch.push({ id: CONF.id, date: CONF.date, kind: CONF.kind, note: CONF.note, mode: daily.fromAi ? 'ai' : 'bank', qa, feedback, daily }); wr(K_ARCH, arch.slice(-100));
+    renderPanel();
+}
+
+// ============================================================================
+// AI prompts + validation
+// ============================================================================
+function editionPrompt(c, qa) {
+    return `הקשר: ${KINDS[c.kind]}\nעובדות שהשחקן מסר: ${c.note || '(לא נמסרו)'}\nשם העיתון: ${CFG.paper}\nשם השחקן: ${playerInfo().name}\n\nתמלול מסיבת העיתונאים:\n${qa.map((x, i) => `${i + 1}. [${x.jname} | ${x.outlet} | id=${x.jid}] שאלה: ${x.q}\n   תשובת השחקן: ${x.a || '(ללא תגובה)'}`).join('\n')}\n\nכתוב את מהדורת היומיום של העיתון ומשוב תקשורתי כן לשחקן. פורמט JSON בדיוק:\n{"mainHeadline":"כותרת ראשית","subHeadline":"כותרת משנה","lead":"פסקה פותחת של 40-70 מילה","pullQuote":{"text":"ציטוט מילה במילה מתשובות השחקן","by":"שם השחקן"},"articles":[{"j":"<id העיתונאי>","kicker":"כותרת עליונה קצרה","headline":"כותרת","body":"2-3 משפטים"}],"ticker":["3 עד 4 שורות קצרות"],"feedback":{"overall":"הערכה כנה בשתי שורות","strengths":["..."],"risks":[{"quote":"ציטוט מהתשובות שעלול להישמע רע או להילקח מהקשרו","why":"למה","better":"ניסוח טוב יותר"}],"tips":["עצה מעשית"]}}\nמספר המאמרים: עד ${Math.min(4, qa.length)}, כל אחד בזווית של העיתונאי שלו. אם השחקן לא ענה (ללא תגובה), הכותרת יכולה לשקף זאת בצורה ישרה. המשוב יהיה כן ומאוזן ולא מחמיא סתם.`;
+}
+const norm = t => String(t).replace(/[\s"'״׳"'.,;:!?\-–—…()\[\]]+/g, '').toLowerCase();
+function quoteInAnswers(q, qa) { const nq = norm(q); return nq.length >= 6 && qa.some(x => norm(x.a).includes(nq)); }
+function normalizeEdition(o, qa, type) {
+    const s = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
+    const ed = { type, fromAi: true, masthead: CFG.paper, date: todayStr(), mainHeadline: s(o.mainHeadline, 140), subHeadline: s(o.subHeadline, 200), lead: s(o.lead, 700), pullQuote: null, articles: [], ticker: [] };
+    if (!ed.mainHeadline) throw new Error('no headline');
+    const pq = o.pullQuote && typeof o.pullQuote === 'object' ? s(o.pullQuote.text, 260) : '';
+    const fixed = pq && quoteInAnswers(pq, qa);
+    ed.pullQuote = fixed ? { text: pq, by: playerInfo().name } : pickQuote(qa);       // an invented "quote" is replaced by a real one
+    ed.quoteReplaced = !!pq && !fixed;
+    ed.articles = (Array.isArray(o.articles) ? o.articles : []).slice(0, 4).map(a => { const j = jById(a && a.j) || null; return { byline: j ? j.name : '', outlet: j ? j.outlet : '', kicker: s(a && a.kicker, 40), headline: s(a && a.headline, 140), body: s(a && a.body, 520) }; }).filter(a => a.headline);
+    ed.ticker = (Array.isArray(o.ticker) ? o.ticker : []).slice(0, 4).map(t => s(t, 140)).filter(Boolean);
+    return ed;
+}
+function normalizeFeedback(f) {
+    if (!f || typeof f !== 'object') return null;
+    const arr = a => (Array.isArray(a) ? a : []).map(x => String(x == null ? '' : x).trim().slice(0, 240)).filter(Boolean).slice(0, 5);
+    const fb = { overall: String(f.overall || '').trim().slice(0, 500), strengths: arr(f.strengths), tips: arr(f.tips),
+        risks: (Array.isArray(f.risks) ? f.risks : []).slice(0, 4).map(r => ({ quote: String(r && r.quote || '').trim().slice(0, 240), why: String(r && r.why || '').trim().slice(0, 300), better: String(r && r.better || '').trim().slice(0, 300) })).filter(r => r.quote || r.why) };
+    return fb.overall || fb.strengths.length || fb.risks.length ? fb : null;
+}
+
+// ============================================================================
+// Rule-based fallback (no AI): quote picking, headlines, simple feedback
+// ============================================================================
+const HEDGE = /(אולי|לא יודע|נראה לי|כנראה|בערך|בעזרת השם|נעשה מה שאפשר)/;
+const BLAME = /(שופט|שופטים|שיפוט|אשמת|אשמה של|הם אשמים|הוא אשם|עצלנים|לא הגיע לנו|גנבו)/;
+const ABSOLUTE = /(בטוח ש|ברור ש|בלי ספק|תמיד|אף פעם|מבטיח|מובטח|ננצח ב)/;
+const STRONG = /(ניצחון|נלחם|ביחד|נתקדם|נלמד|אחריות|גאה|מאמין|עבודה|הקבוצה)/;
+function words(t) { return String(t).trim().split(/\s+/).filter(Boolean); }
+function pickQuote(qa) {
+    let best = null, bestScore = -1;
+    qa.forEach(x => String(x.a).split(/(?<=[.!?])\s+|\n+/).map(t => t.trim()).filter(Boolean).forEach(sen => {
+        const n = words(sen).length; if (n < 4) return;
+        const score = (n >= 5 && n <= 16 ? 3 : 0) + (STRONG.test(sen) ? 2 : 0) - (HEDGE.test(sen) ? 1 : 0) + Math.min(n, 16) / 16;
+        if (score > bestScore) { bestScore = score; best = sen.replace(/^["'״]|["'״]$/g, ''); }
+    }));
+    if (!best) { const any = qa.find(x => words(x.a).length); best = any ? words(any.a).slice(0, 12).join(' ') + (words(any.a).length > 12 ? '…' : '') : 'ללא תגובה'; }
+    return { text: best.slice(0, 200), by: playerInfo().name };
+}
+function bankEdition(c, qa) {
+    const pl = playerInfo().name, answered = qa.filter(x => words(x.a).length), q = pickQuote(qa);
+    const kindHead = { win: `${pl} אחרי הניצחון`, loss: `${pl} אחרי ההפסד`, pregame: `${pl} לפני המשחק הגדול`, season: `${pl} מסכם עונה`, great: `${pl} אחרי ערב מושלם`, bad: `${pl} אחרי ערב קשה`, general: `${pl} בראיון גלוי` }[c.kind];
+    const ed = { type: 'daily', fromAi: false, masthead: CFG.paper, date: todayStr(), mainHeadline: answered.length ? `${kindHead}: «${q.text}»` : `${kindHead}: ללא תגובה`, subHeadline: answered.length ? `${answered.length} מתוך ${qa.length} שאלות נענו במסיבת העיתונאים` : 'השחקן בחר שלא להשיב לשאלות', lead: c.note ? c.note : `מסיבת עיתונאים ${KINDS[c.kind]}. ${pl} השיב לעיתונאים והנה עיקרי הדברים.`, pullQuote: q, articles: [], ticker: [] };
+    qa.slice(0, 4).forEach(x => {
+        const a = x.a, n = words(a).length, qt = pickQuote([x]).text, hedged = HEDGE.test(a) || n < 6, st = x.style;
+        let headline, kicker;
+        if (!n) { headline = `${pl} בחר לא להגיב לשאלה של ${x.jname}`; kicker = 'ללא תגובה'; }
+        else if (st === 'sharp' || st === 'skeptic') { headline = hedged ? `${pl} נשאל ישירות. התשובה זהירה במיוחד` : `${pl} בלי התחמקויות: «${qt}»`; kicker = 'שאלה קשה'; }
+        else if (st === 'analyst') { headline = `מאחורי המילים של ${pl}: «${qt}»`; kicker = 'ניתוח'; }
+        else if (st === 'drama') { headline = `הסערה בחדר: «${qt}»`; kicker = 'מבפנים'; }
+        else { headline = `${pl} בגילוי לב: «${qt}»`; kicker = 'בגילוי לב'; }
+        ed.articles.push({ byline: x.jname, outlet: x.outlet, kicker, headline, body: n ? `כשנשאל "${x.q}", השיב ${pl}: ${a.length > 260 ? a.slice(0, 257) + '…' : a}` : `לשאלה "${x.q}" לא התקבלה תגובה.` });
+    });
+    ed.ticker = answered.length ? [`${pl}: ${q.text}`, `${qa.length} שאלות נשאלו`, ...(c.note ? [c.note.slice(0, 90)] : [])] : ['ללא תגובה מהשחקן'];
+    return ed;
+}
+function bankFeedback(qa) {
+    const ans = qa.filter(x => words(x.a).length), tot = ans.reduce((n, x) => n + words(x.a).length, 0), avg = ans.length ? Math.round(tot / ans.length) : 0;
+    const all = ans.map(x => x.a).join(' '), we = (all.match(/(אנחנו|הקבוצה|החבר'ה|השחקנים|ביחד)/g) || []).length, me = (all.match(/(^|\s)אני(\s|$)/g) || []).length;
+    const fb = { overall: '', strengths: [], risks: [], tips: [] };
+    if (!ans.length) { fb.overall = 'לא נמסרו תשובות, ולכן אין על מה לתת משוב.'; return fb; }
+    if (avg < 6) fb.tips.push('התשובות קצרות מאוד (ממוצע ' + avg + ' מילים). תשובה של משפט-שניים עם נקודה אחת ברורה קשה יותר לפרש לא נכון.');
+    else if (avg > 60) fb.tips.push('התשובות ארוכות (ממוצע ' + avg + ' מילים). בתקשורת ארוכה יש יותר ציטוטים שאפשר לקחת מהקשרם: הכן 2-3 מסרים וחזור עליהם.');
+    else fb.strengths.push('אורך התשובות סביר (ממוצע ' + avg + ' מילים).');
+    if (we >= me && we > 0) fb.strengths.push('שפה של קבוצה: השתמשת ב"אנחנו / הקבוצה" לפחות כמו ב"אני".'); else if (me > we + 2) fb.tips.push('הרבה "אני" ומעט "אנחנו". קוורטרבק נתפס כמנהיג ברגע שהוא מדבר גם בשם הקבוצה.');
+    ans.forEach(x => x.a.split(/(?<=[.!?])\s+|\n+/).map(t => t.trim()).filter(Boolean).forEach(sen => {
+        if (fb.risks.length >= 4) return;
+        if (BLAME.test(sen)) fb.risks.push({ quote: sen.slice(0, 200), why: 'האשמה של שופטים או אחרים נוטה להפוך לכותרת ולהסיט מהמסר שלך.', better: 'התמקד במה שבשליטתך: "יש לנו מה לשפר ואנחנו נעבוד על זה".' });
+        else if (ABSOLUTE.test(sen)) fb.risks.push({ quote: sen.slice(0, 200), why: 'הבטחה או קביעה מוחלטת יכולה לחזור אליך כבומרנג אם התוצאה תהיה אחרת.', better: 'ניסוח של מחויבות במקום הבטחה: "נעשה את כל מה שאפשר כדי לנצח".' });
+        else if (HEDGE.test(sen) && words(sen).length < 8) fb.risks.push({ quote: sen.slice(0, 200), why: 'תשובה מהוססת עלולה להיקרא כחוסר ביטחון.', better: 'ענה בקצרה ובביטחון על מה שאתה כן יודע.' });
+    }));
+    fb.overall = `נבדקו ${ans.length} תשובות בבדיקת טקסט פשוטה (אורך, שפת קבוצה, האשמות, הבטחות והיסוסים). זה אינו תחליף למאמן תקשורת, ואם יש לך מפתח AI תקבל משוב עשיר יותר.`;
+    if (!fb.risks.length) fb.strengths.push('לא זוהו ניסוחים מסוכנים בבדיקה הפשוטה.');
+    return fb;
+}
+function feedbackHtml(fb) {
+    if (!fb) return '';
+    const list = (arr, color) => arr && arr.length ? `<ul class="list-disc pr-5 space-y-1 text-xs" style="color:${color}">${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '';
+    return `<div class="space-y-3 text-xs">
+        ${fb.notice ? `<div class="text-amber-300">${esc(fb.notice)}</div>` : ''}
+        <div class="text-slate-200 leading-relaxed">${esc(fb.overall)}</div>
+        ${fb.strengths.length ? `<div><div class="font-bold text-emerald-300 mb-1">✅ מה עבד</div>${list(fb.strengths, '#cbd5e1')}</div>` : ''}
+        ${fb.risks.length ? `<div><div class="font-bold text-rose-300 mb-1">⚠️ ציטוטים שעלולים להיות בעייתיים</div><div class="space-y-2">${fb.risks.map(r => `<div class="bg-slate-900 border border-slate-700 rounded-xl p-3"><div class="text-slate-100">«${esc(r.quote)}»</div><div class="text-slate-400 mt-1">${esc(r.why)}</div>${r.better ? `<div class="text-sky-300 mt-1">💡 ${esc(r.better)}</div>` : ''}</div>`).join('')}</div></div>` : ''}
+        ${fb.tips.length ? `<div><div class="font-bold text-amber-300 mb-1">🎯 לשיפור</div>${list(fb.tips, '#cbd5e1')}</div>` : ''}
+        <div class="text-[10px] text-slate-500">${fb.mode === 'ai' ? 'משוב שנוצר על ידי AI: הערכה סובייקטיבית שעשויה לטעות.' : 'בדיקת טקסט פשוטה לפי כללים קבועים.'}</div></div>`;
+}
+
+// ============================================================================
+// Newspaper rendering + weekly edition
+// ============================================================================
+const HEB_MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+// ---------- defensive loading of saved conferences / editions (imported or damaged data must never break the page) ----------
+const DATE_OK = /^\d{4}-\d{2}-\d{2}$/;
+function cleanEd(e) {
+    const o = e && typeof e === 'object' && !Array.isArray(e) ? e : {}, s = (v, n) => String(v == null ? '' : v).slice(0, n), arr = a => Array.isArray(a) ? a : [];
+    const pq = o.pullQuote && typeof o.pullQuote === 'object' ? { text: s(o.pullQuote.text, 260), by: s(o.pullQuote.by, 60) } : null;
+    return { type: o.type === 'weekly' ? 'weekly' : 'daily', fromAi: !!o.fromAi, quoteReplaced: !!o.quoteReplaced, masthead: s(o.masthead, 30) || (CFG ? CFG.paper : ''), date: DATE_OK.test(o.date) ? o.date : '', from: DATE_OK.test(o.from) ? o.from : '', to: DATE_OK.test(o.to) ? o.to : '',
+        mainHeadline: s(o.mainHeadline, 160), subHeadline: s(o.subHeadline, 220), lead: s(o.lead, 800), pullQuote: pq && pq.text ? pq : null,
+        articles: arr(o.articles).filter(a => a && typeof a === 'object').slice(0, 4).map(a => ({ byline: s(a.byline, 40), outlet: s(a.outlet, 40), kicker: s(a.kicker, 50), headline: s(a.headline, 160), body: s(a.body, 600) })),
+        ticker: arr(o.ticker).slice(0, 5).map(t => s(t, 160)).filter(Boolean) };
+}
+function cleanFbSaved(f) { const fb = normalizeFeedback(f); if (!fb) return null; fb.notice = String(f.notice || '').slice(0, 200); fb.mode = f.mode === 'ai' ? 'ai' : 'bank'; return fb; }
+function loadArch() {
+    const a = rd(K_ARCH, []); if (!Array.isArray(a)) return [];
+    return a.filter(x => x && typeof x === 'object' && typeof x.id === 'string' && x.id).map(x => ({ id: x.id.slice(0, 40), date: DATE_OK.test(x.date) ? x.date : '', kind: KINDS[x.kind] ? x.kind : 'general', note: String(x.note || '').slice(0, 600), mode: x.mode === 'ai' ? 'ai' : 'bank',
+        qa: (Array.isArray(x.qa) ? x.qa : []).filter(q => q && typeof q === 'object').slice(0, 12).map(q => ({ jid: String(q.jid || '').slice(0, 40), jname: String(q.jname || '').slice(0, 40), outlet: String(q.outlet || '').slice(0, 40), style: STYLES[q.style] ? q.style : 'friendly', q: String(q.q || '').slice(0, 300), a: String(q.a || '').slice(0, 1200) })),
+        feedback: cleanFbSaved(x.feedback), daily: x.daily && typeof x.daily === 'object' ? cleanEd(x.daily) : null }));
+}
+function loadWeekly() {
+    const a = rd(K_WEEK, []); if (!Array.isArray(a)) return [];
+    return a.filter(x => x && typeof x === 'object' && typeof x.id === 'string' && x.id && x.ed && typeof x.ed === 'object').map(x => ({ id: x.id.slice(0, 40), date: DATE_OK.test(x.date) ? x.date : '', from: DATE_OK.test(x.from) ? x.from : '', to: DATE_OK.test(x.to) ? x.to : '', ed: cleanEd(x.ed) }));
+}
+function hebDate(ds) { if (!DATE_OK.test(ds || '')) return ''; const [y, m, d] = ds.split('-').map(Number); return `${d} ב${HEB_MONTHS[m - 1]} ${y}`; }
+function paperHtml(ed, opts) {
+    const pl = playerInfo(), weekly = ed.type === 'weekly';
+    return `<div class="paper">
+        <div class="paper-mast"><div class="paper-name">${esc(weekly ? CFG.weekly : ed.masthead)}</div></div>
+        <div class="paper-meta"><span>${weekly ? 'מהדורת סוף שבוע' : 'מהדורת היום'}</span><span>${weekly ? esc(hebDate(ed.from) + ' – ' + hebDate(ed.to)) : esc(hebDate(ed.date))}</span><span>${esc(teamName() || 'ספורט')}</span></div>
+        <div class="paper-grid">
+            <div><div class="paper-h1">${esc(ed.mainHeadline)}</div><div class="paper-h2">${esc(ed.subHeadline)}</div>
+                <figure class="paper-photo"><div class="im">${QBAvatar.html(pl.avatar, { number: pl.num })}</div><figcaption>${esc(pl.name)}</figcaption></figure>
+                <div class="paper-lead">${esc(ed.lead)}</div></div>
+            <div class="paper-side">
+                ${ed.pullQuote ? `<div class="paper-quote">«${esc(ed.pullQuote.text)}»<small>— ${esc(ed.pullQuote.by)}</small></div>` : ''}
+                ${ed.ticker && ed.ticker.length ? `<div class="paper-tick"><h4>${weekly ? 'השבוע בקצרה' : 'בקצרה'}</h4><ul>${ed.ticker.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}</div></div>
+        ${ed.articles && ed.articles.length ? `<div class="paper-arts">${ed.articles.map(a => `<div class="paper-art">${a.kicker ? `<div class="k">${esc(a.kicker)}</div>` : ''}<h3>${esc(a.headline)}</h3><p>${esc(a.body)}</p>${a.byline ? `<div class="by">${esc(a.byline)}${a.outlet ? ', ' + esc(a.outlet) : ''}</div>` : ''}</div>`).join('')}</div>` : ''}
+        <div class="paper-foot">עיתון בדיוני שנוצר ב-QB Master Class לצורכי אימון תקשורת. העיתונאים והעיתונים בדיוניים ${ed.fromAi ? 'והטקסט נוצר על ידי AI על בסיס התשובות שנמסרו' : 'והכותרות הופקו מהתשובות שנמסרו'}.${ed.quoteReplaced ? ' ציטוט שהומצא על ידי ה-AI הוחלף בציטוט אמיתי מהתשובות.' : ''}</div></div>`;
+}
+let paperView = { type: 'daily', id: null };
+function renderPaper() {
+    const el = document.getElementById('press-paper'), arch = loadArch().filter(x => x && x.daily), weeks = loadWeekly().filter(x => x && x.ed);
+    const dailyOpts = arch.slice().reverse().map(a => `<option value="${esc(a.id)}"${paperView.id === a.id ? ' selected' : ''}>${esc(a.date)} • ${esc(KINDS[a.kind] || '')}</option>`).join('');
+    const weekOpts = weeks.slice().reverse().map(w => `<option value="${esc(w.id)}"${paperView.id === w.id ? ' selected' : ''}>${esc(w.from)} → ${esc(w.to)}</option>`).join('');
+    let ed = null;
+    if (paperView.type === 'daily') { const a = arch.find(x => x.id === paperView.id) || arch[arch.length - 1]; if (a) { ed = a.daily; paperView.id = a.id; } }
+    else { const w = weeks.find(x => x.id === paperView.id) || weeks[weeks.length - 1]; if (w) { ed = w.ed; paperView.id = w.id; } }
+    el.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-3 mb-4 no-print">
+        <div class="tabs"><button class="tab${paperView.type === 'daily' ? ' on' : ''}" onclick="setPaperType('daily')">📰 היומי</button><button class="tab${paperView.type === 'weekly' ? ' on' : ''}" onclick="setPaperType('weekly')">🗞️ השבועי</button></div>
+        <div class="flex flex-wrap items-center gap-2">
+            <select class="btn" onchange="pickEdition(this.value)">${paperView.type === 'daily' ? (dailyOpts || '<option>אין מהדורות</option>') : (weekOpts || '<option>אין מהדורות</option>')}</select>
+            ${paperView.type === 'weekly' ? '<button class="btn ok" id="weekBtn" onclick="makeWeekly()">🗞️ הפק מהדורה שבועית מהשבוע האחרון</button>' : ''}
+            ${ed ? '<button class="btn pri" onclick="printPaper()">🖨️ הדפס / שמור כ-PDF</button>' : ''}</div></div>
+        <div id="weekMsg" class="text-xs text-amber-300 mb-2"></div>
+        ${ed ? paperHtml(ed) : `<div class="pn-card text-center text-slate-400 text-sm py-10">${paperView.type === 'daily' ? 'עדיין אין מהדורה יומית. ערוך מסיבת עיתונאים והעיתון יופיע כאן.' : 'עדיין אין מהדורה שבועית. אחרי לפחות מסיבת עיתונאים אחת בשבוע האחרון, לחץ "הפק מהדורה שבועית".'}</div>`}`;
+}
+function setPaperType(t) { paperView = { type: t, id: null }; renderPaper(); }
+function pickEdition(id) { paperView.id = id; renderPaper(); }
+function printPaper() {
+    const node = document.querySelector('#press-paper .paper'); if (!node) return;
+    document.getElementById('paperPrint').innerHTML = node.outerHTML; document.body.classList.add('pp-active');
+    const done = () => { document.body.classList.remove('pp-active'); document.getElementById('paperPrint').innerHTML = ''; window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done); setTimeout(() => window.print(), 50);
+}
+async function makeWeekly() {
+    const T = QB_TRAINING, to = todayStr(), from = T.addDaysStr(to, -6);
+    const confs = loadArch().filter(x => x && x.date >= from && x.date <= to && x.daily);
+    const msg = document.getElementById('weekMsg'), btn = document.getElementById('weekBtn');
+    if (!confs.length) { msg.innerText = 'לא נערכה מסיבת עיתונאים ב-7 הימים האחרונים.'; return; }
+    btn.disabled = true; msg.innerText = 'מפיק מהדורה שבועית…';
+    let ed = null;
+    if (QBGemini.hasKey() && confs.some(c => c.mode === 'ai')) {
+        try {
+            const body = confs.map((c, i) => `מסיבה ${i + 1} (${c.date}, ${KINDS[c.kind]}): עובדות: ${c.note || '(אין)'}\n` + c.qa.map(x => `  ש: ${x.q}\n  ת: ${x.a || '(ללא תגובה)'}`).join('\n')).join('\n\n');
+            const prompt = `שם השבועון: ${CFG.weekly}\nשם השחקן: ${playerInfo().name}\nטווח: ${from} עד ${to}\n\nמסיבות העיתונאים של השבוע:\n${body}\n\nכתוב מהדורת סוף שבוע. פורמט JSON: {"mainHeadline":"","subHeadline":"","lead":"סיכום השבוע ב-50-80 מילה","pullQuote":{"text":"ציטוט מילה במילה מהתשובות","by":"${playerInfo().name}"},"articles":[{"j":"","kicker":"","headline":"","body":""}],"ticker":["3 עד 4 נקודות על השבוע"]}\nעד 4 מאמרים, כל אחד סוקר מסיבה או נושא אחר. השתמש רק בעובדות ובציטוטים שבתמלולים.`;
+            const all = confs.flatMap(c => c.qa);
+            ed = normalizeEdition(QBGemini.parseJson(await QBGemini.call({ system: PRESS_RULES, prompt, json: true, temperature: 0.7, timeoutMs: 90000 })), all, 'weekly');
+        } catch (err) { msg.innerText = 'ה-AI לא הצליח (' + (err.message || '').slice(0, 60) + '), המהדורה הופקה בכללים פשוטים.'; ed = null; }
+    }
+    if (!ed) {
+        const pl = playerInfo().name, quotes = confs.map(c => c.daily.pullQuote).filter(Boolean), all = confs.flatMap(c => c.qa);
+        ed = { type: 'weekly', fromAi: false, masthead: CFG.weekly, date: to, mainHeadline: confs[confs.length - 1].daily.mainHeadline, subHeadline: `${confs.length} מסיבות עיתונאים בשבוע האחרון`, lead: `סיכום השבוע של ${pl}: ${confs.length} מסיבות עיתונאים, ${all.length} שאלות, ${all.filter(x => words(x.a).length).length} תשובות.`,
+            pullQuote: quotes.length ? quotes[quotes.length - 1] : pickQuote(all), articles: confs.slice(-4).map(c => ({ byline: '', outlet: '', kicker: `${KINDS[c.kind]} • ${c.date}`, headline: c.daily.mainHeadline, body: c.daily.subHeadline })), ticker: quotes.slice(-4).map(q => `«${q.text}»`) };
+    }
+    ed.from = from; ed.to = to;
+    const weeks = loadWeekly(); const id = uid(); weeks.push({ id, date: to, from, to, ed }); wr(K_WEEK, weeks.slice(-60));
+    paperView = { type: 'weekly', id }; renderPaper();
+}
+
+// ============================================================================
+// Crew management + archive
+// ============================================================================
+let editJ = null, jApi = null, jNew = false;
+function renderCrew() {
+    document.getElementById('press-crew').innerHTML = `<div class="pn-card">
+        <div class="flex flex-wrap items-end justify-between gap-3 mb-4"><h3 class="font-bold text-white">🧑‍💼 הצוות העיתונאי</h3>
+            <div class="flex flex-wrap items-end gap-2"><label class="text-xs">שם היומון<input type="text" id="paperName" value="${esc(CFG.paper)}" maxlength="30" oninput="onPaperNames()" style="width:150px"></label><label class="text-xs">שם השבועון<input type="text" id="weeklyName" value="${esc(CFG.weekly)}" maxlength="30" oninput="onPaperNames()" style="width:150px"></label>
+            ${CFG.journalists.length < 6 ? '<button class="btn pri" onclick="newJ()">➕ הוסף עיתונאי</button>' : ''}</div></div>
+        <div class="crew">${CFG.journalists.map(j => `<div class="c" onclick="openJ('${esc(j.id)}')"><div class="av">${QBAvatar.html(j.avatar)}</div><div class="font-bold text-white text-sm">${esc(j.name)}</div><div class="text-xs text-sky-300">${esc(j.outlet)}</div><div class="text-[11px] text-slate-400 mt-1">${esc(STYLES[j.style])}</div></div>`).join('')}</div>
+        <p class="text-[11px] text-slate-500 mt-4">כל העיתונאים בדיוניים. אפשר לתת להם שם, שם עיתון, סגנון (שמשפיע על השאלות והכותרות) ותמונה או דמות מאוירת.</p></div>`;
+}
+function onPaperNames() { CFG.paper = document.getElementById('paperName').value.slice(0, 30) || 'ספורט היום'; CFG.weekly = document.getElementById('weeklyName').value.slice(0, 30) || 'השבועון'; saveCfg(); }
+function newJ() { editJ = cleanJ({ id: uid(), name: '', outlet: '', style: 'friendly', avatar: { mode: 'face', face: QBAvatar.randomFace('journalist') } }); editJ.name = ''; jNew = true; drawJ(); }
+function openJ(id) { const j = jById(id); if (!j) return; editJ = JSON.parse(JSON.stringify(j)); jNew = false; drawJ(); }
+function closeJ() { document.getElementById('jmodal').classList.remove('open'); editJ = null; }
+function drawJ() {
+    document.getElementById('jcard').innerHTML = `<div class="flex justify-between items-center mb-3"><h3 class="font-bold text-white">${jNew ? '➕ עיתונאי חדש' : '✏️ עריכת עיתונאי'}</h3><button class="btn" onclick="closeJ()">✕</button></div>
+        <div class="pn-card" style="padding:12px"><div class="grid grid-cols-1 sm:grid-cols-3 gap-2"><label>שם<input type="text" id="j_name" value="${esc(editJ.name)}" maxlength="40"></label><label>עיתון / אתר<input type="text" id="j_outlet" value="${esc(editJ.outlet)}" maxlength="40"></label>
+        <label>סגנון<select id="j_style">${Object.entries(STYLES).map(([k, v]) => `<option value="${k}"${editJ.style === k ? ' selected' : ''}>${v}</option>`).join('')}</select></label></div></div>
+        <div id="jAvatar" class="mt-3"></div>
+        <div class="flex gap-2 mt-4"><button class="btn ok" onclick="saveJ()">💾 שמור</button>${jNew || CFG.journalists.length <= 1 ? '' : '<button class="btn red" onclick="deleteJ()">🗑️ מחק</button>'}<button class="btn" onclick="closeJ()">סגור</button></div>`;
+    document.getElementById('jmodal').classList.add('open');
+    jApi = QBAvatar.editor(document.getElementById('jAvatar'), editJ.avatar, v => { editJ.avatar = v; }, { role: 'journalist' });
+}
+function saveJ() {
+    editJ.name = document.getElementById('j_name').value.trim().slice(0, 40); editJ.outlet = document.getElementById('j_outlet').value.trim().slice(0, 40); editJ.style = document.getElementById('j_style').value;
+    if (!editJ.name) { alert('נא להזין שם לעיתונאי.'); return; }
+    const j = cleanJ(editJ), i = CFG.journalists.findIndex(x => x.id === j.id);
+    if (i >= 0) CFG.journalists[i] = j; else if (CFG.journalists.length < 6) CFG.journalists.push(j);
+    if (!saveCfg()) { alert('השמירה נכשלה: האחסון בדפדפן מלא.'); return; }
+    closeJ(); renderCrew(); renderScene();
+}
+function deleteJ() { if (!confirm('למחוק את העיתונאי?')) return; CFG.journalists = CFG.journalists.filter(x => x.id !== editJ.id); saveCfg(); closeJ(); renderCrew(); renderScene(); }
+function renderArchive() {
+    const arch = loadArch().filter(x => x && x.id), weeks = loadWeekly().filter(x => x && x.id);
+    document.getElementById('press-archive').innerHTML = `<div class="pn-card"><h3 class="font-bold text-white mb-3">🗂️ מסיבות עיתונאים</h3>
+        ${arch.length ? arch.slice().reverse().map(a => `<div class="arch"><span><b>${esc(a.date)}</b> • ${esc(KINDS[a.kind] || '')} • ${a.qa.length} שאלות • ${a.mode === 'ai' ? 'AI' : 'מאגר'}<br><span class="text-slate-400">${esc((a.daily && a.daily.mainHeadline) || '')}</span></span><span class="flex gap-2"><button class="btn" onclick="openArch('${esc(a.id)}')">📰 פתח</button><button class="btn red" onclick="delArch('${esc(a.id)}')">🗑️</button></span></div>`).join('') : '<p class="text-sm text-slate-400">הארכיון ריק.</p>'}
+        ${weeks.length ? `<h3 class="font-bold text-white mt-5 mb-3">🗞️ מהדורות שבועיות</h3>${weeks.slice().reverse().map(w => `<div class="arch"><span><b>${esc(w.from)} → ${esc(w.to)}</b><br><span class="text-slate-400">${esc(w.ed.mainHeadline)}</span></span><span class="flex gap-2"><button class="btn" onclick="openWeek('${esc(w.id)}')">🗞️ פתח</button><button class="btn red" onclick="delWeek('${esc(w.id)}')">🗑️</button></span></div>`).join('')}` : ''}</div>`;
+}
+function openArch(id) { paperView = { type: 'daily', id }; showTab('paper'); }
+function openWeek(id) { paperView = { type: 'weekly', id }; showTab('paper'); }
+function delArch(id) { if (!confirm('למחוק את המסיבה ואת המהדורה שלה?')) return; wr(K_ARCH, loadArch().filter(x => x && x.id !== id)); renderArchive(); }
+function delWeek(id) { if (!confirm('למחוק את המהדורה השבועית?')) return; wr(K_WEEK, loadWeekly().filter(x => x && x.id !== id)); renderArchive(); }
+
+function showTab(t) {
+    ['room', 'paper', 'crew', 'archive'].forEach(x => document.getElementById('press-' + x).classList.toggle('hidden', x !== t));
+    document.querySelectorAll('#pressTabs .tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+    if (t === 'room') { renderScene(); renderPanel(); } else if (t === 'paper') renderPaper(); else if (t === 'crew') renderCrew(); else renderArchive();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeJ(); });
+window.addEventListener('DOMContentLoaded', () => { loadCfg(); renderScene(); renderPanel(); });
+    </script>
+</body>
+</html>
