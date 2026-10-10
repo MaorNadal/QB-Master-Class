@@ -230,6 +230,8 @@
     </div>
 
     <script>
+        function ymdLocal(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }  // local date; toISOString() is UTC and shifts days in Israel
+
         const COMMON_METRICS = [
             { name: '40-Yard Dash', unit: 'שניות' },
             { name: 'Vertical Jump', unit: 'ס"מ' },
@@ -487,7 +489,7 @@
             const d = new Date(dateStr + 'T00:00:00');
             const day = d.getDay(); // 0 = Sunday
             d.setDate(d.getDate() - day);
-            return d.toISOString().slice(0, 10);
+            return ymdLocal(d);
         }
 
         function renderCorrelationChart() {
@@ -516,7 +518,7 @@
             let cursor = new Date(minWeek + 'T00:00:00');
             const end = new Date(maxWeek + 'T00:00:00');
             while (cursor <= end) {
-                weeks.push(cursor.toISOString().slice(0, 10));
+                weeks.push(ymdLocal(cursor));
                 cursor.setDate(cursor.getDate() + 7);
             }
 
@@ -525,7 +527,7 @@
                 for (let i = 0; i < 7; i++) {
                     const d = new Date(weekStart + 'T00:00:00');
                     d.setDate(d.getDate() + i);
-                    const ds = d.toISOString().slice(0, 10);
+                    const ds = ymdLocal(d);
                     const entries = (calendarDataCache && calendarDataCache[ds]) || [];
                     if (entries.includes(categoryId)) count++;
                 }
@@ -535,7 +537,7 @@
             const lineData = weeks.map(weekStart => {
                 const weekEnd = new Date(weekStart + 'T00:00:00');
                 weekEnd.setDate(weekEnd.getDate() + 6);
-                const weekEndStr = weekEnd.toISOString().slice(0, 10);
+                const weekEndStr = ymdLocal(weekEnd);
                 const matches = metricEntries.filter(e => e.date >= weekStart && e.date <= weekEndStr);
                 if (!matches.length) return null;
                 return matches.reduce((sum, e) => sum + e.value, 0) / matches.length;
@@ -664,7 +666,7 @@
             return prs;
         }
         function persistMetricPRs() {
-            try { localStorage.setItem('qbmc_metric_prs', JSON.stringify({ updatedAt: new Date().toISOString().slice(0, 10), prs: computeMetricPRs() })); } catch (e) {}
+            try { localStorage.setItem('qbmc_metric_prs', JSON.stringify({ updatedAt: ymdLocal(), prs: computeMetricPRs() })); } catch (e) {}
         }
 
         function getAllMetricDates() {
@@ -1036,7 +1038,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'qb_master_class_metrics_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.download = 'qb_master_class_metrics_backup_' + ymdLocal() + '.json';
             a.click();
             URL.revokeObjectURL(url);
         }
@@ -1112,7 +1114,7 @@
             if (calData && Object.keys(calData).length) {
                 const cutoff = new Date();
                 cutoff.setDate(cutoff.getDate() - 30);
-                const cutoffStr = cutoff.toISOString().slice(0, 10);
+                const cutoffStr = ymdLocal(cutoff);
                 const recentDates = Object.keys(calData).filter(d => d >= cutoffStr);
                 const loggedDays = recentDates.filter(d => calData[d].length > 0).length;
                 const catCounts = {};

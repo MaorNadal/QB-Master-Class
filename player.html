@@ -60,6 +60,7 @@
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
 
     <script src="nav.js"></script>
+    <script src="avatars.js"></script>
 
     <header class="max-w-7xl mx-auto px-4 pt-8 pb-6 text-center">
         <div class="inline-block px-4 py-1.5 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-400 text-sm font-semibold mb-3">
@@ -90,6 +91,7 @@
                     <p class="text-[9px] text-slate-500 mt-2">התמונה נדחסת אוטומטית ונשמרת רק במכשיר הזה.</p>
 
                     <div id="playerCard" class="w-full mt-4 rounded-2xl overflow-hidden border border-sky-500/40 shadow-lg shadow-sky-950/40"></div>
+                    <div id="lockerLink" class="no-print text-[11px] mt-2 text-center"></div>
                 </div>
 
                 <div class="lg:col-span-3 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 backdrop-blur">
@@ -482,6 +484,13 @@
         // madden.html (qbmc_madden_computed), so this never shows a number that could
         // drift from what the Madden page itself displays. ----
         const CAT_LABELS = { THP: 'ARM', SAC: 'S-ACC', MAC: 'M-ACC', DAC: 'D-ACC', AWR: 'AWR', RLS: 'RLS', RUN: 'RUN' };
+        function myLocker() {
+            try {
+                const r = JSON.parse(localStorage.getItem('qbmc_team_roster'));
+                const me = r && Array.isArray(r.players) ? r.players.find(x => x && x.me === true) : null;
+                return me && window.QBAvatar ? { avatar: QBAvatar.sanitizeAvatar(me.avatar), num: String(me.num || '').replace(/[^0-9A-Za-z]/g, '').slice(0, 3), name: String(me.name || '').slice(0, 40) } : null;
+            } catch (e) { return null; }
+        }
         function renderPlayerCard() {
             const p = loadProfile();
             let status = {};
@@ -489,7 +498,9 @@
             let madden = null;
             try { madden = JSON.parse(localStorage.getItem('qbmc_madden_computed')); } catch (e) {}
 
-            const photoTag = p.photo ? `<img src="${p.photo}" class="w-full h-full object-cover">` : `<span class="text-3xl">🏈</span>`;
+            // With no uploaded photo, the illustrated character from "my locker" (team page) is shown instead of the placeholder.
+            const lockerMe = myLocker();
+            const photoTag = p.photo ? `<img src="${p.photo}" class="w-full h-full object-cover">` : (lockerMe && window.QBAvatar ? QBAvatar.html(lockerMe.avatar, { number: lockerMe.num }) : `<span class="text-3xl">🏈</span>`);
             const logoTag = teamLogoTag(status.team, 'w-6 h-6');
             const ovrGrade = madden ? gradeFor(madden.ovr) : null;
 
@@ -523,6 +534,8 @@
                 <div class="bg-slate-950 text-center py-1 text-[8px] text-slate-500 border-t border-slate-800">מבוסס על ${madden.updatedAt} • הערכה עצמית / דירוג מאמן</div>` :
                 `<div class="bg-slate-900 text-center py-2 text-[9px] text-slate-500">אין עדיין נתוני Madden — מלא ב"דירוג QB"</div>`}
             `;
+            const ll = document.getElementById('lockerLink');
+            if (ll) ll.innerHTML = lockerMe ? `<a href="team.html" class="text-sky-300 hover:underline">🏟️ הארון שלי בחדר ההלבשה ←</a>` + (p.photo ? '' : ' <span class="text-slate-500">(הדמות המאוירת מוצגת כי אין תמונה)</span>') : `<a href="team.html" class="text-slate-400 hover:text-sky-300 hover:underline">🏟️ הוסף את עצמך לחדר ההלבשה</a>`;
         }
 
         function loadProfile() {

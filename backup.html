@@ -114,6 +114,8 @@
     </main>
 
     <script>
+        function ymdLocal(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }  // local date; toISOString() is UTC and shifts days in Israel
+
         const CATEGORY_INFO = {
             'qbmc_ex_': { label: '📋 תוכנית אימונים (ראשי)', color: '#38bdf8', filename: 'qb_master_class_workouts_backup.json' },
             'qbmc_cal_': { label: '📅 לוח שנה אימונים', color: '#e879f9', filename: 'qb_master_class_calendar_backup.json' },
@@ -200,7 +202,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'qb_master_class_UNIFIED_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.download = 'qb_master_class_UNIFIED_backup_' + ymdLocal() + '.json';
             a.click();
             URL.revokeObjectURL(url);
         }
@@ -281,7 +283,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'qb_master_class_UNIFIED_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.download = 'qb_master_class_UNIFIED_backup_' + ymdLocal() + '.json';
             a.click();
             URL.revokeObjectURL(url);
         }

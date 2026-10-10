@@ -139,6 +139,8 @@
     <script src="training-data.js"></script>
     <script src="practices.js"></script>
     <script>
+        function ymdLocal(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }  // local date; toISOString() is UTC and shifts days in Israel
+
         const CATEGORIES = [
             { id: 'd1', label: 'יום 1: Upper Body (נפח)', color: '#38bdf8', group: 'system' },
             { id: 'd2', label: 'יום 2: Lower Body & Core', color: '#10b981', group: 'system' },
@@ -527,7 +529,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'qb_master_class_calendar_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.download = 'qb_master_class_calendar_backup_' + ymdLocal() + '.json';
             a.click();
             URL.revokeObjectURL(url);
         }

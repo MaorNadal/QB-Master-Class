@@ -1,6 +1,7 @@
-/* QB Master Class - shared Gemini access for pages that need a plain text/JSON request (press room, and any future page).
-   Same strategy as the AI page and the coach chat: key from localStorage (qbmc_gemini_key), model discovery with a fallback chain,
-   a retry on transient errors, and a timeout. ai-tools.html and coach.html keep their own inline copies (left untouched). */
+/* QB Master Class - the ONE shared Gemini access layer (AI page, coach chat, press room). Key from localStorage (qbmc_gemini_key),
+   model discovery with a fallback chain, one retry on transient errors, and a timeout.
+   call(opts): { system, contents | parts | prompt, generationConfig, json, temperature, timeoutMs, softBlocked, blockedText, noKeyMessage }
+   Errors carry .noKey / .fatal / .transient / .detail / .blocked. */
 (function () {
     'use strict';
     const CANDIDATES = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
@@ -21,11 +22,12 @@
             return cached || [];
         } catch (e) { return []; }
     }
-    // opts: { system, contents | prompt, json, temperature, timeoutMs }.  Resolves to the reply text. Errors carry .noKey / .fatal / .transient / .detail.
+    // Resolves to the reply text. With softBlocked, an empty/blocked reply resolves to blockedText instead of throwing.
     async function call(opts) {
+        opts = opts || {};
         const key = getKey();
-        if (!key) { const e = new Error('לא הוגדר מפתח Gemini API.'); e.noKey = true; throw e; }
-        const contents = opts.contents || [{ role: 'user', parts: [{ text: String(opts.prompt || '') }] }];
+        if (!key) { const e = new Error(opts.noKeyMessage || 'לא הוגדר מפתח Gemini API.'); e.noKey = true; throw e; }
+        const contents = opts.contents || [{ role: 'user', parts: opts.parts || [{ text: String(opts.prompt || '') }] }];
         const models = [...new Set([...(await discover(key)), ...CANDIDATES])];
         let last = null, quota = false;
         for (const model of models) {
@@ -33,14 +35,18 @@
             for (let attempt = 1; attempt <= 2; attempt++) {
                 const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), opts.timeoutMs || 90000);
                 try {
-                    const body = { contents, generationConfig: Object.assign({ temperature: opts.temperature == null ? 0.7 : opts.temperature }, opts.json ? { responseMimeType: 'application/json' } : {}) };
+                    const gc = Object.assign({}, opts.generationConfig || {}, opts.temperature != null ? { temperature: opts.temperature } : {}, opts.json ? { responseMimeType: 'application/json' } : {});
+                    const body = { contents };
+                    if (Object.keys(gc).length) body.generationConfig = gc;     // nothing is sent unless a caller asked for it (model defaults otherwise)
                     if (opts.system) body.systemInstruction = { parts: [{ text: opts.system }] };
                     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal, body: JSON.stringify(body) });
                     clearTimeout(timer);
                     if (res.ok) {
                         const data = await res.json(), cand = data.candidates && data.candidates[0];
                         if (cand && cand.content && cand.content.parts) return cand.content.parts.map(p => p.text || '').join('\n').trim();
-                        const e = new Error('המודל לא החזיר תשובה (ייתכן שהתוכן נחסם). נסה שוב או נסח אחרת.'); e.blocked = true; throw e;
+                        const msg2 = opts.blockedText || 'המודל לא החזיר תשובה (ייתכן שהתוכן נחסם). נסה שוב או נסח אחרת.';
+                        if (opts.softBlocked) return msg2;
+                        const e = new Error(msg2); e.blocked = true; throw e;
                     }
                     const msg = cleanError(await res.text()); last = new Error(msg);
                     if (res.status === 404) { cached = null; break; }

@@ -14,6 +14,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
     <script src="nav.js"></script>
+    <script src="gemini-core.js"></script>
 
     <header class="max-w-5xl mx-auto px-4 pt-8 pb-4 text-center">
         <div class="inline-block px-4 py-1.5 bg-violet-500/10 border border-violet-500/30 rounded-full text-violet-300 text-sm font-semibold mb-3">🧑‍🏫 מאמן AI אישי</div>
@@ -370,58 +371,12 @@ function refreshPreview() { const el = document.getElementById('sharePreview'); 
 function togglePreview() { const el = document.getElementById('sharePreview'); el.classList.toggle('hidden'); refreshPreview(); }
 
 // ============================================================================
-// Gemini access layer for multi-turn chat.
-// NOTE: same retry / model-discovery / fallback strategy as ai-tools.html's callGemini(), adapted to
-// send a full conversation. It is a separate copy on purpose (ai-tools.html was left untouched).
+// Gemini access: the shared layer in gemini-core.js (model discovery, fallback chain, retry, timeout).
 // ============================================================================
-const GEMINI_MODEL_CANDIDATES = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
-const GEMINI_RETRYABLE = [429, 500, 502, 503, 504];
-let cachedModels = null;
 function getApiKey() { try { return localStorage.getItem('qbmc_gemini_key') || ''; } catch (e) { return ''; } }
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-function cleanError(t) { try { const p = JSON.parse(t); if (p.error && p.error.message) return p.error.message; } catch (e) {} return String(t).slice(0, 200); }
-async function discoverModels(key) {
-    if (cachedModels && cachedModels.length) return cachedModels;
-    try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-        if (!res.ok) return [];
-        const data = await res.json();
-        const usable = (data.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent') && /flash/i.test(m.name) && !/embedding|vision|tts|image|audio|preview|exp/i.test(m.name)).map(m => m.name.replace('models/', ''));
-        usable.sort((a, b) => a.length - b.length);
-        if (usable.length) cachedModels = usable.slice(0, 4);
-        return cachedModels || [];
-    } catch (e) {}
-    return [];
-}
 async function callGeminiChat(contents, systemText) {
-    const key = getApiKey();
-    if (!key) { const e = new Error('לא הוגדר מפתח Gemini API.'); e.noKey = true; throw e; }
-    const models = [...new Set([...(await discoverModels(key)), ...GEMINI_MODEL_CANDIDATES])];
-    let lastError = null, sawQuota = false;
-    for (const model of models) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-        for (let attempt = 1; attempt <= 2; attempt++) {
-            const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 90000);
-            try {
-                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-                    body: JSON.stringify({ contents, systemInstruction: { parts: [{ text: systemText }] }, generationConfig: { temperature: 0.5 } }) });
-                clearTimeout(timer);
-                if (res.ok) {
-                    const data = await res.json();
-                    const cand = data.candidates && data.candidates[0];
-                    if (cand && cand.content && cand.content.parts) return cand.content.parts.map(p => p.text || '').join('\n').trim() || 'לא התקבלה תשובה מהמודל. נסה לנסח מחדש.';
-                    return 'המודל לא החזיר תשובה (ייתכן שהתוכן נחסם). נסה לנסח מחדש.';
-                }
-                const msg = cleanError(await res.text()); lastError = new Error(msg);
-                if (res.status === 404) { cachedModels = null; break; }
-                if (GEMINI_RETRYABLE.includes(res.status)) { if (res.status === 429) sawQuota = true; if (attempt < 2) await sleep(1200 + Math.random() * 600); continue; }
-                if (res.status === 401 || /api key/i.test(msg)) { const f = new Error('מפתח ה-API נדחה: ' + msg); f.fatal = true; throw f; }
-                break;
-            } catch (err) { clearTimeout(timer); if (err.fatal) throw err; lastError = err; if (attempt < 2) await sleep(1200 + Math.random() * 600); }
-        }
-    }
-    const fin = new Error(sawQuota ? 'הגעת למגבלת הבקשות של המפתח או ש-Gemini עמוס כרגע.' : 'Gemini לא זמין כרגע (עומס זמני בצד גוגל).');
-    fin.transient = true; fin.detail = lastError ? lastError.message : ''; throw fin;
+    if (!window.QBGemini) { const e = new Error('הקובץ gemini-core.js לא נטען. ודא שהוא הועלה לאותה תיקייה עם שאר הקבצים.'); e.fatal = true; throw e; }
+    return QBGemini.call({ contents, system: systemText, temperature: 0.5, softBlocked: true, blockedText: 'המודל לא החזיר תשובה (ייתכן שהתוכן נחסם). נסה לנסח מחדש.', noKeyMessage: 'לא הוגדר מפתח Gemini API.' });
 }
 
 // ============================================================================

@@ -199,6 +199,8 @@
     </main>
 
     <script>
+        function ymdLocal(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }  // local date; toISOString() is UTC and shifts days in Israel
+
         const WATCH_CATEGORIES = [
             {
                 id: 'presnap', icon: '👁️', color: '#38bdf8', title: 'Pre-Snap Reads',
@@ -490,7 +492,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'qb_master_class_film_study_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.download = 'qb_master_class_film_study_backup_' + ymdLocal() + '.json';
             a.click();
             URL.revokeObjectURL(url);
         }

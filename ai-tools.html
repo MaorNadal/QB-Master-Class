@@ -411,7 +411,10 @@
     </div>
 
     <script src="training-data.js"></script>
+    <script src="gemini-core.js"></script>
     <script>
+        function ymdLocal(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }  // local date; toISOString() is UTC and shifts days in Israel
+
         function getApiKey() {
             try { return localStorage.getItem('qbmc_gemini_key') || ''; } catch (e) { return ''; }
         }
@@ -451,28 +454,7 @@
         //     next model (including the lighter "flash-lite" variants).
         // If everything still fails, the error is marked `transient` and the UI offers
         // manual entry instead of leaving the user stuck.
-        const GEMINI_MODEL_CANDIDATES = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
-        const GEMINI_RETRYABLE = [429, 500, 502, 503, 504];
-        let cachedGeminiModels = null;
-
-        async function discoverGeminiModels(key) {
-            if (cachedGeminiModels && cachedGeminiModels.length) return cachedGeminiModels;
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-                if (!res.ok) return [];
-                const data = await res.json();
-                const usable = (data.models || []).filter(m =>
-                    (m.supportedGenerationMethods || []).includes('generateContent') &&
-                    /flash/i.test(m.name) &&
-                    !/embedding|vision|tts|image|audio|preview|exp/i.test(m.name)
-                ).map(m => m.name.replace('models/', ''));
-                // Plainest names first (stable aliases rather than dated variants).
-                usable.sort((a, b) => a.length - b.length);
-                if (usable.length) cachedGeminiModels = usable.slice(0, 4);
-                return cachedGeminiModels || [];
-            } catch (e) {}
-            return [];
-        }
+        // The Gemini request layer (model discovery, fallback chain, retry, timeout) lives in gemini-core.js, shared with the coach and the press room.
 
         function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
@@ -487,77 +469,12 @@
         }
 
         async function callGemini(parts, options = {}) {
-            const key = getApiKey();
-            if (!key) {
-                const e = new Error('לא הוגדר מפתח Gemini API (בחלק העליון של העמוד).');
-                e.noKey = true;
-                throw e;
-            }
-
-            const discovered = await discoverGeminiModels(key);
-            const models = [...new Set([...discovered, ...GEMINI_MODEL_CANDIDATES])];
-            const timeoutMs = options.timeoutMs || 90000;
-
-            let lastError = null, sawQuota = false;
-            for (const model of models) {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-
-                for (let attempt = 1; attempt <= 2; attempt++) {
-                    const ctrl = new AbortController();
-                    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-                    try {
-                        const res = await fetch(url, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(Object.assign(
-                                { contents: [{ parts }] },
-                                options.systemInstruction ? { systemInstruction: { parts: [{ text: options.systemInstruction }] } } : {},
-                                options.generationConfig ? { generationConfig: options.generationConfig } : {}
-                            )),
-                            signal: ctrl.signal
-                        });
-                        clearTimeout(timer);
-
-                        if (res.ok) {
-                            const data = await res.json();
-                            return data.candidates && data.candidates[0] && data.candidates[0].content
-                                ? data.candidates[0].content.parts.map(p => p.text || '').join('\n')
-                                : 'לא התקבלה תשובה תקינה מהמודל — נסה שוב.';
-                        }
-
-                        const cleanMsg = extractErrorMessage(await res.text());
-                        lastError = new Error(cleanMsg);
-
-                        if (res.status === 404) {          // model retired -> rediscover, try next
-                            cachedGeminiModels = null;
-                            break;
-                        }
-                        if (GEMINI_RETRYABLE.includes(res.status)) {   // overload / quota
-                            if (res.status === 429) sawQuota = true;
-                            if (attempt < 2) await sleep(1200 + Math.random() * 600);
-                            continue;                        // 2nd attempt, then next model
-                        }
-                        if (res.status === 401 || /api key/i.test(cleanMsg)) {   // key problem: retrying is pointless
-                            const fatal = new Error('מפתח ה-API נדחה: ' + cleanMsg);
-                            fatal.fatal = true;
-                            throw fatal;
-                        }
-                        break;                               // other 4xx: this model can't serve it, try next
-                    } catch (err) {
-                        clearTimeout(timer);
-                        if (err.fatal) throw err;
-                        lastError = err;                     // network error / timeout -> treat as transient
-                        if (attempt < 2) await sleep(1200 + Math.random() * 600);
-                    }
-                }
-            }
-
-            const finalErr = new Error(sawQuota
-                ? 'הגעת למגבלת הבקשות של המפתח או ש-Gemini עמוס כרגע.'
-                : 'Gemini לא זמין כרגע (עומס זמני בצד גוגל).');
-            finalErr.transient = true;
-            finalErr.detail = lastError ? lastError.message : '';
-            throw finalErr;
+            if (!window.QBGemini) { const e = new Error('הקובץ gemini-core.js לא נטען. ודא שהוא הועלה לאותה תיקייה עם שאר הקבצים.'); e.fatal = true; throw e; }
+            return QBGemini.call({
+                parts, system: options.systemInstruction, generationConfig: options.generationConfig, timeoutMs: options.timeoutMs,
+                softBlocked: true, blockedText: 'לא התקבלה תשובה תקינה מהמודל — נסה שוב.',
+                noKeyMessage: 'לא הוגדר מפתח Gemini API (בחלק העליון של העמוד).'
+            });
         }
 
         // ================= Shared honesty rules for the text-based AI features (nutrition, holistic analysis) =================
@@ -1952,7 +1869,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'qb_master_class_nutrition_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.download = 'qb_master_class_nutrition_backup_' + ymdLocal() + '.json';
             a.click();
             URL.revokeObjectURL(url);
         }

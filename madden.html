@@ -147,6 +147,8 @@
     </footer>
 
     <script>
+        function ymdLocal(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }  // local date; toISOString() is UTC and shifts days in Israel
+
         let qbChartInstance = null;
 
         // ---- Sub-metric configuration ----
@@ -461,7 +463,7 @@
             try {
                 const rounded = {};
                 Object.keys(values).forEach(k => rounded[k] = Math.round(values[k]));
-                localStorage.setItem('qbmc_madden_computed', JSON.stringify({ categories: rounded, ovr, updatedAt: new Date().toISOString().slice(0, 10) }));
+                localStorage.setItem('qbmc_madden_computed', JSON.stringify({ categories: rounded, ovr, updatedAt: ymdLocal() }));
             } catch (e) {}
             scheduleMaddenSnapshot();
         }

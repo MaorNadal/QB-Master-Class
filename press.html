@@ -186,7 +186,7 @@ function renderScene() {
     sc.innerHTML = `<div class="pr-wall"></div><div class="pr-spons">${sponsors}</div>
         <div class="pr-banner"><b>${esc(tn)}</b><small>${CONF ? esc(KINDS[CONF.kind] || '') : 'מסיבת עיתונאים'}</small></div><div class="pr-live">● LIVE</div>
         <i class="pr-flash" style="left:6%;top:30%;animation-delay:.4s"></i><i class="pr-flash" style="left:20%;top:44%;animation-delay:1.7s"></i><i class="pr-flash" style="right:8%;top:34%;animation-delay:1.1s"></i><i class="pr-flash" style="right:22%;top:48%;animation-delay:2.6s"></i>
-        <div class="pr-bubble${q ? '' : ' idle'}">${q && cur ? `<span class="who">🎤 ${esc(cur.name)} • ${esc(cur.outlet)}</span>${esc(q.q)}` : (CONF && CONF.phase === 'done' ? 'מסיבת העיתונאים הסתיימה. תודה לכולם!' : 'הכן את עצמך. הגדר את המסיבה למטה ולחץ "התחל".')}</div>
+        <div class="pr-bubble${q ? '' : ' idle'}">${q && cur ? `<span class="who">🎤 ${esc(cur.name)} • ${esc(cur.outlet)}${q.follow ? ' • ↩️ שאלת המשך' : ''}</span>${esc(q.q)}` : (CONF && CONF.phase === 'done' ? 'מסיבת העיתונאים הסתיימה. תודה לכולם!' : 'הכן את עצמך. הגדר את המסיבה למטה ולחץ "התחל".')}</div>
         <div class="pr-podium"><div class="pr-player">${QBAvatar.html(pl.avatar, { number: pl.num })}</div><div class="pr-desk"><div class="pn">${esc(pl.name)}</div></div></div>
         <div class="pr-seats">${CFG.journalists.map(j => { const asked = CONF && CONF.qs ? CONF.qs.findIndex(x => x.jid === j.id) : -1; const isOn = cur && cur.id === j.id; const doneJ = CONF && CONF.qs && CONF.answers && CONF.qs.some((x, i) => x.jid === j.id && CONF.answers[i] !== undefined) && !isOn;
             return `<div class="pr-j${isOn ? ' on' : ''}${doneJ ? ' done' : ''}"><div class="av">${QBAvatar.html(j.avatar)}</div><i class="notepad"></i><div class="tb"><span>${esc(j.name)}<small>${esc(j.outlet)}</small></span></div></div>`; }).join('')}</div>`;
@@ -206,6 +206,7 @@ function renderPanel() {
                 <label>מקור השאלות והעיתון<select id="cMode"><option value="ai"${has ? '' : ' disabled'}>AI (Gemini)${has ? '' : ' - אין מפתח'}</option><option value="bank"${has ? '' : ' selected'}>מאגר שאלות מובנה (בלי AI)</option></select></label>
             </div>
             <label>עובדות לשיחה (אופציונלי): תוצאה, רגע מרכזי, מה שחשוב שהעיתונאים ידעו<textarea id="cNote" rows="2" maxlength="600" placeholder="למשל: ניצחנו 28-21 אחרי שהיינו בפיגור של 14 בתחילת הרבע השלישי. מסרתי שני טאצ׳דאונים."></textarea></label>
+            <label style="display:flex;gap:6px;align-items:center;color:#cbd5e1"><input type="checkbox" id="cFollow" checked> שאלות המשך (עד 2): העיתונאי מגיב למה שענית ומתחקר אותו</label>
             <label style="display:flex;gap:6px;align-items:center;color:#cbd5e1"><input type="checkbox" id="cStats"> אפשר ל-AI להתבסס גם על סטטיסטיקת המשחקים האחרונים שלי (נשלחות ל-Google רק אם סימנת)</label>
             <div class="flex flex-wrap items-center gap-2 mt-2"><button class="btn pri" id="startBtn" onclick="startConference()">▶️ התחל מסיבת עיתונאים</button><span id="cMsg" class="text-xs text-amber-300"></span></div>
             <p class="text-[11px] text-slate-500 mt-3 leading-relaxed">העיתונאים והעיתונים בדיוניים. ב-AI השאלות והכותרות נוצרות רק מתוך מה שכתבת, ולכן עדיף להזין עובדות אמיתיות. אין שליחת פרטים אישיים ל-AI פרט למה שהקלדת (ולסטטיסטיקה אם סימנת).</p>`;
@@ -214,7 +215,7 @@ function renderPanel() {
     if (CONF.phase === 'asking') {
         const q = CONF.qs[CONF.i], j = jById(q.jid);
         el.innerHTML = `<div class="dots">${CONF.qs.map((_, i) => `<i class="${i < CONF.i ? 'dn' : (i === CONF.i ? 'on' : '')}"></i>`).join('')}</div>
-            <div class="text-xs text-slate-400 mb-1">שאלה ${CONF.i + 1} מתוך ${CONF.qs.length} • ${j ? esc(j.name) : ''}</div>
+            <div class="text-xs text-slate-400 mb-1">שאלה ${CONF.i + 1} מתוך ${CONF.qs.length}${q.follow ? ' (שאלת המשך)' : ''} • ${j ? esc(j.name) : ''}</div>
             <label>התשובה שלך<textarea id="ansBox" rows="4" maxlength="1200" placeholder="ענה כמו שהיית עונה מול המצלמות…" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter')submitAnswer()"></textarea></label>
             <div class="flex flex-wrap gap-2"><button class="btn ok" onclick="submitAnswer()">✅ שלח תשובה</button><button class="btn" onclick="submitAnswer(true)">🤐 ללא תגובה</button><button class="btn red" onclick="abortConference()">✕ סיים</button></div>`;
         const b = document.getElementById('ansBox'); if (b) b.focus();
@@ -263,20 +264,53 @@ async function startConference() {
             used.add(pick); qs.push({ jid: j.id, q: pick });
         }
     }
-    CONF = { id: uid(), date: todayStr(), kind, note, mode: usedMode, stats, qs, answers: [], i: 0, phase: 'asking' };
+    CONF = { id: uid(), date: todayStr(), kind, note, mode: usedMode, stats, qs, answers: [], i: 0, phase: 'asking', follow: document.getElementById('cFollow').checked, followCount: 0, busy: false };
     renderScene(); renderPanel();
 }
-function submitAnswer(skip) {
-    if (!CONF || CONF.phase !== 'asking') return;
+const MAX_FOLLOW = 2;
+async function submitAnswer(skip) {
+    if (!CONF || CONF.phase !== 'asking' || CONF.busy) return;
     const box = document.getElementById('ansBox'); let a = skip ? '' : box.value.trim();
     if (!skip && !a) { box.focus(); return; }
+    const cur = CONF.qs[CONF.i];
     CONF.answers[CONF.i] = a.slice(0, 1200);
+    // A journalist may react to what was just said with ONE follow-up (never a follow-up to a follow-up).
+    if (CONF.follow && CONF.followCount < MAX_FOLLOW && a && !cur.follow) {
+        CONF.busy = true; document.getElementById('prPanel').innerHTML = `<p class="text-sm text-amber-300">${esc((jById(cur.jid) || { name: 'העיתונאי' }).name)} מקשיב…</p>`;
+        let fq = null;
+        try { fq = await followUpFor(cur, a); } catch (e) { fq = null; }
+        CONF.busy = false;
+        if (fq) { CONF.qs.splice(CONF.i + 1, 0, { jid: cur.jid, q: fq, follow: true }); CONF.followCount++; }
+    }
     CONF.i++;
     if (CONF.i >= CONF.qs.length) finishConference(); else { renderScene(); renderPanel(); }
 }
+// AI first (when this conference runs on AI). If the AI explicitly says there is nothing worth probing, that is respected (no follow-up);
+// only a failure / unusable reply falls back to the simple rules, which may also decline.
+async function followUpFor(q, a) {
+    const j = jById(q.jid) || { name: 'עיתונאי', outlet: '', style: 'friendly' };
+    if (CONF.mode === 'ai') {
+        try {
+            const prompt = `הקשר: ${KINDS[CONF.kind]}\nעובדות שהשחקן מסר: ${CONF.note || '(לא נמסרו)'}\nהעיתונאי: ${j.name} (${j.outlet}), סגנון: ${STYLE_PROMPT[j.style]}\nהשאלה שנשאלה: ${q.q}\nתשובת השחקן: ${a}\n\nהחלט אם יש מקום לשאלת המשך אחת קצרה (עד 25 מילים) שמתחקרת דבר מסוים שנאמר בתשובה: טענה, הבטחה, האשמה, ערפול או רגש. אסור להמציא עובדות חדשות ואסור לחזור על השאלה המקורית. אם אין מה לתחקר, החזר follow=false. פורמט JSON: {"follow":true,"q":"..."}`;
+            const o = QBGemini.parseJson(await QBGemini.call({ system: PRESS_RULES, prompt, json: true, temperature: 0.7, timeoutMs: 45000 }));
+            if (o.follow === false) return null;
+            const t = String(o.q || '').trim().slice(0, 220);
+            if (t && t !== q.q) return t;
+        } catch (e) { /* fall through to the simple rules */ }
+    }
+    return ruleFollowUp(a);
+}
+function ruleFollowUp(a) {
+    const n = words(a).length;
+    if (BLAME.test(a)) return 'זה נשמע כמו האשמה. אתה מוכן לעמוד מאחורי המילים האלה כשהן יופיעו בכותרת?';
+    if (ABSOLUTE.test(a)) return 'זו הבטחה גדולה. מה יקרה אם זה לא יתממש?';
+    if (HEDGE.test(a) || n < 6) return 'התשובה קצרה ולא חד-משמעית. אפשר להרחיב ולהסביר למה?';
+    if (/(ביחד|הקבוצה|החבר'ה|אנחנו)/.test(a)) return 'מי בקבוצה הוכיח את זה במיוחד, ואיך זה בא לידי ביטוי על המגרש?';
+    return null;
+}
 function abortConference() { if (CONF && CONF.answers.length && !confirm('לסיים עכשיו? תשובות שנמסרו עד כה יישמרו.')) return; if (CONF && CONF.answers.length) { CONF.qs = CONF.qs.slice(0, CONF.answers.length); finishConference(); } else resetConference(); }
 function resetConference() { CONF = null; renderScene(); renderPanel(); }
-function transcript(c) { return c.qs.map((x, i) => { const j = jById(x.jid) || { name: 'עיתונאי', outlet: '' }; return { jid: x.jid, jname: j.name, outlet: j.outlet, style: j.style || 'friendly', q: x.q, a: c.answers[i] || '' }; }); }
+function transcript(c) { return c.qs.map((x, i) => { const j = jById(x.jid) || { name: 'עיתונאי', outlet: '' }; return { jid: x.jid, jname: j.name, outlet: j.outlet, style: j.style || 'friendly', q: x.q, a: c.answers[i] || '', follow: !!x.follow }; }); }
 
 async function finishConference() {
     CONF.phase = 'done'; const qa = transcript(CONF);
@@ -301,7 +335,7 @@ async function finishConference() {
 // AI prompts + validation
 // ============================================================================
 function editionPrompt(c, qa) {
-    return `הקשר: ${KINDS[c.kind]}\nעובדות שהשחקן מסר: ${c.note || '(לא נמסרו)'}\nשם העיתון: ${CFG.paper}\nשם השחקן: ${playerInfo().name}\n\nתמלול מסיבת העיתונאים:\n${qa.map((x, i) => `${i + 1}. [${x.jname} | ${x.outlet} | id=${x.jid}] שאלה: ${x.q}\n   תשובת השחקן: ${x.a || '(ללא תגובה)'}`).join('\n')}\n\nכתוב את מהדורת היומיום של העיתון ומשוב תקשורתי כן לשחקן. פורמט JSON בדיוק:\n{"mainHeadline":"כותרת ראשית","subHeadline":"כותרת משנה","lead":"פסקה פותחת של 40-70 מילה","pullQuote":{"text":"ציטוט מילה במילה מתשובות השחקן","by":"שם השחקן"},"articles":[{"j":"<id העיתונאי>","kicker":"כותרת עליונה קצרה","headline":"כותרת","body":"2-3 משפטים"}],"ticker":["3 עד 4 שורות קצרות"],"feedback":{"overall":"הערכה כנה בשתי שורות","strengths":["..."],"risks":[{"quote":"ציטוט מהתשובות שעלול להישמע רע או להילקח מהקשרו","why":"למה","better":"ניסוח טוב יותר"}],"tips":["עצה מעשית"]}}\nמספר המאמרים: עד ${Math.min(4, qa.length)}, כל אחד בזווית של העיתונאי שלו. אם השחקן לא ענה (ללא תגובה), הכותרת יכולה לשקף זאת בצורה ישרה. המשוב יהיה כן ומאוזן ולא מחמיא סתם.`;
+    return `הקשר: ${KINDS[c.kind]}\nעובדות שהשחקן מסר: ${c.note || '(לא נמסרו)'}\nשם העיתון: ${CFG.paper}\nשם השחקן: ${playerInfo().name}\n\nתמלול מסיבת העיתונאים:\n${qa.map((x, i) => `${i + 1}. [${x.jname} | ${x.outlet} | id=${x.jid}] ${x.follow ? 'שאלת המשך' : 'שאלה'}: ${x.q}\n   תשובת השחקן: ${x.a || '(ללא תגובה)'}`).join('\n')}\n\nכתוב את מהדורת היומיום של העיתון ומשוב תקשורתי כן לשחקן. פורמט JSON בדיוק:\n{"mainHeadline":"כותרת ראשית","subHeadline":"כותרת משנה","lead":"פסקה פותחת של 40-70 מילה","pullQuote":{"text":"ציטוט מילה במילה מתשובות השחקן","by":"שם השחקן"},"articles":[{"j":"<id העיתונאי>","kicker":"כותרת עליונה קצרה","headline":"כותרת","body":"2-3 משפטים"}],"ticker":["3 עד 4 שורות קצרות"],"feedback":{"overall":"הערכה כנה בשתי שורות","strengths":["..."],"risks":[{"quote":"ציטוט מהתשובות שעלול להישמע רע או להילקח מהקשרו","why":"למה","better":"ניסוח טוב יותר"}],"tips":["עצה מעשית"]}}\nמספר המאמרים: עד ${Math.min(4, qa.length)}, כל אחד בזווית של העיתונאי שלו. אם השחקן לא ענה (ללא תגובה), הכותרת יכולה לשקף זאת בצורה ישרה. המשוב יהיה כן ומאוזן ולא מחמיא סתם.`;
 }
 const norm = t => String(t).replace(/[\s"'״׳"'.,;:!?\-–—…()\[\]]+/g, '').toLowerCase();
 function quoteInAnswers(q, qa) { const nq = norm(q); return nq.length >= 6 && qa.some(x => norm(x.a).includes(nq)); }
@@ -409,7 +443,7 @@ function cleanFbSaved(f) { const fb = normalizeFeedback(f); if (!fb) return null
 function loadArch() {
     const a = rd(K_ARCH, []); if (!Array.isArray(a)) return [];
     return a.filter(x => x && typeof x === 'object' && typeof x.id === 'string' && x.id).map(x => ({ id: x.id.slice(0, 40), date: DATE_OK.test(x.date) ? x.date : '', kind: KINDS[x.kind] ? x.kind : 'general', note: String(x.note || '').slice(0, 600), mode: x.mode === 'ai' ? 'ai' : 'bank',
-        qa: (Array.isArray(x.qa) ? x.qa : []).filter(q => q && typeof q === 'object').slice(0, 12).map(q => ({ jid: String(q.jid || '').slice(0, 40), jname: String(q.jname || '').slice(0, 40), outlet: String(q.outlet || '').slice(0, 40), style: STYLES[q.style] ? q.style : 'friendly', q: String(q.q || '').slice(0, 300), a: String(q.a || '').slice(0, 1200) })),
+        qa: (Array.isArray(x.qa) ? x.qa : []).filter(q => q && typeof q === 'object').slice(0, 12).map(q => ({ jid: String(q.jid || '').slice(0, 40), jname: String(q.jname || '').slice(0, 40), outlet: String(q.outlet || '').slice(0, 40), style: STYLES[q.style] ? q.style : 'friendly', q: String(q.q || '').slice(0, 300), a: String(q.a || '').slice(0, 1200), follow: q.follow === true })),
         feedback: cleanFbSaved(x.feedback), daily: x.daily && typeof x.daily === 'object' ? cleanEd(x.daily) : null }));
 }
 function loadWeekly() {
